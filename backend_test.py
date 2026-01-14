@@ -811,6 +811,105 @@ class PropOpsAPITester:
                          error=f"Expected 403, got {status}: {error_detail}")
             return False
 
+    def test_pending_invites_empty(self):
+        """Test /invites/pending returns empty array for user with no invites"""
+        if not self.staff_token:
+            self.log_test("Pending Invites (Empty)", False, error="No staff token available")
+            return False
+        
+        # Create a new user who has no invites
+        new_user_email = f"noinvites_{uuid.uuid4().hex[:8]}@example.com"
+        data = {
+            "email": new_user_email,
+            "password": "testpass123",
+            "name": f"No Invites User {uuid.uuid4().hex[:6]}"
+        }
+        
+        response = self.make_request('POST', 'auth/register', data)
+        
+        if not response or response.status_code != 200:
+            self.log_test("Pending Invites (Empty)", False, error="Failed to create test user")
+            return False
+        
+        new_user_token = response.json().get('token')
+        
+        # Switch to new user token
+        original_token = self.token
+        self.token = new_user_token
+        
+        # Test pending invites endpoint
+        response = self.make_request('GET', 'invites/pending')
+        
+        # Restore original token
+        self.token = original_token
+        
+        if response and response.status_code == 200:
+            invites = response.json()
+            success = isinstance(invites, list) and len(invites) == 0
+            self.log_test("Pending Invites (Empty)", success, 
+                         f"Pending invites count: {len(invites) if isinstance(invites, list) else 'Not a list'}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to get pending invites') if response else 'No response'
+            self.log_test("Pending Invites (Empty)", False, error=error_msg)
+            return False
+
+    def test_pending_invites_with_data(self):
+        """Test /invites/pending returns invites for user who has them"""
+        if not self.staff_token or not self.org_id:
+            self.log_test("Pending Invites (With Data)", False, error="No staff token or org_id available")
+            return False
+        
+        # Create another invitation for the staff user
+        test_email = f"pending_test_{uuid.uuid4().hex[:8]}@example.com"
+        
+        # First register this user
+        data = {
+            "email": test_email,
+            "password": "testpass123",
+            "name": f"Pending Test User {uuid.uuid4().hex[:6]}"
+        }
+        
+        response = self.make_request('POST', 'auth/register', data)
+        
+        if not response or response.status_code != 200:
+            self.log_test("Pending Invites (With Data)", False, error="Failed to create test user")
+            return False
+        
+        test_user_token = response.json().get('token')
+        
+        # Create invitation for this user
+        invite_data = {
+            "email": test_email,
+            "role": "manager"
+        }
+        
+        response = self.make_request('POST', f'organizations/{self.org_id}/invites', invite_data)
+        
+        if not response or response.status_code != 200:
+            self.log_test("Pending Invites (With Data)", False, error="Failed to create test invitation")
+            return False
+        
+        # Switch to test user token and check pending invites
+        original_token = self.token
+        self.token = test_user_token
+        
+        response = self.make_request('GET', 'invites/pending')
+        
+        # Restore original token
+        self.token = original_token
+        
+        if response and response.status_code == 200:
+            invites = response.json()
+            success = isinstance(invites, list) and len(invites) > 0
+            self.log_test("Pending Invites (With Data)", success, 
+                         f"Pending invites count: {len(invites) if isinstance(invites, list) else 'Not a list'}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to get pending invites') if response else 'No response'
+            self.log_test("Pending Invites (With Data)", False, error=error_msg)
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print(f"🚀 Starting PropOps API Tests - New Features Focus")
