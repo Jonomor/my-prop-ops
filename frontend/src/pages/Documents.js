@@ -58,9 +58,9 @@ const categoryColors = {
 
 const getFileIcon = (filename) => {
   const ext = filename.split('.').pop()?.toLowerCase();
-  if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return FileImage;
-  if (['pdf'].includes(ext)) return FilePdf;
-  if (['xls', 'xlsx', 'csv'].includes(ext)) return FileSpreadsheet;
+  if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return Image;
+  if (['pdf'].includes(ext)) return FileType;
+  if (['xls', 'xlsx', 'csv'].includes(ext)) return Sheet;
   return File;
 };
 
