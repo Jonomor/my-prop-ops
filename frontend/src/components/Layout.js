@@ -29,7 +29,9 @@ import {
   ChevronDown,
   Building,
   History,
-  Plus
+  Plus,
+  Calendar,
+  UserPlus
 } from 'lucide-react';
 
 const navItems = [
@@ -37,7 +39,9 @@ const navItems = [
   { path: '/properties', label: 'Properties', icon: Building2 },
   { path: '/tenants', label: 'Tenants', icon: Users },
   { path: '/inspections', label: 'Inspections', icon: ClipboardCheck },
+  { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/documents', label: 'Documents', icon: FileText },
+  { path: '/team', label: 'Team', icon: UserPlus },
   { path: '/audit-logs', label: 'Audit Logs', icon: History },
 ];
 
