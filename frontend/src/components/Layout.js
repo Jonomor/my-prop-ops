@@ -209,6 +209,13 @@ export const Layout = ({ children }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => navigate('/invites')} data-testid="pending-invites-btn">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Pending Invites
+                  {pendingInvitesCount > 0 && (
+                    <Badge variant="default" className="ml-auto text-xs">{pendingInvitesCount}</Badge>
+                  )}
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="settings-btn">
                   <Settings className="w-4 h-4 mr-2" />
                   Settings
