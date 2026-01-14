@@ -728,8 +728,8 @@ class PropOpsAPITester:
         
         # Should get 403 Forbidden
         print(f"DEBUG: Checking response: {response}")
-        print(f"DEBUG: Response bool: {bool(response)}")
-        if response:
+        print(f"DEBUG: Response is not None: {response is not None}")
+        if response is not None:
             print(f"DEBUG: Response status: {response.status_code}")
             if response.status_code == 403:
                 success = True
