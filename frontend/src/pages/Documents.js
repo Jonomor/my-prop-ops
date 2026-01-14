@@ -290,7 +290,7 @@ const Documents = () => {
                         <SelectValue placeholder="Select an inspection" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No inspection</SelectItem>
+                        <SelectItem value="none">No inspection</SelectItem>
                         {inspections.map(inspection => (
                           <SelectItem key={inspection.id} value={inspection.id}>
                             {new Date(inspection.scheduled_date).toLocaleDateString()} - {inspection.status}
