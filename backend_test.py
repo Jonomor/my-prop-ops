@@ -711,7 +711,17 @@ class PropOpsAPITester:
             "status": "inactive"
         }
         
+        print(f"DEBUG: About to make request with staff token")
+        print(f"DEBUG: Endpoint: organizations/{self.org_id}/tenants/{self.tenant_id}")
+        print(f"DEBUG: Staff token exists: {bool(self.staff_token)}")
+        print(f"DEBUG: Tenant ID exists: {bool(self.tenant_id)}")
+        
         response = self.make_request('PUT', f'organizations/{self.org_id}/tenants/{self.tenant_id}', data)
+        
+        print(f"DEBUG: Response received: {response}")
+        print(f"DEBUG: Response type: {type(response)}")
+        if response:
+            print(f"DEBUG: Response status: {response.status_code}")
         
         # Restore original token
         self.token = original_token
