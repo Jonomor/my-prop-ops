@@ -553,6 +553,32 @@ async def list_invites(org_id: str, user = Depends(get_current_user)):
     invites = await db.invites.find({"org_id": org_id}, {"_id": 0}).to_list(100)
     return [InviteResponse(org_name=org['name'], **inv) for inv in invites]
 
+@api_router.delete("/organizations/{org_id}/invites/{invite_id}")
+async def delete_invite(org_id: str, invite_id: str, user = Depends(get_current_user)):
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN])
+    
+    result = await db.invites.delete_one({"id": invite_id, "org_id": org_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    
+    return {"message": "Invite deleted"}
+
+# Get pending invites for current user - must be before /invites/{token} to avoid route conflict
+@api_router.get("/invites/pending", response_model=List[InviteResponse])
+async def get_pending_invites(user = Depends(get_current_user)):
+    invites = await db.invites.find({
+        "email": user['email'],
+        "status": InviteStatus.PENDING
+    }, {"_id": 0}).to_list(100)
+    
+    result = []
+    for inv in invites:
+        org = await db.organizations.find_one({"id": inv['org_id']}, {"_id": 0})
+        if org:
+            result.append(InviteResponse(org_name=org['name'], **inv))
+    return result
+
 @api_router.get("/invites/{token}")
 async def get_invite_by_token(token: str):
     """Public endpoint to get invite details by token"""
