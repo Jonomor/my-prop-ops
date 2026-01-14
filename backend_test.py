@@ -528,11 +528,27 @@ class PropOpsAPITester:
 
     def test_invite_token_lookup(self):
         """Test public invite token lookup"""
-        if not self.invite_token:
-            self.log_test("Invite Token Lookup", False, error="No invite token available")
+        # Create a separate invitation for testing token lookup
+        if not self.org_id:
+            self.log_test("Invite Token Lookup", False, error="No org_id available")
             return False
             
-        response = self.make_request('GET', f'invites/{self.invite_token}')
+        # Create a test invitation
+        data = {
+            "email": f"lookup_test_{uuid.uuid4().hex[:8]}@example.com",
+            "role": "manager"
+        }
+        
+        response = self.make_request('POST', f'organizations/{self.org_id}/invites', data)
+        
+        if not response or response.status_code != 200:
+            self.log_test("Invite Token Lookup", False, error="Failed to create test invite")
+            return False
+            
+        test_token = response.json().get('token')
+        
+        # Now test the lookup
+        response = self.make_request('GET', f'invites/{test_token}')
         
         if response and response.status_code == 200:
             result = response.json()
