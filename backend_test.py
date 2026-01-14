@@ -647,14 +647,15 @@ class PropOpsAPITester:
         response = self.make_request('PUT', f'organizations/{self.org_id}/inspections/{test_inspection_id}', data)
         
         # This should fail with 400 status
-        if response and response.status_code == 400:
+        if response is not None and response.status_code == 400:
             success = True
             self.log_test("Inspection State Machine (Invalid)", success, 
                          "Invalid transition correctly rejected")
             return success
         else:
+            status = response.status_code if response is not None else 'No response'
             self.log_test("Inspection State Machine (Invalid)", False, 
-                         error="Invalid transition was allowed (should have been rejected)")
+                         error=f"Expected 400, got {status} - Invalid transition was allowed")
             return False
 
     def test_role_enforcement_staff_property_create(self):
