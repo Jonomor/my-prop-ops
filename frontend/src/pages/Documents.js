@@ -42,9 +42,9 @@ import {
   Download,
   Trash2,
   File,
-  FileImage,
-  FileSpreadsheet,
-  FilePdf
+  Image,
+  Sheet,
+  FileType
 } from 'lucide-react';
 import { toast } from 'sonner';
 
