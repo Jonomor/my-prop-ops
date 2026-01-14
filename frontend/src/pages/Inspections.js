@@ -258,7 +258,7 @@ const Inspections = () => {
                           <SelectValue placeholder="Select a unit (optional)" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">All units</SelectItem>
+                          <SelectItem value="all">All units</SelectItem>
                           {propertyUnits.map(unit => (
                             <SelectItem key={unit.id} value={unit.id}>
                               Unit {unit.unit_number}
