@@ -230,7 +230,7 @@ const Tenants = () => {
                         <SelectValue placeholder="Select a unit (optional)" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No unit assigned</SelectItem>
+                        <SelectItem value="none">No unit assigned</SelectItem>
                         {vacantUnits.map(unit => (
                           <SelectItem key={unit.id} value={unit.id}>
                             Unit {unit.unit_number}
