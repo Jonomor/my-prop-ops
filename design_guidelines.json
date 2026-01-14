@@ -1,0 +1,170 @@
+{
+  "identity": {
+    "name": "E1",
+    "persona": "The Anti-AI Designer",
+    "philosophy": "Fusion over Imitation. Emotion First. Content is King."
+  },
+  "project_context": {
+    "app_name": "PropOps",
+    "app_type": "SaaS Property Management",
+    "target_audience": "Property Managers, Housing Operations Staff",
+    "emotional_tone": "Precision, Authority, Clarity (The 'Control Room' Vibe)"
+  },
+  "design_system": {
+    "typography": {
+      "font_family": {
+        "headings": "Manrope, sans-serif",
+        "body": "Inter, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "usage_rules": [
+        "Headings (h1-h3): Manrope. Bold (700) or ExtraBold (800). Tracking-tight.",
+        "Body: Inter. Regular (400) or Medium (500). Leading-relaxed.",
+        "Data/IDs: JetBrains Mono. Text-xs or Text-sm.",
+        "CRITICAL: Do not use Inter for Headings."
+      ]
+    },
+    "colors": {
+      "palette_name": "Cobalt Command",
+      "strategy": "Professional Blue with an Electric Twist",
+      "css_variables": {
+        "light": {
+          "--background": "210 40% 98%",
+          "--foreground": "222 47% 11%",
+          "--card": "0 0% 100%",
+          "--card-foreground": "222 47% 11%",
+          "--popover": "0 0% 100%",
+          "--popover-foreground": "222 47% 11%",
+          "--primary": "221 83% 53%",
+          "--primary-foreground": "210 40% 98%",
+          "--secondary": "210 40% 96.1%",
+          "--secondary-foreground": "222 47% 11%",
+          "--muted": "210 40% 96.1%",
+          "--muted-foreground": "215 16% 47%",
+          "--accent": "210 40% 96.1%",
+          "--accent-foreground": "222 47% 11%",
+          "--destructive": "0 84.2% 60.2%",
+          "--destructive-foreground": "210 40% 98%",
+          "--border": "214.3 31.8% 91.4%",
+          "--input": "214.3 31.8% 91.4%",
+          "--ring": "221 83% 53%",
+          "--radius": "0.5rem"
+        },
+        "dark": {
+          "--background": "222 47% 11%",
+          "--foreground": "210 40% 98%",
+          "--card": "217 33% 17%",
+          "--card-foreground": "210 40% 98%",
+          "--popover": "222 47% 11%",
+          "--popover-foreground": "210 40% 98%",
+          "--primary": "217 91% 60%",
+          "--primary-foreground": "222 47% 11%",
+          "--secondary": "217 33% 17%",
+          "--secondary-foreground": "210 40% 98%",
+          "--muted": "217 33% 17%",
+          "--muted-foreground": "215 20.2% 65.1%",
+          "--accent": "217 33% 17%",
+          "--accent-foreground": "210 40% 98%",
+          "--destructive": "0 62.8% 30.6%",
+          "--destructive-foreground": "210 40% 98%",
+          "--border": "217 33% 17%",
+          "--input": "217 33% 17%",
+          "--ring": "217 91% 60%"
+        }
+      },
+      "rules": [
+        "Never use pure black (#000000). Use Deep Navy (hsl 222 47% 11%).",
+        "Primary Action Color: Electric Blue (hsl 221 83% 53%).",
+        "Alert/Error Color: Use a sharp Coral/Orange instead of standard Red for warnings to maintain the 'Blue/Orange' complementary contrast."
+      ]
+    },
+    "spacing_layout": {
+      "scale": "Tailwind Default",
+      "philosophy": "Generous Spacing. 2-3x more than typical SaaS.",
+      "grid_systems": {
+        "dashboard": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+        "detail_view": "grid-cols-1 md:grid-cols-12 gap-8 (Tetris Grid)"
+      },
+      "container_padding": "p-6 md:p-8 lg:p-12"
+    },
+    "components": {
+      "cards": {
+        "style": "Glass-Tech",
+        "classes": "bg-card/50 backdrop-blur-sm border border-border/50 shadow-sm hover:shadow-md transition-all duration-300"
+      },
+      "buttons": {
+        "primary": "rounded-md font-semibold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all",
+        "secondary": "rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+      },
+      "inputs": {
+        "style": "Clean & Crisp",
+        "classes": "h-10 rounded-md border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+      }
+    },
+    "visual_enhancers": {
+      "glassmorphism": "backdrop-blur-xl bg-white/70 dark:bg-slate-950/70 border-b border-white/20 dark:border-white/10",
+      "gradients": "Use subtle radial gradients for backgrounds, not linear. Example: 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-background to-background'",
+      "shadows": "shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
+    }
+  },
+  "assets": {
+    "images": {
+      "login_background": {
+        "url": "https://images.unsplash.com/photo-1559329146-807aff9ff1fb?crop=entropy&cs=srgb&fm=jpg&q=85",
+        "alt": "Modern White Concrete Building",
+        "usage": "Full screen background for login/register pages with overlay"
+      },
+      "properties": [
+        {
+          "url": "https://images.unsplash.com/photo-1766923475286-b2fb204cf95e?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Modern Apartment Low Angle",
+          "usage": "Property Card Thumbnail"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1762397794646-f19044bd0828?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Red and White Facade",
+          "usage": "Property Detail Hero"
+        }
+      ],
+      "interiors": [
+        {
+          "url": "https://images.unsplash.com/photo-1597665863042-47e00964d899?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Bright Living Room",
+          "usage": "Unit Detail View"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1725042893312-5ec0dea9e369?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Living Room Round Window",
+          "usage": "Unit Card Thumbnail"
+        }
+      ],
+      "avatars": [
+        {
+          "url": "https://images.unsplash.com/photo-1655249493799-9cee4fe983bb?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Professional Man Grey Sweater",
+          "usage": "Tenant Profile / User Avatar"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1655249481446-25d575f1c054?crop=entropy&cs=srgb&fm=jpg&q=85",
+          "alt": "Professional Woman Blue Dress",
+          "usage": "Manager Profile / Admin Avatar"
+        }
+      ]
+    },
+    "icons": "Use Lucide React (default). For specialized property icons, use Phosphor Icons if needed."
+  },
+  "implementation_instructions": {
+    "step_1": "Update /app/frontend/src/index.css with the provided CSS variables for Light and Dark modes.",
+    "step_2": "Install 'Manrope' and 'JetBrains Mono' fonts via Google Fonts in index.html or CSS import.",
+    "step_3": "Configure tailwind.config.js to extend font families: sans: ['Manrope', ...], body: ['Inter', ...], mono: ['JetBrains Mono', ...].",
+    "step_4": "Create a 'Layout' component that enforces the 'Control Room' grid structure.",
+    "step_5": "Apply the 'Glass-Tech' card style to all dashboard widgets.",
+    "step_6": "Ensure all interactive elements have data-testid attributes."
+  },
+  "universal_guidelines": [
+    "Avoid 'AI Slop': Do not use generic centered layouts.",
+    "Dark Mode First: Design for dark mode as the primary 'Control Room' experience, then adapt for light mode.",
+    "Micro-Interactions: Add hover:scale-[1.02] to cards and active:scale-[0.98] to buttons.",
+    "Data Density: Use dense tables for 'Admin' views, but spacious cards for 'Tenant' views."
+  ]
+}
