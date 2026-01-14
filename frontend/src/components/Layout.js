@@ -53,6 +53,7 @@ export const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const { api } = useAuth();
 
   React.useEffect(() => {
@@ -67,6 +68,20 @@ export const Layout = ({ children }) => {
     };
     fetchNotifications();
     const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [api]);
+
+  React.useEffect(() => {
+    const fetchPendingInvites = async () => {
+      try {
+        const response = await api.get('/invites/pending');
+        setPendingInvitesCount(response.data.length);
+      } catch (error) {
+        console.error('Failed to fetch pending invites:', error);
+      }
+    };
+    fetchPendingInvites();
+    const interval = setInterval(fetchPendingInvites, 60000);
     return () => clearInterval(interval);
   }, [api]);
 
