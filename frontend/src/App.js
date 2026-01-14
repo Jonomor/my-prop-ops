@@ -21,6 +21,7 @@ import CreateOrganization from './pages/CreateOrganization';
 import CalendarView from './pages/CalendarView';
 import TeamManagement from './pages/TeamManagement';
 import AcceptInvite from './pages/AcceptInvite';
+import PendingInvites from './pages/PendingInvites';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -80,6 +81,7 @@ function AppRoutes() {
       <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
       <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
       <Route path="/team" element={<ProtectedRoute><TeamManagement /></ProtectedRoute>} />
+      <Route path="/invites" element={<ProtectedRoute><PendingInvites /></ProtectedRoute>} />
       <Route path="/audit-logs" element={<ProtectedRoute><AuditLogs /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
       <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
