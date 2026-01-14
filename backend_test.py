@@ -632,7 +632,7 @@ class PropOpsAPITester:
         
         create_response = self.make_request('POST', f'organizations/{self.org_id}/inspections', create_data)
         
-        if not create_response or create_response.status_code != 200:
+        if create_response is None or create_response.status_code != 200:
             self.log_test("Inspection State Machine (Invalid)", False, error="Failed to create test inspection")
             return False
             
