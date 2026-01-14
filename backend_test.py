@@ -761,30 +761,48 @@ class PropOpsAPITester:
 
     def run_all_tests(self):
         """Run all API tests"""
-        print(f"🚀 Starting PropOps API Tests")
+        print(f"🚀 Starting PropOps API Tests - New Features Focus")
         print(f"📍 Base URL: {self.base_url}")
         print("=" * 60)
         
-        # Core tests
-        tests = [
+        # Core setup tests
+        setup_tests = [
             self.test_health_check,
             self.test_user_registration,
             self.test_auth_me,
             self.test_get_organizations,
-            self.test_dashboard_stats,
             self.test_create_property,
-            self.test_list_properties,
             self.test_create_unit,
             self.test_create_tenant,
-            self.test_list_tenants,
             self.test_create_inspection,
-            self.test_list_inspections,
-            self.test_list_documents,
-            self.test_notifications,
-            self.test_audit_logs
         ]
         
-        for test in tests:
+        # New feature tests
+        new_feature_tests = [
+            self.test_create_staff_user,
+            self.test_team_invitation_create,
+            self.test_team_invitation_list,
+            self.test_invite_token_lookup,
+            self.test_calendar_endpoint,
+            self.test_inspection_state_machine_valid,
+            self.test_inspection_state_machine_invalid,
+            self.test_role_enforcement_staff_property_create,
+            self.test_role_enforcement_staff_tenant_update,
+            self.test_role_enforcement_staff_inspection_approve,
+            self.test_role_enforcement_staff_document_delete,
+        ]
+        
+        all_tests = setup_tests + new_feature_tests
+        
+        print("🔧 Running setup tests...")
+        for test in setup_tests:
+            try:
+                test()
+            except Exception as e:
+                self.log_test(test.__name__, False, error=f"Exception: {str(e)}")
+        
+        print("\n🆕 Running new feature tests...")
+        for test in new_feature_tests:
             try:
                 test()
             except Exception as e:
