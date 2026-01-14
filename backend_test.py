@@ -935,6 +935,8 @@ class PropOpsAPITester:
             self.test_staff_accept_invitation,
             self.test_team_invitation_list,
             self.test_invite_token_lookup,
+            self.test_pending_invites_empty,
+            self.test_pending_invites_with_data,
             self.test_calendar_endpoint,
             self.test_inspection_state_machine_valid,
             self.test_inspection_state_machine_invalid,
