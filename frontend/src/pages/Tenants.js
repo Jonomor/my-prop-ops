@@ -98,7 +98,7 @@ const Tenants = () => {
     try {
       const data = {
         ...formData,
-        unit_id: formData.unit_id || null,
+        unit_id: formData.unit_id === 'none' ? null : formData.unit_id || null,
         lease_start: formData.lease_start || null,
         lease_end: formData.lease_end || null
       };
