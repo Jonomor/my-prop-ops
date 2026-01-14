@@ -423,6 +423,342 @@ class PropOpsAPITester:
             self.log_test("List Audit Logs", False, error=error_msg)
             return False
 
+    # ============== NEW FEATURE TESTS ==============
+    
+    def test_create_staff_user(self):
+        """Create a staff user for role enforcement testing"""
+        test_email = f"staff_{uuid.uuid4().hex[:8]}@example.com"
+        test_name = f"Staff User {uuid.uuid4().hex[:6]}"
+        
+        data = {
+            "email": test_email,
+            "password": "staffpass123",
+            "name": test_name
+        }
+        
+        response = self.make_request('POST', 'auth/register', data)
+        
+        if response and response.status_code == 200:
+            result = response.json()
+            self.staff_token = result.get('token')
+            self.staff_user_id = result.get('user', {}).get('id')
+            success = bool(self.staff_token and self.staff_user_id)
+            self.log_test("Create Staff User", success, 
+                         f"Staff User ID: {self.staff_user_id}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Unknown error') if response else 'No response'
+            self.log_test("Create Staff User", False, error=error_msg)
+            return False
+
+    def test_team_invitation_create(self):
+        """Test creating team invitation (Admin only)"""
+        if not self.org_id:
+            self.log_test("Create Team Invitation", False, error="No org_id available")
+            return False
+            
+        data = {
+            "email": f"invite_{uuid.uuid4().hex[:8]}@example.com",
+            "role": "staff"
+        }
+        
+        response = self.make_request('POST', f'organizations/{self.org_id}/invites', data)
+        
+        if response and response.status_code == 200:
+            result = response.json()
+            self.invite_id = result.get('id')
+            self.invite_token = result.get('token')
+            success = bool(self.invite_id and self.invite_token)
+            self.log_test("Create Team Invitation", success, 
+                         f"Invite ID: {self.invite_id}, Token: {bool(self.invite_token)}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to create invite') if response else 'No response'
+            self.log_test("Create Team Invitation", False, error=error_msg)
+            return False
+
+    def test_team_invitation_list(self):
+        """Test listing team invitations (Admin only)"""
+        if not self.org_id:
+            self.log_test("List Team Invitations", False, error="No org_id available")
+            return False
+            
+        response = self.make_request('GET', f'organizations/{self.org_id}/invites')
+        
+        if response and response.status_code == 200:
+            invites = response.json()
+            success = isinstance(invites, list)
+            self.log_test("List Team Invitations", success, 
+                         f"Invites count: {len(invites) if success else 0}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to list invites') if response else 'No response'
+            self.log_test("List Team Invitations", False, error=error_msg)
+            return False
+
+    def test_invite_token_lookup(self):
+        """Test public invite token lookup"""
+        if not self.invite_token:
+            self.log_test("Invite Token Lookup", False, error="No invite token available")
+            return False
+            
+        response = self.make_request('GET', f'invites/{self.invite_token}')
+        
+        if response and response.status_code == 200:
+            result = response.json()
+            success = 'org_name' in result and 'email' in result and 'role' in result
+            self.log_test("Invite Token Lookup", success, 
+                         f"Invite details: {result.get('org_name', 'N/A')}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Invalid token') if response else 'No response'
+            self.log_test("Invite Token Lookup", False, error=error_msg)
+            return False
+
+    def test_calendar_endpoint(self):
+        """Test calendar endpoint for inspections and lease dates"""
+        if not self.org_id:
+            self.log_test("Calendar Endpoint", False, error="No org_id available")
+            return False
+            
+        # Test with date range
+        from datetime import datetime, timedelta
+        start_date = datetime.now().strftime('%Y-%m-%d')
+        end_date = (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')
+        
+        response = self.make_request('GET', f'organizations/{self.org_id}/calendar?start_date={start_date}&end_date={end_date}')
+        
+        if response and response.status_code == 200:
+            events = response.json()
+            success = isinstance(events, list)
+            self.log_test("Calendar Endpoint", success, 
+                         f"Calendar events count: {len(events) if success else 0}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to get calendar') if response else 'No response'
+            self.log_test("Calendar Endpoint", False, error=error_msg)
+            return False
+
+    def test_inspection_state_machine_valid(self):
+        """Test valid inspection status transition (scheduled -> completed)"""
+        if not self.inspection_id:
+            self.log_test("Inspection State Machine (Valid)", False, error="No inspection_id available")
+            return False
+            
+        data = {
+            "status": "completed",
+            "notes": "Inspection completed successfully",
+            "completed_date": datetime.now().strftime('%Y-%m-%d')
+        }
+        
+        response = self.make_request('PUT', f'organizations/{self.org_id}/inspections/{self.inspection_id}', data)
+        
+        if response and response.status_code == 200:
+            result = response.json()
+            success = result.get('status') == 'completed'
+            self.log_test("Inspection State Machine (Valid)", success, 
+                         f"Status updated to: {result.get('status', 'N/A')}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to update') if response else 'No response'
+            self.log_test("Inspection State Machine (Valid)", False, error=error_msg)
+            return False
+
+    def test_inspection_state_machine_invalid(self):
+        """Test invalid inspection status transition (scheduled -> approved should fail)"""
+        # Create a new inspection for this test
+        if not self.property_id:
+            self.log_test("Inspection State Machine (Invalid)", False, error="No property_id available")
+            return False
+            
+        # First create a new inspection
+        create_data = {
+            "property_id": self.property_id,
+            "unit_id": self.unit_id,
+            "scheduled_date": (datetime.now() + timedelta(days=14)).strftime('%Y-%m-%d'),
+            "notes": "Test inspection for invalid transition"
+        }
+        
+        create_response = self.make_request('POST', f'organizations/{self.org_id}/inspections', create_data)
+        
+        if not create_response or create_response.status_code != 200:
+            self.log_test("Inspection State Machine (Invalid)", False, error="Failed to create test inspection")
+            return False
+            
+        test_inspection_id = create_response.json().get('id')
+        
+        # Now try invalid transition: scheduled -> approved (should fail)
+        data = {
+            "status": "approved",
+            "notes": "Trying invalid transition"
+        }
+        
+        response = self.make_request('PUT', f'organizations/{self.org_id}/inspections/{test_inspection_id}', data)
+        
+        # This should fail with 400 status
+        if response and response.status_code == 400:
+            success = True
+            self.log_test("Inspection State Machine (Invalid)", success, 
+                         "Invalid transition correctly rejected")
+            return success
+        else:
+            self.log_test("Inspection State Machine (Invalid)", False, 
+                         error="Invalid transition was allowed (should have been rejected)")
+            return False
+
+    def test_role_enforcement_staff_property_create(self):
+        """Test that Staff cannot create properties (should get 403)"""
+        if not self.staff_token or not self.org_id:
+            self.log_test("Role Enforcement - Staff Property Create", False, 
+                         error="No staff token or org_id available")
+            return False
+        
+        # Switch to staff token temporarily
+        original_token = self.token
+        self.token = self.staff_token
+        
+        # First, staff user needs to be added to the organization
+        # This would normally be done through invitation acceptance
+        # For testing, we'll assume they're already a member with staff role
+        
+        data = {
+            "name": f"Staff Test Property {uuid.uuid4().hex[:6]}",
+            "address": "456 Staff Street, Staff City, SC 67890",
+            "description": "Property creation attempt by staff user",
+            "total_units": 3
+        }
+        
+        response = self.make_request('POST', f'organizations/{self.org_id}/properties', data)
+        
+        # Restore original token
+        self.token = original_token
+        
+        # Should get 403 Forbidden
+        if response and response.status_code == 403:
+            success = True
+            self.log_test("Role Enforcement - Staff Property Create", success, 
+                         "Staff correctly denied property creation")
+            return success
+        else:
+            status = response.status_code if response else 'No response'
+            self.log_test("Role Enforcement - Staff Property Create", False, 
+                         error=f"Expected 403, got {status}")
+            return False
+
+    def test_role_enforcement_staff_tenant_update(self):
+        """Test that Staff cannot update tenants (should get 403)"""
+        if not self.staff_token or not self.tenant_id:
+            self.log_test("Role Enforcement - Staff Tenant Update", False, 
+                         error="No staff token or tenant_id available")
+            return False
+        
+        # Switch to staff token temporarily
+        original_token = self.token
+        self.token = self.staff_token
+        
+        data = {
+            "name": "Updated by Staff",
+            "email": f"updated_{uuid.uuid4().hex[:8]}@example.com",
+            "phone": "+1-555-9999",
+            "status": "inactive"
+        }
+        
+        response = self.make_request('PUT', f'organizations/{self.org_id}/tenants/{self.tenant_id}', data)
+        
+        # Restore original token
+        self.token = original_token
+        
+        # Should get 403 Forbidden
+        if response and response.status_code == 403:
+            success = True
+            self.log_test("Role Enforcement - Staff Tenant Update", success, 
+                         "Staff correctly denied tenant update")
+            return success
+        else:
+            status = response.status_code if response else 'No response'
+            self.log_test("Role Enforcement - Staff Tenant Update", False, 
+                         error=f"Expected 403, got {status}")
+            return False
+
+    def test_role_enforcement_staff_inspection_approve(self):
+        """Test that Staff cannot approve inspections (should get 403)"""
+        if not self.staff_token or not self.inspection_id:
+            self.log_test("Role Enforcement - Staff Inspection Approve", False, 
+                         error="No staff token or inspection_id available")
+            return False
+        
+        # First, update inspection to completed status (as admin)
+        data = {
+            "status": "completed",
+            "notes": "Completed for approval test"
+        }
+        
+        response = self.make_request('PUT', f'organizations/{self.org_id}/inspections/{self.inspection_id}', data)
+        
+        if not response or response.status_code != 200:
+            self.log_test("Role Enforcement - Staff Inspection Approve", False, 
+                         error="Failed to set inspection to completed")
+            return False
+        
+        # Now try to approve as staff (should fail)
+        original_token = self.token
+        self.token = self.staff_token
+        
+        approve_data = {
+            "status": "approved",
+            "notes": "Staff trying to approve"
+        }
+        
+        response = self.make_request('PUT', f'organizations/{self.org_id}/inspections/{self.inspection_id}', approve_data)
+        
+        # Restore original token
+        self.token = original_token
+        
+        # Should get 403 Forbidden
+        if response and response.status_code == 403:
+            success = True
+            self.log_test("Role Enforcement - Staff Inspection Approve", success, 
+                         "Staff correctly denied inspection approval")
+            return success
+        else:
+            status = response.status_code if response else 'No response'
+            self.log_test("Role Enforcement - Staff Inspection Approve", False, 
+                         error=f"Expected 403, got {status}")
+            return False
+
+    def test_role_enforcement_staff_document_delete(self):
+        """Test that Staff cannot delete documents (should get 403)"""
+        if not self.staff_token or not self.org_id:
+            self.log_test("Role Enforcement - Staff Document Delete", False, 
+                         error="No staff token or org_id available")
+            return False
+        
+        # First create a document as admin
+        # Since we can't easily upload files in this test, we'll test the endpoint directly
+        # and expect it to fail due to role enforcement before file handling
+        
+        original_token = self.token
+        self.token = self.staff_token
+        
+        # Try to delete a non-existent document (role check should happen first)
+        fake_doc_id = str(uuid.uuid4())
+        response = self.make_request('DELETE', f'organizations/{self.org_id}/documents/{fake_doc_id}')
+        
+        # Restore original token
+        self.token = original_token
+        
+        # Should get 403 Forbidden (role check happens before document existence check)
+        if response and response.status_code == 403:
+            success = True
+            self.log_test("Role Enforcement - Staff Document Delete", success, 
+                         "Staff correctly denied document deletion")
+            return success
+        else:
+            status = response.status_code if response else 'No response'
+            self.log_test("Role Enforcement - Staff Document Delete", False, 
+                         error=f"Expected 403, got {status}")
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print(f"🚀 Starting PropOps API Tests")
