@@ -646,32 +646,6 @@ async def accept_invite(data: AcceptInviteRequest, user = Depends(get_current_us
     org = await db.organizations.find_one({"id": invite['org_id']}, {"_id": 0})
     return {"message": f"Successfully joined {org['name']}", "org_id": invite['org_id']}
 
-@api_router.delete("/organizations/{org_id}/invites/{invite_id}")
-async def delete_invite(org_id: str, invite_id: str, user = Depends(get_current_user)):
-    membership = await get_user_membership(user['id'], org_id)
-    require_role(membership, [UserRole.ADMIN])
-    
-    result = await db.invites.delete_one({"id": invite_id, "org_id": org_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Invite not found")
-    
-    return {"message": "Invite deleted"}
-
-# Get pending invites for current user
-@api_router.get("/invites/pending", response_model=List[InviteResponse])
-async def get_pending_invites(user = Depends(get_current_user)):
-    invites = await db.invites.find({
-        "email": user['email'],
-        "status": InviteStatus.PENDING
-    }, {"_id": 0}).to_list(100)
-    
-    result = []
-    for inv in invites:
-        org = await db.organizations.find_one({"id": inv['org_id']}, {"_id": 0})
-        if org:
-            result.append(InviteResponse(org_name=org['name'], **inv))
-    return result
-
 # ============== PROPERTY ROUTES ==============
 @api_router.get("/organizations/{org_id}/properties", response_model=List[PropertyResponse])
 async def list_properties(org_id: str, user = Depends(get_current_user)):
