@@ -31,7 +31,8 @@ import {
   History,
   Plus,
   Calendar,
-  UserPlus
+  UserPlus,
+  Mail
 } from 'lucide-react';
 
 const navItems = [
