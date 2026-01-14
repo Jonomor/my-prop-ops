@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, status, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -16,6 +16,7 @@ import bcrypt
 import jwt
 from enum import Enum
 import shutil
+import secrets
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -70,6 +71,19 @@ class DocumentCategory(str, Enum):
     INSPECTION = "inspection"
     MAINTENANCE = "maintenance"
     OTHER = "other"
+
+class InviteStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    EXPIRED = "expired"
+
+# ============== INSPECTION STATUS STATE MACHINE ==============
+VALID_TRANSITIONS = {
+    InspectionStatus.SCHEDULED: [InspectionStatus.COMPLETED, InspectionStatus.FAILED],
+    InspectionStatus.COMPLETED: [InspectionStatus.APPROVED, InspectionStatus.FAILED],
+    InspectionStatus.FAILED: [],
+    InspectionStatus.APPROVED: []
+}
 
 # ============== MODELS ==============
 class UserCreate(BaseModel):
@@ -227,6 +241,38 @@ class DashboardStats(BaseModel):
     pending_inspections: int
     unread_notifications: int
 
+# Team Invitation Models
+class InviteCreate(BaseModel):
+    email: EmailStr
+    role: UserRole = UserRole.STAFF
+
+class InviteResponse(BaseModel):
+    id: str
+    org_id: str
+    org_name: str
+    email: str
+    role: str
+    token: str
+    status: str
+    invited_by: str
+    invited_by_name: str
+    created_at: str
+    expires_at: str
+
+class AcceptInviteRequest(BaseModel):
+    token: str
+
+# Calendar Event Model
+class CalendarEvent(BaseModel):
+    id: str
+    title: str
+    date: str
+    type: str  # 'inspection' or 'lease_end'
+    status: Optional[str]
+    property_name: Optional[str]
+    unit_number: Optional[str]
+    tenant_name: Optional[str]
+
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -262,6 +308,21 @@ async def get_user_membership(user_id: str, org_id: str):
     if not membership:
         raise HTTPException(status_code=403, detail="Not a member of this organization")
     return membership
+
+def require_role(membership: dict, allowed_roles: list):
+    """Reusable helper for role enforcement"""
+    if membership['role'] not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Insufficient permissions")
+
+def validate_inspection_transition(current_status: str, new_status: InspectionStatus):
+    """Validate inspection status transitions according to state machine"""
+    current = InspectionStatus(current_status)
+    valid_next_states = VALID_TRANSITIONS.get(current, [])
+    if new_status not in valid_next_states:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Invalid inspection status transition from '{current_status}' to '{new_status}'"
+        )
 
 async def create_audit_log(org_id: str, user_id: str, user_name: str, action: str, entity_type: str, entity_id: str, details: str = None):
     log = {
@@ -420,6 +481,171 @@ async def get_organization(org_id: str, user = Depends(get_current_user)):
         raise HTTPException(status_code=404, detail="Organization not found")
     return OrganizationResponse(**org)
 
+# ============== TEAM INVITATION ROUTES ==============
+@api_router.post("/organizations/{org_id}/invites", response_model=InviteResponse)
+async def create_invite(org_id: str, data: InviteCreate, user = Depends(get_current_user)):
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN])
+    
+    org = await db.organizations.find_one({"id": org_id}, {"_id": 0})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    # Check if user is already a member
+    existing_membership = await db.memberships.find_one({"org_id": org_id, "user_id": {"$exists": True}})
+    if existing_membership:
+        existing_user = await db.users.find_one({"id": existing_membership['user_id'], "email": data.email})
+        if existing_user:
+            raise HTTPException(status_code=400, detail="User is already a member of this organization")
+    
+    # Check for existing pending invite
+    existing_invite = await db.invites.find_one({
+        "org_id": org_id, 
+        "email": data.email, 
+        "status": InviteStatus.PENDING
+    })
+    if existing_invite:
+        raise HTTPException(status_code=400, detail="An invite for this email is already pending")
+    
+    invite_id = str(uuid.uuid4())
+    invite_token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=7)
+    
+    invite = {
+        "id": invite_id,
+        "org_id": org_id,
+        "email": data.email,
+        "role": data.role,
+        "token": invite_token,
+        "status": InviteStatus.PENDING,
+        "invited_by": user['id'],
+        "invited_by_name": user['name'],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "expires_at": expires_at.isoformat()
+    }
+    await db.invites.insert_one(invite)
+    
+    await create_audit_log(org_id, user['id'], user['name'], "created", "invite", invite_id, f"Invited {data.email} as {data.role}")
+    
+    return InviteResponse(
+        id=invite_id,
+        org_id=org_id,
+        org_name=org['name'],
+        email=data.email,
+        role=data.role,
+        token=invite_token,
+        status=InviteStatus.PENDING,
+        invited_by=user['id'],
+        invited_by_name=user['name'],
+        created_at=invite['created_at'],
+        expires_at=invite['expires_at']
+    )
+
+@api_router.get("/organizations/{org_id}/invites", response_model=List[InviteResponse])
+async def list_invites(org_id: str, user = Depends(get_current_user)):
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN])
+    
+    org = await db.organizations.find_one({"id": org_id}, {"_id": 0})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    invites = await db.invites.find({"org_id": org_id}, {"_id": 0}).to_list(100)
+    return [InviteResponse(org_name=org['name'], **inv) for inv in invites]
+
+@api_router.get("/invites/{token}")
+async def get_invite_by_token(token: str):
+    """Public endpoint to get invite details by token"""
+    invite = await db.invites.find_one({"token": token}, {"_id": 0})
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    
+    # Check if expired
+    expires_at = datetime.fromisoformat(invite['expires_at'].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires_at:
+        await db.invites.update_one({"token": token}, {"$set": {"status": InviteStatus.EXPIRED}})
+        raise HTTPException(status_code=400, detail="Invite has expired")
+    
+    if invite['status'] != InviteStatus.PENDING:
+        raise HTTPException(status_code=400, detail=f"Invite is {invite['status']}")
+    
+    org = await db.organizations.find_one({"id": invite['org_id']}, {"_id": 0})
+    return {
+        "org_name": org['name'] if org else "Unknown",
+        "email": invite['email'],
+        "role": invite['role'],
+        "invited_by_name": invite['invited_by_name']
+    }
+
+@api_router.post("/invites/accept")
+async def accept_invite(data: AcceptInviteRequest, user = Depends(get_current_user)):
+    """Accept an invite (user must be logged in)"""
+    invite = await db.invites.find_one({"token": data.token}, {"_id": 0})
+    if not invite:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    
+    # Check if expired
+    expires_at = datetime.fromisoformat(invite['expires_at'].replace('Z', '+00:00'))
+    if datetime.now(timezone.utc) > expires_at:
+        await db.invites.update_one({"token": data.token}, {"$set": {"status": InviteStatus.EXPIRED}})
+        raise HTTPException(status_code=400, detail="Invite has expired")
+    
+    if invite['status'] != InviteStatus.PENDING:
+        raise HTTPException(status_code=400, detail=f"Invite is {invite['status']}")
+    
+    # Verify email matches
+    if invite['email'].lower() != user['email'].lower():
+        raise HTTPException(status_code=403, detail="This invite was sent to a different email address")
+    
+    # Check if already a member
+    existing = await db.memberships.find_one({"org_id": invite['org_id'], "user_id": user['id']})
+    if existing:
+        raise HTTPException(status_code=400, detail="You are already a member of this organization")
+    
+    # Create membership
+    membership = {
+        "id": str(uuid.uuid4()),
+        "org_id": invite['org_id'],
+        "user_id": user['id'],
+        "role": invite['role'],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.memberships.insert_one(membership)
+    
+    # Update invite status
+    await db.invites.update_one({"token": data.token}, {"$set": {"status": InviteStatus.ACCEPTED}})
+    
+    await create_audit_log(invite['org_id'], user['id'], user['name'], "accepted", "invite", invite['id'], f"Accepted invite as {invite['role']}")
+    
+    org = await db.organizations.find_one({"id": invite['org_id']}, {"_id": 0})
+    return {"message": f"Successfully joined {org['name']}", "org_id": invite['org_id']}
+
+@api_router.delete("/organizations/{org_id}/invites/{invite_id}")
+async def delete_invite(org_id: str, invite_id: str, user = Depends(get_current_user)):
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN])
+    
+    result = await db.invites.delete_one({"id": invite_id, "org_id": org_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Invite not found")
+    
+    return {"message": "Invite deleted"}
+
+# Get pending invites for current user
+@api_router.get("/invites/pending", response_model=List[InviteResponse])
+async def get_pending_invites(user = Depends(get_current_user)):
+    invites = await db.invites.find({
+        "email": user['email'],
+        "status": InviteStatus.PENDING
+    }, {"_id": 0}).to_list(100)
+    
+    result = []
+    for inv in invites:
+        org = await db.organizations.find_one({"id": inv['org_id']}, {"_id": 0})
+        if org:
+            result.append(InviteResponse(org_name=org['name'], **inv))
+    return result
+
 # ============== PROPERTY ROUTES ==============
 @api_router.get("/organizations/{org_id}/properties", response_model=List[PropertyResponse])
 async def list_properties(org_id: str, user = Depends(get_current_user)):
@@ -429,7 +655,8 @@ async def list_properties(org_id: str, user = Depends(get_current_user)):
 
 @api_router.post("/organizations/{org_id}/properties", response_model=PropertyResponse)
 async def create_property(org_id: str, data: PropertyCreate, user = Depends(get_current_user)):
-    await get_user_membership(user['id'], org_id)
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
     
     prop_id = str(uuid.uuid4())
     prop = {
@@ -462,7 +689,8 @@ async def get_property(org_id: str, property_id: str, user = Depends(get_current
 
 @api_router.put("/organizations/{org_id}/properties/{property_id}", response_model=PropertyResponse)
 async def update_property(org_id: str, property_id: str, data: PropertyCreate, user = Depends(get_current_user)):
-    await get_user_membership(user['id'], org_id)
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
     
     result = await db.properties.update_one(
         {"id": property_id, "org_id": org_id},
@@ -484,8 +712,7 @@ async def update_property(org_id: str, property_id: str, data: PropertyCreate, u
 @api_router.delete("/organizations/{org_id}/properties/{property_id}")
 async def delete_property(org_id: str, property_id: str, user = Depends(get_current_user)):
     membership = await get_user_membership(user['id'], org_id)
-    if membership['role'] not in [UserRole.ADMIN, UserRole.MANAGER]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
     
     prop = await db.properties.find_one({"id": property_id, "org_id": org_id}, {"_id": 0})
     if not prop:
@@ -611,7 +838,8 @@ async def get_tenant(org_id: str, tenant_id: str, user = Depends(get_current_use
 
 @api_router.put("/organizations/{org_id}/tenants/{tenant_id}", response_model=TenantResponse)
 async def update_tenant(org_id: str, tenant_id: str, data: TenantCreate, user = Depends(get_current_user)):
-    await get_user_membership(user['id'], org_id)
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
     
     old_tenant = await db.tenants.find_one({"id": tenant_id, "org_id": org_id}, {"_id": 0})
     if not old_tenant:
@@ -697,11 +925,25 @@ async def get_inspection(org_id: str, inspection_id: str, user = Depends(get_cur
 
 @api_router.put("/organizations/{org_id}/inspections/{inspection_id}", response_model=InspectionResponse)
 async def update_inspection(org_id: str, inspection_id: str, data: InspectionUpdate, user = Depends(get_current_user)):
-    await get_user_membership(user['id'], org_id)
+    membership = await get_user_membership(user['id'], org_id)
     
     old_inspection = await db.inspections.find_one({"id": inspection_id, "org_id": org_id}, {"_id": 0})
     if not old_inspection:
         raise HTTPException(status_code=404, detail="Inspection not found")
+    
+    current_status = old_inspection['status']
+    
+    # Check if inspection is in a terminal state (approved/failed cannot be modified)
+    if current_status in [InspectionStatus.APPROVED, InspectionStatus.FAILED]:
+        raise HTTPException(status_code=400, detail=f"Cannot modify inspection with status '{current_status}'")
+    
+    # Validate status transition if status is being changed
+    if data.status and data.status != current_status:
+        validate_inspection_transition(current_status, data.status)
+        
+        # Approve requires Admin or Manager
+        if data.status == InspectionStatus.APPROVED:
+            require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
     
     update_data = {}
     if data.status:
@@ -724,6 +966,83 @@ async def update_inspection(org_id: str, inspection_id: str, data: InspectionUpd
     
     inspection = await db.inspections.find_one({"id": inspection_id}, {"_id": 0})
     return InspectionResponse(**inspection)
+
+# ============== CALENDAR ROUTES ==============
+@api_router.get("/organizations/{org_id}/calendar", response_model=List[CalendarEvent])
+async def get_calendar_events(
+    org_id: str, 
+    start_date: Optional[str] = Query(None, description="Start date (YYYY-MM-DD)"),
+    end_date: Optional[str] = Query(None, description="End date (YYYY-MM-DD)"),
+    user = Depends(get_current_user)
+):
+    """Get calendar events including inspections and lease end dates"""
+    await get_user_membership(user['id'], org_id)
+    
+    events = []
+    
+    # Get inspections
+    inspection_query = {"org_id": org_id}
+    if start_date and end_date:
+        inspection_query["scheduled_date"] = {"$gte": start_date, "$lte": end_date}
+    
+    inspections = await db.inspections.find(inspection_query, {"_id": 0}).to_list(1000)
+    
+    for insp in inspections:
+        # Get property name
+        prop = await db.properties.find_one({"id": insp['property_id']}, {"_id": 0})
+        prop_name = prop['name'] if prop else "Unknown Property"
+        
+        # Get unit number if applicable
+        unit_number = None
+        if insp.get('unit_id'):
+            unit = await db.units.find_one({"id": insp['unit_id']}, {"_id": 0})
+            unit_number = unit['unit_number'] if unit else None
+        
+        events.append(CalendarEvent(
+            id=insp['id'],
+            title=f"Inspection: {prop_name}" + (f" - Unit {unit_number}" if unit_number else ""),
+            date=insp['scheduled_date'],
+            type="inspection",
+            status=insp['status'],
+            property_name=prop_name,
+            unit_number=unit_number,
+            tenant_name=None
+        ))
+    
+    # Get lease end dates
+    tenant_query = {"org_id": org_id, "lease_end": {"$ne": None}}
+    if start_date and end_date:
+        tenant_query["lease_end"] = {"$gte": start_date, "$lte": end_date}
+    
+    tenants = await db.tenants.find(tenant_query, {"_id": 0}).to_list(1000)
+    
+    for tenant in tenants:
+        if tenant.get('lease_end'):
+            # Get unit and property info
+            unit_number = None
+            prop_name = None
+            if tenant.get('unit_id'):
+                unit = await db.units.find_one({"id": tenant['unit_id']}, {"_id": 0})
+                if unit:
+                    unit_number = unit['unit_number']
+                    prop = await db.properties.find_one({"id": unit['property_id']}, {"_id": 0})
+                    prop_name = prop['name'] if prop else None
+            
+            events.append(CalendarEvent(
+                id=f"lease-{tenant['id']}",
+                title=f"Lease End: {tenant['name']}",
+                date=tenant['lease_end'],
+                type="lease_end",
+                status=tenant['status'],
+                property_name=prop_name,
+                unit_number=unit_number,
+                tenant_name=tenant['name']
+            ))
+    
+    # Sort by date
+    events.sort(key=lambda x: x.date)
+    
+    return events
 
 # ============== DOCUMENT ROUTES ==============
 @api_router.get("/organizations/{org_id}/documents", response_model=List[DocumentResponse])
@@ -791,7 +1110,8 @@ async def download_document(org_id: str, doc_id: str, user = Depends(get_current
 
 @api_router.delete("/organizations/{org_id}/documents/{doc_id}")
 async def delete_document(org_id: str, doc_id: str, user = Depends(get_current_user)):
-    await get_user_membership(user['id'], org_id)
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
     
     doc = await db.documents.find_one({"id": doc_id, "org_id": org_id}, {"_id": 0})
     if not doc:
