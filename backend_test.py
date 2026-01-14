@@ -798,15 +798,16 @@ class PropOpsAPITester:
         self.token = original_token
         
         # Should get 403 Forbidden (role check happens before document existence check)
-        if response and response.status_code == 403:
+        if response is not None and response.status_code == 403:
             success = True
             self.log_test("Role Enforcement - Staff Document Delete", success, 
                          "Staff correctly denied document deletion")
             return success
         else:
-            status = response.status_code if response else 'No response'
+            status = response.status_code if response is not None else 'No response'
+            error_detail = response.json().get('detail', 'Unknown') if response is not None else 'No response'
             self.log_test("Role Enforcement - Staff Document Delete", False, 
-                         error=f"Expected 403, got {status}")
+                         error=f"Expected 403, got {status}: {error_detail}")
             return False
 
     def run_all_tests(self):
