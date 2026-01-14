@@ -120,8 +120,8 @@ const Documents = () => {
       const formDataObj = new FormData();
       formDataObj.append('file', selectedFile);
       formDataObj.append('category', formData.category);
-      if (formData.tenant_id) formDataObj.append('tenant_id', formData.tenant_id);
-      if (formData.inspection_id) formDataObj.append('inspection_id', formData.inspection_id);
+      if (formData.tenant_id && formData.tenant_id !== 'none') formDataObj.append('tenant_id', formData.tenant_id);
+      if (formData.inspection_id && formData.inspection_id !== 'none') formDataObj.append('inspection_id', formData.inspection_id);
 
       await api.post(`/organizations/${currentOrg.org_id}/documents`, formDataObj, {
         headers: { 'Content-Type': 'multipart/form-data' }
