@@ -733,7 +733,14 @@ class PropOpsAPITester:
                          "Staff correctly denied tenant update")
             return success
         else:
-            status = response.status_code if response else 'No response'
+            if response:
+                status = response.status_code
+                print(f"DEBUG: Response status code: {status}")
+                print(f"DEBUG: Response status code type: {type(status)}")
+                print(f"DEBUG: 403 == status: {403 == status}")
+                print(f"DEBUG: response.status_code == 403: {response.status_code == 403}")
+            else:
+                status = 'No response'
             self.log_test("Role Enforcement - Staff Tenant Update", False, 
                          error=f"Expected 403, got {status}")
             return False
