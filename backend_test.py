@@ -811,6 +811,7 @@ class PropOpsAPITester:
         new_feature_tests = [
             self.test_create_staff_user,
             self.test_team_invitation_create,
+            self.test_staff_accept_invitation,
             self.test_team_invitation_list,
             self.test_invite_token_lookup,
             self.test_calendar_endpoint,
