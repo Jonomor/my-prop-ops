@@ -681,14 +681,14 @@ class PropOpsAPITester:
         self.token = original_token
         
         # Should get 403 Forbidden
-        if response and response.status_code == 403:
+        if response is not None and response.status_code == 403:
             success = True
             self.log_test("Role Enforcement - Staff Property Create", success, 
                          "Staff correctly denied property creation")
             return success
         else:
-            status = response.status_code if response else 'No response'
-            error_detail = response.json().get('detail', 'Unknown') if response else 'No response'
+            status = response.status_code if response is not None else 'No response'
+            error_detail = response.json().get('detail', 'Unknown') if response is not None else 'No response'
             self.log_test("Role Enforcement - Staff Property Create", False, 
                          error=f"Expected 403, got {status}: {error_detail}")
             return False
