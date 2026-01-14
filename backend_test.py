@@ -727,22 +727,22 @@ class PropOpsAPITester:
         self.token = original_token
         
         # Should get 403 Forbidden
-        if response and response.status_code == 403:
-            success = True
-            self.log_test("Role Enforcement - Staff Tenant Update", success, 
-                         "Staff correctly denied tenant update")
-            return success
-        else:
-            if response:
-                status = response.status_code
-                print(f"DEBUG: Response status code: {status}")
-                print(f"DEBUG: Response status code type: {type(status)}")
-                print(f"DEBUG: 403 == status: {403 == status}")
-                print(f"DEBUG: response.status_code == 403: {response.status_code == 403}")
+        print(f"DEBUG: Checking response: {response}")
+        print(f"DEBUG: Response bool: {bool(response)}")
+        if response:
+            print(f"DEBUG: Response status: {response.status_code}")
+            if response.status_code == 403:
+                success = True
+                self.log_test("Role Enforcement - Staff Tenant Update", success, 
+                             "Staff correctly denied tenant update")
+                return success
             else:
-                status = 'No response'
+                self.log_test("Role Enforcement - Staff Tenant Update", False, 
+                             error=f"Expected 403, got {response.status_code}")
+                return False
+        else:
             self.log_test("Role Enforcement - Staff Tenant Update", False, 
-                         error=f"Expected 403, got {status}")
+                         error="No response received")
             return False
 
     def test_role_enforcement_staff_inspection_approve(self):
