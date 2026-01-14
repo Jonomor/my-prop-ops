@@ -120,7 +120,7 @@ const Inspections = () => {
     try {
       const data = {
         property_id: formData.property_id,
-        unit_id: formData.unit_id || null,
+        unit_id: formData.unit_id === 'all' ? null : formData.unit_id || null,
         scheduled_date: format(formData.scheduled_date, 'yyyy-MM-dd'),
         notes: formData.notes || null
       };
