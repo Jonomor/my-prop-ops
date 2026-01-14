@@ -711,38 +711,22 @@ class PropOpsAPITester:
             "status": "inactive"
         }
         
-        print(f"DEBUG: About to make request with staff token")
-        print(f"DEBUG: Endpoint: organizations/{self.org_id}/tenants/{self.tenant_id}")
-        print(f"DEBUG: Staff token exists: {bool(self.staff_token)}")
-        print(f"DEBUG: Tenant ID exists: {bool(self.tenant_id)}")
-        
         response = self.make_request('PUT', f'organizations/{self.org_id}/tenants/{self.tenant_id}', data)
-        
-        print(f"DEBUG: Response received: {response}")
-        print(f"DEBUG: Response type: {type(response)}")
-        if response:
-            print(f"DEBUG: Response status: {response.status_code}")
         
         # Restore original token
         self.token = original_token
         
         # Should get 403 Forbidden
-        print(f"DEBUG: Checking response: {response}")
-        print(f"DEBUG: Response is not None: {response is not None}")
-        if response is not None:
-            print(f"DEBUG: Response status: {response.status_code}")
-            if response.status_code == 403:
-                success = True
-                self.log_test("Role Enforcement - Staff Tenant Update", success, 
-                             "Staff correctly denied tenant update")
-                return success
-            else:
-                self.log_test("Role Enforcement - Staff Tenant Update", False, 
-                             error=f"Expected 403, got {response.status_code}")
-                return False
+        if response is not None and response.status_code == 403:
+            success = True
+            self.log_test("Role Enforcement - Staff Tenant Update", success, 
+                         "Staff correctly denied tenant update")
+            return success
         else:
+            status = response.status_code if response is not None else 'No response'
+            error_detail = response.json().get('detail', 'Unknown') if response is not None else 'No response'
             self.log_test("Role Enforcement - Staff Tenant Update", False, 
-                         error="No response received")
+                         error=f"Expected 403, got {status}: {error_detail}")
             return False
 
     def test_role_enforcement_staff_inspection_approve(self):
