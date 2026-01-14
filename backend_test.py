@@ -22,6 +22,12 @@ class PropOpsAPITester:
         self.tenant_id = None
         self.inspection_id = None
         self.document_id = None
+        self.invite_id = None
+        self.invite_token = None
+        
+        # Staff user for role testing
+        self.staff_token = None
+        self.staff_user_id = None
 
     def log_test(self, name, success, details="", error=""):
         """Log test result"""
