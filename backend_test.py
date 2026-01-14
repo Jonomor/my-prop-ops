@@ -427,11 +427,11 @@ class PropOpsAPITester:
     
     def test_create_staff_user(self):
         """Create a staff user for role enforcement testing"""
-        test_email = f"staff_{uuid.uuid4().hex[:8]}@example.com"
+        self.staff_email = f"staff_{uuid.uuid4().hex[:8]}@example.com"
         test_name = f"Staff User {uuid.uuid4().hex[:6]}"
         
         data = {
-            "email": test_email,
+            "email": self.staff_email,
             "password": "staffpass123",
             "name": test_name
         }
@@ -453,12 +453,12 @@ class PropOpsAPITester:
 
     def test_team_invitation_create(self):
         """Test creating team invitation (Admin only)"""
-        if not self.org_id:
-            self.log_test("Create Team Invitation", False, error="No org_id available")
+        if not self.org_id or not hasattr(self, 'staff_email'):
+            self.log_test("Create Team Invitation", False, error="No org_id or staff_email available")
             return False
             
         data = {
-            "email": f"invite_{uuid.uuid4().hex[:8]}@example.com",
+            "email": self.staff_email,  # Invite the staff user we just created
             "role": "staff"
         }
         
@@ -475,6 +475,36 @@ class PropOpsAPITester:
         else:
             error_msg = response.json().get('detail', 'Failed to create invite') if response else 'No response'
             self.log_test("Create Team Invitation", False, error=error_msg)
+            return False
+
+    def test_staff_accept_invitation(self):
+        """Test staff user accepting invitation to join organization"""
+        if not self.invite_token or not self.staff_token:
+            self.log_test("Staff Accept Invitation", False, error="No invite token or staff token available")
+            return False
+        
+        # Switch to staff token to accept invitation
+        original_token = self.token
+        self.token = self.staff_token
+        
+        data = {
+            "token": self.invite_token
+        }
+        
+        response = self.make_request('POST', 'invites/accept', data)
+        
+        # Restore original token
+        self.token = original_token
+        
+        if response and response.status_code == 200:
+            result = response.json()
+            success = 'message' in result and 'org_id' in result
+            self.log_test("Staff Accept Invitation", success, 
+                         f"Joined organization: {result.get('message', 'N/A')}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to accept invite') if response else 'No response'
+            self.log_test("Staff Accept Invitation", False, error=error_msg)
             return False
 
     def test_team_invitation_list(self):
