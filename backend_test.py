@@ -663,10 +663,6 @@ class PropOpsAPITester:
         original_token = self.token
         self.token = self.staff_token
         
-        # First, staff user needs to be added to the organization
-        # This would normally be done through invitation acceptance
-        # For testing, we'll assume they're already a member with staff role
-        
         data = {
             "name": f"Staff Test Property {uuid.uuid4().hex[:6]}",
             "address": "456 Staff Street, Staff City, SC 67890",
@@ -678,6 +674,12 @@ class PropOpsAPITester:
         
         # Restore original token
         self.token = original_token
+        
+        # Debug: print response details
+        if response:
+            print(f"DEBUG: Staff property create - Status: {response.status_code}, Response: {response.text[:200]}")
+        else:
+            print("DEBUG: Staff property create - No response received")
         
         # Should get 403 Forbidden
         if response and response.status_code == 403:
