@@ -68,10 +68,15 @@ class PropOpsAPITester:
                 response = requests.put(url, json=data, headers=headers, timeout=30)
             elif method == 'DELETE':
                 response = requests.delete(url, headers=headers, timeout=30)
+            else:
+                print(f"Unsupported method: {method}")
+                return None
             
             return response
         except Exception as e:
             print(f"Request error for {method} {url}: {str(e)}")
+            import traceback
+            traceback.print_exc()
             return None
 
     def test_health_check(self):
