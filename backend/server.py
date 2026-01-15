@@ -513,6 +513,7 @@ async def create_organization(data: OrganizationCreate, user = Depends(get_curre
         "id": org_id,
         "name": data.name,
         "description": data.description,
+        "plan": OrganizationPlan.FREE,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.organizations.insert_one(org)
@@ -533,6 +534,7 @@ async def create_organization(data: OrganizationCreate, user = Depends(get_curre
         id=org_id,
         name=data.name,
         description=data.description,
+        plan=OrganizationPlan.FREE,
         created_at=org['created_at']
     )
 
@@ -542,6 +544,9 @@ async def get_organization(org_id: str, user = Depends(get_current_user)):
     org = await db.organizations.find_one({"id": org_id}, {"_id": 0})
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
+    # Ensure plan field exists for backwards compatibility
+    if 'plan' not in org:
+        org['plan'] = OrganizationPlan.FREE
     return OrganizationResponse(**org)
 
 # ============== TEAM INVITATION ROUTES ==============
