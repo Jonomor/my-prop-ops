@@ -436,6 +436,7 @@ async def register(data: UserCreate):
         "id": org_id,
         "name": f"{data.name}'s Organization",
         "description": "Default organization",
+        "plan": OrganizationPlan.FREE,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.organizations.insert_one(org)
