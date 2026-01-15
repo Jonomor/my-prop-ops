@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, status, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, status, Query, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -9,7 +9,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Dict
 import uuid
 from datetime import datetime, timezone, timedelta
 import bcrypt
@@ -47,6 +47,20 @@ security = HTTPBearer()
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# ============== FEATURE FLAGS ==============
+# All advanced features default to OFF for monetization readiness
+FEATURE_FLAGS = {
+    "email_invites": False,      # Email delivery for invitations
+    "billing": False,            # Stripe/payment integration
+    "maintenance": False,        # Maintenance request workflows
+    "advanced_analytics": False, # Advanced reporting features
+    "api_access": False,         # External API access
+}
+
+def is_feature_enabled(feature: str) -> bool:
+    """Check if a feature flag is enabled"""
+    return FEATURE_FLAGS.get(feature, False)
 
 # ============== ENUMS ==============
 class UserRole(str, Enum):
