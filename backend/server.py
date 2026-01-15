@@ -91,6 +91,11 @@ class InviteStatus(str, Enum):
     ACCEPTED = "accepted"
     EXPIRED = "expired"
 
+class OrganizationPlan(str, Enum):
+    FREE = "free"
+    PRO = "pro"
+    ENTERPRISE = "enterprise"
+
 # ============== INSPECTION STATUS STATE MACHINE ==============
 VALID_TRANSITIONS = {
     InspectionStatus.SCHEDULED: [InspectionStatus.COMPLETED, InspectionStatus.FAILED],
