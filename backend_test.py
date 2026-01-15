@@ -910,6 +910,199 @@ class PropOpsAPITester:
             self.log_test("Pending Invites (With Data)", False, error=error_msg)
             return False
 
+    # ============== HARDENING FEATURE TESTS ==============
+    
+    def test_feature_flags_endpoint(self):
+        """Test GET /api/feature-flags returns all flags as false"""
+        if not self.token:
+            self.log_test("Feature Flags Endpoint", False, error="No token available")
+            return False
+            
+        response = self.make_request('GET', 'feature-flags')
+        
+        if response and response.status_code == 200:
+            flags = response.json()
+            expected_flags = ['email_invites', 'billing', 'maintenance', 'advanced_analytics', 'api_access']
+            
+            # Check all expected flags exist and are False
+            success = all(flag in flags and flags[flag] is False for flag in expected_flags)
+            self.log_test("Feature Flags Endpoint", success, 
+                         f"Flags: {flags}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to get feature flags') if response else 'No response'
+            self.log_test("Feature Flags Endpoint", False, error=error_msg)
+            return False
+
+    def test_member_directory_endpoint(self):
+        """Test GET /api/organizations/{org_id}/members returns members list"""
+        if not self.org_id:
+            self.log_test("Member Directory Endpoint", False, error="No org_id available")
+            return False
+            
+        response = self.make_request('GET', f'organizations/{self.org_id}/members')
+        
+        if response and response.status_code == 200:
+            members = response.json()
+            success = isinstance(members, list) and len(members) > 0
+            
+            # Check member structure
+            if success and len(members) > 0:
+                member = members[0]
+                required_fields = ['id', 'name', 'email', 'role', 'joined_at']
+                success = all(field in member for field in required_fields)
+            
+            self.log_test("Member Directory Endpoint", success, 
+                         f"Members count: {len(members) if isinstance(members, list) else 0}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to get members') if response else 'No response'
+            self.log_test("Member Directory Endpoint", False, error=error_msg)
+            return False
+
+    def test_organization_plan_field(self):
+        """Test organization has plan field in response"""
+        if not self.org_id:
+            self.log_test("Organization Plan Field", False, error="No org_id available")
+            return False
+            
+        response = self.make_request('GET', f'organizations/{self.org_id}')
+        
+        if response and response.status_code == 200:
+            org = response.json()
+            success = 'plan' in org and org['plan'] in ['free', 'pro', 'enterprise']
+            self.log_test("Organization Plan Field", success, 
+                         f"Plan: {org.get('plan', 'Missing')}")
+            return success
+        else:
+            error_msg = response.json().get('detail', 'Failed to get organization') if response else 'No response'
+            self.log_test("Organization Plan Field", False, error=error_msg)
+            return False
+
+    def test_team_invitation_duplicate_check(self):
+        """Test cannot invite user already in org"""
+        if not self.org_id or not hasattr(self, 'staff_email'):
+            self.log_test("Team Invitation Duplicate Check", False, error="No org_id or staff_email available")
+            return False
+        
+        # Try to invite the staff user again (they should already be in the org)
+        data = {
+            "email": self.staff_email,
+            "role": "manager"
+        }
+        
+        response = self.make_request('POST', f'organizations/{self.org_id}/invites', data)
+        
+        # Should get 400 error for duplicate member
+        if response and response.status_code == 400:
+            error_detail = response.json().get('detail', '')
+            success = 'already a member' in error_detail.lower()
+            self.log_test("Team Invitation Duplicate Check", success, 
+                         f"Duplicate invite correctly rejected: {error_detail}")
+            return success
+        else:
+            status = response.status_code if response else 'No response'
+            self.log_test("Team Invitation Duplicate Check", False, 
+                         error=f"Expected 400, got {status} - Duplicate invite was allowed")
+            return False
+
+    def test_inspection_approved_cannot_modify(self):
+        """Test approved inspections cannot be modified"""
+        if not self.property_id:
+            self.log_test("Inspection Approved Cannot Modify", False, error="No property_id available")
+            return False
+        
+        # Create a new inspection and approve it
+        create_data = {
+            "property_id": self.property_id,
+            "unit_id": self.unit_id,
+            "scheduled_date": (datetime.now() + timedelta(days=21)).strftime('%Y-%m-%d'),
+            "notes": "Test inspection for approval lock test"
+        }
+        
+        create_response = self.make_request('POST', f'organizations/{self.org_id}/inspections', create_data)
+        
+        if not create_response or create_response.status_code != 200:
+            self.log_test("Inspection Approved Cannot Modify", False, error="Failed to create test inspection")
+            return False
+        
+        test_inspection_id = create_response.json().get('id')
+        
+        # First transition to completed
+        update_data = {
+            "status": "completed",
+            "notes": "Completed for approval test"
+        }
+        
+        response = self.make_request('PUT', f'organizations/{self.org_id}/inspections/{test_inspection_id}', update_data)
+        
+        if not response or response.status_code != 200:
+            self.log_test("Inspection Approved Cannot Modify", False, error="Failed to complete inspection")
+            return False
+        
+        # Then approve it
+        approve_data = {
+            "status": "approved",
+            "notes": "Approved for lock test"
+        }
+        
+        response = self.make_request('PUT', f'organizations/{self.org_id}/inspections/{test_inspection_id}', approve_data)
+        
+        if not response or response.status_code != 200:
+            self.log_test("Inspection Approved Cannot Modify", False, error="Failed to approve inspection")
+            return False
+        
+        # Now try to modify the approved inspection (should fail)
+        modify_data = {
+            "notes": "Trying to modify approved inspection"
+        }
+        
+        response = self.make_request('PUT', f'organizations/{self.org_id}/inspections/{test_inspection_id}', modify_data)
+        
+        # Should get 400 error
+        if response and response.status_code == 400:
+            error_detail = response.json().get('detail', '')
+            success = 'cannot modify' in error_detail.lower() or 'approved' in error_detail.lower()
+            self.log_test("Inspection Approved Cannot Modify", success, 
+                         f"Approved inspection correctly locked: {error_detail}")
+            return success
+        else:
+            status = response.status_code if response else 'No response'
+            self.log_test("Inspection Approved Cannot Modify", False, 
+                         error=f"Expected 400, got {status} - Approved inspection was modifiable")
+            return False
+
+    def test_audit_logs_with_ip_user_agent(self):
+        """Test audit logs endpoint includes IP and user-agent fields"""
+        if not self.org_id:
+            self.log_test("Audit Logs IP/User-Agent", False, error="No org_id available")
+            return False
+            
+        response = self.make_request('GET', f'organizations/{self.org_id}/audit-logs')
+        
+        if response and response.status_code == 200:
+            logs = response.json()
+            success = isinstance(logs, list)
+            
+            # Check if logs have the new fields (they might be null for backwards compatibility)
+            if success and len(logs) > 0:
+                log = logs[0]
+                has_ip_field = 'ip_address' in log
+                has_user_agent_field = 'user_agent' in log
+                success = has_ip_field and has_user_agent_field
+                
+            self.log_test("Audit Logs IP/User-Agent", success, 
+                         f"Logs count: {len(logs) if isinstance(logs, list) else 0}, Has IP/UA fields: {success}")
+            return success
+        elif response and response.status_code == 403:
+            # Expected for non-admin users
+            self.log_test("Audit Logs IP/User-Agent", True, "Access denied (expected for non-admin)")
+            return True
+        else:
+            error_msg = response.json().get('detail', 'Failed to get audit logs') if response else 'No response'
+            self.log_test("Audit Logs IP/User-Agent", False, error=error_msg)
+            return False
+
     def run_all_tests(self):
         """Run all API tests"""
         print(f"🚀 Starting PropOps API Tests - New Features Focus")
