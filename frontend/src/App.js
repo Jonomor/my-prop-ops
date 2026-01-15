@@ -82,6 +82,7 @@ function AppRoutes() {
       <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
       <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
       <Route path="/team" element={<ProtectedRoute><TeamManagement /></ProtectedRoute>} />
+      <Route path="/members" element={<ProtectedRoute><MemberDirectory /></ProtectedRoute>} />
       <Route path="/invites" element={<ProtectedRoute><PendingInvites /></ProtectedRoute>} />
       <Route path="/audit-logs" element={<ProtectedRoute><AuditLogs /></ProtectedRoute>} />
       <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
