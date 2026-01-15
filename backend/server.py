@@ -132,6 +132,7 @@ class OrganizationResponse(BaseModel):
     id: str
     name: str
     description: Optional[str]
+    plan: str = "free"
     created_at: str
 
 class MembershipResponse(BaseModel):
@@ -141,6 +142,14 @@ class MembershipResponse(BaseModel):
     user_id: str
     role: str
     created_at: str
+
+class MemberResponse(BaseModel):
+    """Read-only member info for directory"""
+    id: str
+    name: str
+    email: str
+    role: str
+    joined_at: str
 
 class PropertyCreate(BaseModel):
     name: str
