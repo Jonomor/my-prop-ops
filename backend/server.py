@@ -362,7 +362,18 @@ def validate_inspection_transition(current_status: str, new_status: InspectionSt
             detail=f"Invalid inspection status transition from '{current_status}' to '{new_status}'"
         )
 
-async def create_audit_log(org_id: str, user_id: str, user_name: str, action: str, entity_type: str, entity_id: str, details: str = None):
+async def create_audit_log(
+    org_id: str, 
+    user_id: str, 
+    user_name: str, 
+    action: str, 
+    entity_type: str, 
+    entity_id: str, 
+    details: str = None,
+    ip_address: str = None,
+    user_agent: str = None
+):
+    """Create immutable audit log entry with full context"""
     log = {
         "id": str(uuid.uuid4()),
         "org_id": org_id,
@@ -372,9 +383,22 @@ async def create_audit_log(org_id: str, user_id: str, user_name: str, action: st
         "entity_type": entity_type,
         "entity_id": entity_id,
         "details": details,
+        "ip_address": ip_address,
+        "user_agent": user_agent,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
+    # Audit logs are immutable - insert only, no updates or deletes exposed
     await db.audit_logs.insert_one(log)
+
+def get_client_info(request: Request) -> tuple:
+    """Extract IP address and user agent from request"""
+    ip_address = request.client.host if request.client else None
+    # Handle X-Forwarded-For for proxied requests
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        ip_address = forwarded.split(",")[0].strip()
+    user_agent = request.headers.get("User-Agent", "")[:500]  # Limit length
+    return ip_address, user_agent
 
 async def create_notification(org_id: str, user_id: str, title: str, message: str):
     notification = {
