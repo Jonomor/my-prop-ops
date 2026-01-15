@@ -1139,7 +1139,17 @@ class PropOpsAPITester:
             self.test_role_enforcement_staff_document_delete,
         ]
         
-        all_tests = setup_tests + new_feature_tests
+        # Hardening feature tests
+        hardening_tests = [
+            self.test_feature_flags_endpoint,
+            self.test_member_directory_endpoint,
+            self.test_organization_plan_field,
+            self.test_team_invitation_duplicate_check,
+            self.test_inspection_approved_cannot_modify,
+            self.test_audit_logs_with_ip_user_agent,
+        ]
+        
+        all_tests = setup_tests + new_feature_tests + hardening_tests
         
         print("🔧 Running setup tests...")
         for test in setup_tests:
