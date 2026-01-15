@@ -1255,6 +1255,34 @@ async def get_dashboard_stats(org_id: str, user = Depends(get_current_user)):
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now(timezone.utc).isoformat()}
 
+# ============== MEMBER DIRECTORY ROUTES ==============
+@api_router.get("/organizations/{org_id}/members", response_model=List[MemberResponse])
+async def list_members(org_id: str, user = Depends(get_current_user)):
+    """Read-only member directory for organization"""
+    await get_user_membership(user['id'], org_id)
+    
+    memberships = await db.memberships.find({"org_id": org_id}, {"_id": 0}).to_list(100)
+    members = []
+    
+    for m in memberships:
+        member_user = await db.users.find_one({"id": m['user_id']}, {"_id": 0})
+        if member_user:
+            members.append(MemberResponse(
+                id=member_user['id'],
+                name=member_user['name'],
+                email=member_user['email'],
+                role=m['role'],
+                joined_at=m['created_at']
+            ))
+    
+    return members
+
+# ============== FEATURE FLAGS ROUTES ==============
+@api_router.get("/feature-flags", response_model=FeatureFlagsResponse)
+async def get_feature_flags(user = Depends(get_current_user)):
+    """Get current feature flag states"""
+    return FeatureFlagsResponse(**FEATURE_FLAGS)
+
 # Include the router in the main app
 app.include_router(api_router)
 
