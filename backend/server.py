@@ -259,6 +259,8 @@ class AuditLogResponse(BaseModel):
     entity_type: str
     entity_id: str
     details: Optional[str]
+    ip_address: Optional[str]
+    user_agent: Optional[str]
     created_at: str
 
 class DashboardStats(BaseModel):
@@ -300,6 +302,14 @@ class CalendarEvent(BaseModel):
     property_name: Optional[str]
     unit_number: Optional[str]
     tenant_name: Optional[str]
+
+# Feature Flags Response
+class FeatureFlagsResponse(BaseModel):
+    email_invites: bool
+    billing: bool
+    maintenance: bool
+    advanced_analytics: bool
+    api_access: bool
 
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
