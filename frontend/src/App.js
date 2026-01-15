@@ -22,6 +22,7 @@ import CalendarView from './pages/CalendarView';
 import TeamManagement from './pages/TeamManagement';
 import AcceptInvite from './pages/AcceptInvite';
 import PendingInvites from './pages/PendingInvites';
+import MemberDirectory from './pages/MemberDirectory';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
