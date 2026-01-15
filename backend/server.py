@@ -1227,7 +1227,15 @@ async def list_audit_logs(org_id: str, user = Depends(get_current_user)):
         raise HTTPException(status_code=403, detail="Admin access required")
     
     logs = await db.audit_logs.find({"org_id": org_id}, {"_id": 0}).sort("created_at", -1).to_list(500)
-    return [AuditLogResponse(**log) for log in logs]
+    # Ensure backwards compatibility for logs without ip/user_agent
+    result = []
+    for log in logs:
+        if 'ip_address' not in log:
+            log['ip_address'] = None
+        if 'user_agent' not in log:
+            log['user_agent'] = None
+        result.append(AuditLogResponse(**log))
+    return result
 
 # ============== DASHBOARD ROUTES ==============
 @api_router.get("/organizations/{org_id}/dashboard", response_model=DashboardStats)
