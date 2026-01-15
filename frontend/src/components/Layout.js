@@ -43,6 +43,7 @@ const navItems = [
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/documents', label: 'Documents', icon: FileText },
   { path: '/team', label: 'Team', icon: UserPlus },
+  { path: '/members', label: 'Members', icon: Users },
   { path: '/audit-logs', label: 'Audit Logs', icon: History },
 ];
 
