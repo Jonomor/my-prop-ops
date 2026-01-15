@@ -1165,6 +1165,13 @@ class PropOpsAPITester:
             except Exception as e:
                 self.log_test(test.__name__, False, error=f"Exception: {str(e)}")
         
+        print("\n🔒 Running hardening feature tests...")
+        for test in hardening_tests:
+            try:
+                test()
+            except Exception as e:
+                self.log_test(test.__name__, False, error=f"Exception: {str(e)}")
+        
         # Print summary
         print("=" * 60)
         print(f"📊 Test Results: {self.tests_passed}/{self.tests_run} passed")
