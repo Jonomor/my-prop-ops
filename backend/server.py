@@ -559,17 +559,20 @@ async def create_invite(org_id: str, data: InviteCreate, user = Depends(get_curr
     if not org:
         raise HTTPException(status_code=404, detail="Organization not found")
     
-    # Check if user is already a member
-    existing_membership = await db.memberships.find_one({"org_id": org_id, "user_id": {"$exists": True}})
-    if existing_membership:
-        existing_user = await db.users.find_one({"id": existing_membership['user_id'], "email": data.email})
-        if existing_user:
+    # Check if user with this email is already a member
+    existing_user = await db.users.find_one({"email": data.email.lower()}, {"_id": 0})
+    if existing_user:
+        existing_membership = await db.memberships.find_one({
+            "org_id": org_id, 
+            "user_id": existing_user['id']
+        })
+        if existing_membership:
             raise HTTPException(status_code=400, detail="User is already a member of this organization")
     
     # Check for existing pending invite
     existing_invite = await db.invites.find_one({
         "org_id": org_id, 
-        "email": data.email, 
+        "email": {"$regex": f"^{data.email}$", "$options": "i"},
         "status": InviteStatus.PENDING
     })
     if existing_invite:
