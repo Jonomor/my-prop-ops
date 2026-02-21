@@ -222,7 +222,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold font-heading mb-4">8. Privacy</h2>
+              <h2 className="text-2xl font-semibold font-heading mb-4">9. Privacy</h2>
               <p className="text-muted-foreground leading-relaxed">
                 Your privacy is important to us. Please review our <Link to="/privacy" className="text-primary hover:underline">Privacy Policy</Link>, which describes how we collect, use, and share information about you.
               </p>
