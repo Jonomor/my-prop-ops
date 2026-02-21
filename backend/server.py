@@ -362,6 +362,156 @@ class FeatureFlagsResponse(BaseModel):
     advanced_analytics: bool
     api_access: bool
 
+# ============== TENANT PORTAL MODELS ==============
+class HouseholdMember(BaseModel):
+    name: str
+    relationship: str  # self, spouse, child, other
+    date_of_birth: Optional[str] = None
+    income: Optional[float] = None
+    income_source: Optional[str] = None
+
+class TenantPortalRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    phone: Optional[str] = None
+
+class TenantPortalLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class TenantPortalProfile(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    housing_program: Optional[HousingProgram] = None
+    voucher_number: Optional[str] = None
+    household_size: int = 1
+    household_members: List[HouseholdMember] = []
+    annual_income: Optional[float] = None
+    income_sources: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+
+class TenantPortalProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    housing_program: Optional[HousingProgram] = None
+    voucher_number: Optional[str] = None
+    household_size: Optional[int] = None
+    household_members: Optional[List[HouseholdMember]] = None
+    annual_income: Optional[float] = None
+    income_sources: Optional[str] = None
+    emergency_contact_name: Optional[str] = None
+    emergency_contact_phone: Optional[str] = None
+
+class TenantPortalProfileResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    phone: Optional[str]
+    address: Optional[str]
+    housing_program: Optional[str]
+    voucher_number: Optional[str]
+    household_size: int
+    household_members: List[dict]
+    annual_income: Optional[float]
+    income_sources: Optional[str]
+    emergency_contact_name: Optional[str]
+    emergency_contact_phone: Optional[str]
+    application_stage: str
+    created_at: str
+
+class DocumentChecklistItem(BaseModel):
+    id: str
+    name: str
+    description: str
+    required: bool
+    status: str
+    document_id: Optional[str]
+    uploaded_at: Optional[str]
+    verified_at: Optional[str]
+    notes: Optional[str]
+
+class ApplicationStatusResponse(BaseModel):
+    stage: str
+    stages: List[dict]
+    updated_at: str
+
+class TenantAppointment(BaseModel):
+    id: str
+    title: str
+    description: Optional[str]
+    date: str
+    time: str
+    location: Optional[str]
+    type: str  # inspection, interview, orientation, other
+    status: str  # scheduled, completed, cancelled
+    created_at: str
+
+class AppointmentCreate(BaseModel):
+    title: str
+    description: Optional[str] = None
+    date: str
+    time: str
+    location: Optional[str] = None
+    type: str = "other"
+
+class MessageCreate(BaseModel):
+    content: str
+
+class MessageResponse(BaseModel):
+    id: str
+    conversation_id: str
+    sender_id: str
+    sender_name: str
+    sender_type: str  # tenant or landlord
+    content: str
+    is_read: bool
+    created_at: str
+
+class ConversationResponse(BaseModel):
+    id: str
+    tenant_portal_id: str
+    org_id: str
+    property_id: Optional[str]
+    tenant_name: str
+    landlord_name: str
+    last_message: Optional[str]
+    last_message_at: Optional[str]
+    unread_count: int
+    created_at: str
+
+# Default document checklist for housing programs
+DEFAULT_DOCUMENT_CHECKLIST = [
+    {"name": "Government-Issued ID", "description": "Valid driver's license, passport, or state ID for all adult household members", "required": True},
+    {"name": "Social Security Cards", "description": "Social Security cards for all household members", "required": True},
+    {"name": "Birth Certificates", "description": "Birth certificates for all household members", "required": True},
+    {"name": "Proof of Income", "description": "Pay stubs, employer letter, or benefit statements from the last 30 days", "required": True},
+    {"name": "Housing Voucher", "description": "Section 8 voucher, HUD certificate, or other housing program documentation", "required": True},
+    {"name": "Bank Statements", "description": "Last 3 months of bank statements for all accounts", "required": True},
+    {"name": "Tax Returns", "description": "Most recent federal tax return (1040) or tax transcript", "required": False},
+    {"name": "Proof of Assets", "description": "Documentation of any assets (stocks, bonds, property)", "required": False},
+    {"name": "Previous Landlord References", "description": "Contact information and reference letters from previous landlords", "required": False},
+    {"name": "Criminal Background Authorization", "description": "Signed authorization for background check", "required": True},
+    {"name": "Credit Check Authorization", "description": "Signed authorization for credit check", "required": True},
+    {"name": "Disability Verification", "description": "If applicable, documentation of disability status", "required": False},
+]
+
+# Application stages with descriptions
+APPLICATION_STAGES = [
+    {"stage": "not_started", "label": "Not Started", "description": "Begin your application process"},
+    {"stage": "application_submitted", "label": "Application Submitted", "description": "Your application has been received"},
+    {"stage": "documents_under_review", "label": "Documents Under Review", "description": "We are reviewing your submitted documents"},
+    {"stage": "background_check", "label": "Background Check", "description": "Background and credit checks in progress"},
+    {"stage": "inspection_scheduled", "label": "Inspection Scheduled", "description": "Unit inspection has been scheduled"},
+    {"stage": "inspection_complete", "label": "Inspection Complete", "description": "Unit inspection has been completed"},
+    {"stage": "approved", "label": "Approved", "description": "Congratulations! Your application has been approved"},
+    {"stage": "denied", "label": "Denied", "description": "Unfortunately, your application was not approved"},
+]
+
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
