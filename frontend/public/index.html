@@ -57,14 +57,43 @@
             "@type": "SoftwareApplication",
             "name": "MyPropOps",
             "applicationCategory": "BusinessApplication",
-            "operatingSystem": "Web",
-            "description": "All-in-one property management software for landlords and property managers. Manage properties, tenants, inspections, and documents.",
+            "applicationSubCategory": "Property Management Software",
+            "operatingSystem": "Web Browser",
+            "description": "#1 Property Management Software. All-in-one SaaS platform for landlords and property managers. Manage properties, tenants, inspections, and documents.",
             "url": "https://mypropops.com",
+            "softwareVersion": "1.0",
+            "releaseNotes": "Cloud-based property management platform with tenant portal, maintenance tracking, and inspection workflows.",
             "offers": {
-                "@type": "Offer",
-                "price": "0",
+                "@type": "AggregateOffer",
+                "lowPrice": "0",
+                "highPrice": "99",
                 "priceCurrency": "USD",
-                "description": "Free plan available for up to 2 properties and 5 units"
+                "offerCount": "3",
+                "offers": [
+                    {
+                        "@type": "Offer",
+                        "name": "Free Plan",
+                        "price": "0",
+                        "priceCurrency": "USD",
+                        "description": "Free forever for up to 2 properties and 5 units"
+                    },
+                    {
+                        "@type": "Offer",
+                        "name": "Standard Plan",
+                        "price": "29",
+                        "priceCurrency": "USD",
+                        "priceValidUntil": "2027-12-31",
+                        "description": "For growing portfolios - up to 20 properties"
+                    },
+                    {
+                        "@type": "Offer",
+                        "name": "Pro Plan",
+                        "price": "99",
+                        "priceCurrency": "USD",
+                        "priceValidUntil": "2027-12-31",
+                        "description": "Unlimited properties with tenant portal and API access"
+                    }
+                ]
             },
             "aggregateRating": {
                 "@type": "AggregateRating",
@@ -80,9 +109,19 @@
                 "Document Storage",
                 "Team Collaboration",
                 "Tenant Portal",
+                "Maintenance Request System",
                 "Section 8 Housing Support",
-                "HUD Compliance Tools"
-            ]
+                "HUD Compliance Tools",
+                "Real-time Notifications",
+                "Stripe Payment Integration"
+            ],
+            "screenshot": "https://mypropops.com/og-image.png",
+            "softwareHelp": "https://mypropops.com/faq",
+            "creator": {
+                "@type": "Organization",
+                "name": "MyPropOps, Inc.",
+                "url": "https://mypropops.com"
+            }
         }
         </script>
         
