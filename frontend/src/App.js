@@ -145,13 +145,32 @@ function AppRoutes() {
   );
 }
 
+// Tenant Portal Routes - separate from main app routes
+function TenantPortalRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<TenantPublicRoute><TenantLogin /></TenantPublicRoute>} />
+      <Route path="/register" element={<TenantPublicRoute><TenantRegister /></TenantPublicRoute>} />
+      <Route path="/" element={<TenantProtectedRoute><TenantPortal /></TenantProtectedRoute>} />
+    </Routes>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
-          <AppRoutes />
-          <Toaster position="top-right" richColors />
+          <TenantAuthProvider>
+            <Routes>
+              {/* Tenant Portal routes - handled separately with its own auth */}
+              <Route path="/tenant-portal/*" element={<TenantPortalRoutes />} />
+              
+              {/* Main app routes */}
+              <Route path="/*" element={<AppRoutes />} />
+            </Routes>
+            <Toaster position="top-right" richColors />
+          </TenantAuthProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
