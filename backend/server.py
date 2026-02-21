@@ -1704,13 +1704,18 @@ async def get_document_checklist(tenant = Depends(get_current_tenant)):
     default_items_map = {item['name']: item for item in DEFAULT_DOCUMENT_CHECKLIST}
     
     for item in checklist:
+        default_item = default_items_map.get(item['name'], {})
+        # Update required field to match current defaults (privacy fix)
+        if item['name'] in ['Social Security Cards', 'Birth Certificates', 'Bank Statements']:
+            item['required'] = False
+        # Add missing fields
         if 'source_type' not in item:
-            default_item = default_items_map.get(item['name'], {})
             item['source_type'] = default_item.get('source_type', 'tenant_provided')
             item['template'] = default_item.get('template')
-            item['help_text'] = default_item.get('help_text')
             item['requested_at'] = None
             item['request_message'] = None
+        # Always update help_text to latest
+        item['help_text'] = default_item.get('help_text')
     
     return checklist
 
