@@ -347,6 +347,101 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Trust Signals Section */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8 bg-card border-b" data-testid="trust-signals">
+        <div className="max-w-7xl mx-auto">
+          {/* Security & Trust Badges */}
+          <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10 mb-8">
+            <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-950/30 rounded-full border border-green-200 dark:border-green-800">
+              <ShieldCheck className="w-5 h-5 text-green-600" />
+              <span className="text-sm font-medium text-green-700 dark:text-green-300">Bank-Grade 256-bit Encryption</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-950/30 rounded-full border border-blue-200 dark:border-blue-800">
+              <Lock className="w-5 h-5 text-blue-600" />
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">SSL Secured</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-950/30 rounded-full border border-amber-200 dark:border-amber-800">
+              <Star className="w-5 h-5 text-amber-600" />
+              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">Rated 4.9/5 by Landlords</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-950/30 rounded-full border border-purple-200 dark:border-purple-800">
+              <Headphones className="w-5 h-5 text-purple-600" />
+              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">U.S. Based Support</span>
+            </div>
+          </div>
+
+          {/* Powered By / Integrations */}
+          <div className="text-center mb-6">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider mb-4">Powered by world-class infrastructure</p>
+            <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-60 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
+              {/* Stripe */}
+              <div className="flex items-center gap-2">
+                <svg className="h-8" viewBox="0 0 60 25" fill="currentColor">
+                  <path d="M59.64 14.28h-8.06c.19 1.93 1.6 2.55 3.2 2.55 1.64 0 2.96-.37 4.05-.95v3.32a8.33 8.33 0 0 1-4.56 1.1c-4.01 0-6.83-2.5-6.83-7.48 0-4.19 2.39-7.52 6.3-7.52 3.92 0 5.96 3.28 5.96 7.5 0 .4-.02 1.04-.06 1.48zm-3.67-3.14c0-1.38-.57-2.7-2.14-2.7-1.43 0-2.23 1.25-2.32 2.7h4.46z"/>
+                  <path d="M40.95 20.3c-1.44 0-2.32-.6-2.9-1.04l-.02 4.63-4.12.87V5.57h3.76l.08 1.02a4.7 4.7 0 0 1 3.23-1.29c2.9 0 5.62 2.6 5.62 7.4 0 5.23-2.7 7.6-5.65 7.6zM40 8.95c-.95 0-1.54.34-1.97.81l.02 6.12c.4.44.98.78 1.95.78 1.52 0 2.54-1.65 2.54-3.87 0-2.15-1.04-3.84-2.54-3.84z"/>
+                  <path d="M28.24 5.57h4.13v14.44h-4.13z"/>
+                  <path d="M28.24.78l4.13-.87v3.57h-4.13z"/>
+                  <path d="M22.56 7.16c.92-.57 2.25-1.14 3.87-1.14v3.8c-.46-.1-.97-.12-1.58-.12-1.27 0-2.03.4-2.29.87v9.44h-4.13V5.57h3.88l.25 1.59z"/>
+                  <path d="M11.74 14.71c0 1.5.65 2.14 1.96 2.14.66 0 1.44-.13 2.06-.47v3.24c-.76.45-1.9.68-3.08.68-3.09 0-5.04-1.7-5.04-5.22V8.65H5.63V5.57h2.01V2.08l4.1-.87v4.36h3.7v3.08h-3.7v6.06z"/>
+                  <path d="M3.91 12.72c0 4.8-2.52 7.58-6.39 7.58-1.6 0-2.87-.34-3.88-.84L-5 16.11c.9.5 1.88.78 3.04.78 1.73 0 2.84-.95 2.84-3.3V5.57H5v7.15h-1.09z"/>
+                </svg>
+                <span className="text-sm font-medium">Stripe</span>
+              </div>
+              {/* AWS */}
+              <div className="flex items-center gap-2">
+                <Globe className="w-6 h-6" />
+                <span className="text-sm font-medium">Cloud Hosted</span>
+              </div>
+              {/* MongoDB */}
+              <div className="flex items-center gap-2">
+                <Shield className="w-6 h-6" />
+                <span className="text-sm font-medium">Enterprise Database</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Guarantees */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-8">
+            <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <CreditCard className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">No Hidden Fees</p>
+                <p className="text-xs text-muted-foreground">Clear pricing always</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Download className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Export Anytime</p>
+                <p className="text-xs text-muted-foreground">Your data is yours</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <BadgeCheck className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">No Unit Minimums</p>
+                <p className="text-xs text-muted-foreground">Start with 1 property</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 p-4 bg-muted/50 rounded-lg">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Headphones className="w-5 h-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Human Support</p>
+                <p className="text-xs text-muted-foreground">Real people, real help</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Financial Infographic Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8" data-testid="infographic-section">
         <div className="max-w-7xl mx-auto">
