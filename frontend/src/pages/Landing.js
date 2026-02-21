@@ -127,7 +127,8 @@ const planFeatures = {
   free: [
     { text: 'Up to 2 properties', included: true },
     { text: 'Up to 5 units', included: true },
-    { text: '1 team member', included: true }
+    { text: '1 team member', included: true },
+    { text: 'Basic maintenance tracking', included: true }
   ],
   standard: [
     { text: 'Up to 20 properties', included: true },
@@ -135,7 +136,9 @@ const planFeatures = {
     { text: '5 team members', included: true },
     { text: 'Full inspection workflows', included: true },
     { text: 'Document storage (10GB)', included: true },
-    { text: 'Calendar integrations', included: true }
+    { text: 'Calendar integrations', included: true },
+    { text: 'Maintenance requests', included: true },
+    { text: 'Email notifications', included: true }
   ],
   pro: [
     { text: 'Unlimited properties', included: true },
@@ -148,7 +151,9 @@ const planFeatures = {
     { text: 'Calendar integrations', included: true },
     { text: 'Full API access', included: true },
     { text: 'Tenant Portal access', included: true },
-    { text: 'Real-time tenant messaging', included: true }
+    { text: 'Real-time tenant messaging', included: true },
+    { text: 'Maintenance requests', included: true },
+    { text: 'Priority work orders', included: true }
   ]
 };
 
