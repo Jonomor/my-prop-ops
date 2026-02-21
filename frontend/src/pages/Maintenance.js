@@ -80,6 +80,7 @@ const Maintenance = () => {
   const [units, setUnits] = useState([]);
   const [tenants, setTenants] = useState([]);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [contractors, setContractors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -88,6 +89,7 @@ const Maintenance = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [assigningContractor, setAssigningContractor] = useState(false);
 
   // New request form state
   const [form, setForm] = useState({
@@ -113,12 +115,13 @@ const Maintenance = () => {
     
     try {
       const orgId = currentOrg.org_id;
-      const [requestsRes, statsRes, propertiesRes, tenantsRes, membersRes] = await Promise.all([
+      const [requestsRes, statsRes, propertiesRes, tenantsRes, membersRes, contractorsRes] = await Promise.all([
         api.get('/maintenance-requests'),
         api.get('/maintenance-requests/stats/summary'),
         api.get(`/organizations/${orgId}/properties`),
         api.get(`/organizations/${orgId}/tenants`),
-        api.get(`/organizations/${orgId}/members`).catch(() => ({ data: [] }))
+        api.get(`/organizations/${orgId}/members`).catch(() => ({ data: [] })),
+        api.get(`/organizations/${orgId}/contractors`).catch(() => ({ data: [] }))
       ]);
       
       setRequests(requestsRes.data);
@@ -126,6 +129,7 @@ const Maintenance = () => {
       setProperties(propertiesRes.data);
       setTenants(tenantsRes.data);
       setTeamMembers(membersRes.data);
+      setContractors(contractorsRes.data);
     } catch (error) {
       console.error('Failed to fetch data:', error);
       toast.error('Failed to load maintenance data');
