@@ -43,6 +43,46 @@ JWT_SECRET = os.environ.get("JWT_SECRET", "propops-secret-key-change-in-producti
 JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
+# Stripe Configuration
+STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY", "sk_test_emergent")
+
+# Subscription Plan Pricing (amounts in USD)
+SUBSCRIPTION_PLANS = {
+    "standard_monthly": {"amount": 29.00, "plan": "standard", "period": "monthly"},
+    "standard_annual": {"amount": 288.00, "plan": "standard", "period": "annual"},  # $24/mo billed annually
+    "pro_monthly": {"amount": 99.00, "plan": "pro", "period": "monthly"},
+    "pro_annual": {"amount": 984.00, "plan": "pro", "period": "annual"},  # $82/mo billed annually
+}
+
+# Mailchimp Configuration
+MAILCHIMP_MARKETING_API_KEY = os.environ.get("MAILCHIMP_MARKETING_API_KEY", "")
+MAILCHIMP_MARKETING_SERVER = os.environ.get("MAILCHIMP_MARKETING_SERVER", "us1")
+MAILCHIMP_MARKETING_AUDIENCE_ID = os.environ.get("MAILCHIMP_MARKETING_AUDIENCE_ID", "")
+MAILCHIMP_TRANSACTIONAL_API_KEY = os.environ.get("MAILCHIMP_TRANSACTIONAL_API_KEY", "")
+MAILCHIMP_FROM_EMAIL = os.environ.get("MAILCHIMP_TRANSACTIONAL_FROM_EMAIL", "noreply@mypropops.com")
+
+# Initialize Mailchimp clients (if keys are provided)
+mailchimp_marketing_client = None
+mailchimp_transactional_client = None
+
+if MAILCHIMP_AVAILABLE and MAILCHIMP_MARKETING_API_KEY:
+    try:
+        mailchimp_marketing_client = MailchimpMarketing.Client()
+        mailchimp_marketing_client.set_config({
+            "api_key": MAILCHIMP_MARKETING_API_KEY,
+            "server": MAILCHIMP_MARKETING_SERVER
+        })
+        logger.info("Mailchimp Marketing client initialized")
+    except Exception as e:
+        logger.warning(f"Failed to initialize Mailchimp Marketing: {e}")
+
+if MAILCHIMP_AVAILABLE and MAILCHIMP_TRANSACTIONAL_API_KEY:
+    try:
+        mailchimp_transactional_client = MailchimpTransactional.Client(MAILCHIMP_TRANSACTIONAL_API_KEY)
+        logger.info("Mailchimp Transactional client initialized")
+    except Exception as e:
+        logger.warning(f"Failed to initialize Mailchimp Transactional: {e}")
+
 # File upload directory
 UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
