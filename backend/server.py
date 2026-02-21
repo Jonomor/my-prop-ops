@@ -712,12 +712,112 @@ class MaintenanceRequestResponse(BaseModel):
     permission_to_enter: bool
     assigned_to: Optional[str]
     assigned_to_name: Optional[str] = None
+    contractor_id: Optional[str] = None
+    contractor_name: Optional[str] = None
+    photos: Optional[List[str]] = []
     notes: Optional[str]
     scheduled_date: Optional[str]
     completion_notes: Optional[str]
     created_by: str
     created_at: str
     updated_at: Optional[str]
+
+# ============== CONTRACTOR MODELS ==============
+
+class ContractorSpecialty(str, Enum):
+    PLUMBING = "plumbing"
+    ELECTRICAL = "electrical"
+    HVAC = "hvac"
+    APPLIANCES = "appliances"
+    GENERAL = "general"
+    CARPENTRY = "carpentry"
+    PAINTING = "painting"
+    ROOFING = "roofing"
+    LANDSCAPING = "landscaping"
+    CLEANING = "cleaning"
+
+class ContractorStatus(str, Enum):
+    AVAILABLE = "available"
+    BUSY = "busy"
+    OFFLINE = "offline"
+
+class ContractorRegister(BaseModel):
+    email: EmailStr
+    password: str
+    name: str
+    company_name: Optional[str] = None
+    phone: str
+    specialties: List[ContractorSpecialty]
+    service_area: Optional[str] = None
+    hourly_rate: Optional[float] = None
+    license_number: Optional[str] = None
+
+class ContractorLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class ContractorResponse(BaseModel):
+    id: str
+    email: str
+    name: str
+    company_name: Optional[str]
+    phone: str
+    specialties: List[str]
+    service_area: Optional[str]
+    hourly_rate: Optional[float]
+    license_number: Optional[str]
+    status: str
+    rating: Optional[float] = None
+    jobs_completed: int = 0
+    created_at: str
+
+class ContractorProfileUpdate(BaseModel):
+    name: Optional[str] = None
+    company_name: Optional[str] = None
+    phone: Optional[str] = None
+    specialties: Optional[List[ContractorSpecialty]] = None
+    service_area: Optional[str] = None
+    hourly_rate: Optional[float] = None
+    status: Optional[ContractorStatus] = None
+
+class ContractorJobResponse(BaseModel):
+    id: str
+    maintenance_request_id: str
+    org_id: str
+    property_name: str
+    property_address: Optional[str] = None
+    unit_number: Optional[str] = None
+    category: str
+    priority: str
+    status: str
+    title: str
+    description: str
+    photos: List[str] = []
+    tenant_name: Optional[str] = None
+    tenant_phone: Optional[str] = None
+    scheduled_date: Optional[str] = None
+    assigned_at: str
+    completed_at: Optional[str] = None
+    notes: Optional[str] = None
+
+class AssignContractorRequest(BaseModel):
+    contractor_id: str
+    scheduled_date: Optional[str] = None
+    notes: Optional[str] = None
+
+class ContractorJobUpdate(BaseModel):
+    status: Optional[MaintenanceStatus] = None
+    notes: Optional[str] = None
+    completion_notes: Optional[str] = None
+
+# Tenant Portal Maintenance Request (with photos)
+class TenantMaintenanceRequestCreate(BaseModel):
+    category: MaintenanceCategory
+    priority: MaintenancePriority = MaintenancePriority.MEDIUM
+    title: str
+    description: str
+    preferred_access_time: Optional[str] = None
+    permission_to_enter: bool = False
 
 # Tenant Screening Models (inspired by competitors like Yardi ScreeningWorks)
 class ScreeningRequestCreate(BaseModel):
