@@ -105,7 +105,7 @@ const Terms = () => {
                 To use MyPropOps, you must create an account with accurate, complete, and current information. You are responsible for maintaining the confidentiality of your account credentials.
               </p>
 
-              <h3 className="text-xl font-semibold mt-6 mb-3">3.2 Account Responsibilities</h3>
+              <h3 className="text-xl font-semibold mt-6 mb-3">4.2 Account Responsibilities</h3>
               <p className="text-muted-foreground leading-relaxed">
                 You are responsible for all activities that occur under your account. You must immediately notify us of any unauthorized use of your account or any other breach of security.
               </p>
