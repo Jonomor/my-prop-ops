@@ -150,10 +150,76 @@ const TenantPortal = () => {
         const res = await api.get('/api/tenant-portal/resources');
         setResources(res.data);
       }
+      if (activeTab === 'maintenance') {
+        const res = await api.get('/api/portal/maintenance-requests');
+        setMaintenanceRequests(res.data);
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePhotoAdd = (e) => {
+    const files = Array.from(e.target.files);
+    if (maintenancePhotos.length + files.length > 5) {
+      toast.error('Maximum 5 photos allowed');
+      return;
+    }
+    
+    const newPhotos = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    setMaintenancePhotos([...maintenancePhotos, ...newPhotos]);
+  };
+
+  const handlePhotoRemove = (index) => {
+    const newPhotos = [...maintenancePhotos];
+    URL.revokeObjectURL(newPhotos[index].preview);
+    newPhotos.splice(index, 1);
+    setMaintenancePhotos(newPhotos);
+  };
+
+  const handleMaintenanceSubmit = async () => {
+    if (!maintenanceForm.title || !maintenanceForm.description) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    setSubmittingMaintenance(true);
+    try {
+      const formData = new FormData();
+      formData.append('category', maintenanceForm.category);
+      formData.append('priority', maintenanceForm.priority);
+      formData.append('title', maintenanceForm.title);
+      formData.append('description', maintenanceForm.description);
+      formData.append('permission_to_enter', maintenanceForm.permission_to_enter);
+      
+      maintenancePhotos.forEach((photo) => {
+        formData.append('photos', photo.file);
+      });
+
+      await api.post('/api/portal/maintenance-requests/with-photos', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      toast.success('Maintenance request submitted successfully!');
+      setMaintenanceDialogOpen(false);
+      setMaintenanceForm({
+        category: 'other',
+        priority: 'medium',
+        title: '',
+        description: '',
+        permission_to_enter: false
+      });
+      setMaintenancePhotos([]);
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to submit request');
+    } finally {
+      setSubmittingMaintenance(false);
     }
   };
 
