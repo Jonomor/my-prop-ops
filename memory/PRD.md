@@ -102,14 +102,31 @@ Build a full-stack SaaS web application for property and housing operations mana
 
 ## PHASE 5 — MARKETING ✅
 
-### 9. Public Landing Page ✅
+### 9. Public Landing Page ✅ (REDESIGNED Feb 2026)
 - Route: /
-- Hero: "All your property operations. One dashboard."
-- Pain points vs solutions
-- Feature showcase
-- Target audience section
-- CTA → /register
-- Uses existing theme, no new dependencies
+- **Hero Section:**
+  - Badge: "Free forever for small portfolios"
+  - Headline: "Stop drowning in spreadsheets. Start managing."
+  - Value props: Setup in 15 min, No credit card, Free up to 25 units
+  - First-person CTA: "Start My Free Account"
+  - Social proof: "Join 500+ property managers"
+- **Stats Bar:** 10+ hours saved, 100% compliance, 15 min setup, 4.9/5 rating
+- **Problem/Solution:** "The old way" vs "The PropOps way" comparison
+- **How It Works:** 3 simple steps
+- **Features Grid:** 6 features with specific benefits
+- **Testimonials:** 3 customer quotes with star ratings
+- **Pricing Section:**
+  - Free: $0/month (5 properties, 25 units, unlimited team, email support)
+  - Pro: $29/month (unlimited everything, priority support, API access)
+  - "Free forever, not a trial" messaging
+- **FAQ Section:** 6 collapsible questions addressing objections
+- **Final CTA:** Reiterates free offer
+- **Navigation:** Features, Pricing, Reviews, FAQ anchor links
+
+### 10. Auto-Unit Generation ✅ (Feb 2026)
+- When creating a property with total_units > 0, units are auto-created
+- Reduces friction for new users
+- Units numbered 1, 2, 3... by default
 
 ---
 
