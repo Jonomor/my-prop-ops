@@ -443,6 +443,163 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Video Showcase Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/30" data-testid="video-showcase">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+              <Play className="w-4 h-4" />
+              See It In Action
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading">
+              Property Management, Simplified
+            </h2>
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+              Watch how MyPropOps transforms the way you manage properties in just seconds
+            </p>
+          </div>
+
+          {/* Video Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Video 1: Spreadsheet Killer */}
+            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+              <video 
+                className="w-full aspect-[9/16] object-cover"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+                poster="/api/placeholder/400/700"
+              >
+                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/j0e4chjv_prop5.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
+                    <X className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm font-medium text-red-300">No More Spreadsheets</span>
+                </div>
+                <h3 className="text-xl font-bold mb-1">Spreadsheet Killer</h3>
+                <p className="text-sm text-white/80">Ditch the spreadsheets. Get the dashboard.</p>
+              </div>
+            </div>
+
+            {/* Video 2: Rent Collector */}
+            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+              <video 
+                className="w-full aspect-[9/16] object-cover"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+              >
+                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/4xbxgb29_prop4.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                    <DollarSign className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm font-medium text-green-300">Automated Payments</span>
+                </div>
+                <h3 className="text-xl font-bold mb-1">Rent Collector</h3>
+                <p className="text-sm text-white/80">Stop chasing checks. Start collecting sleep.</p>
+              </div>
+            </div>
+
+            {/* Video 3: Compliance Shield */}
+            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+              <video 
+                className="w-full aspect-[9/16] object-cover"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+              >
+                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fzrlnm2b_prop3.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
+                    <Shield className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm font-medium text-blue-300">100% Compliant</span>
+                </div>
+                <h3 className="text-xl font-bold mb-1">Compliance Shield</h3>
+                <p className="text-sm text-white/80">Compliance deadlines? Already handled.</p>
+              </div>
+            </div>
+
+            {/* Video 4: Maintenance Magic */}
+            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+              <video 
+                className="w-full aspect-[9/16] object-cover"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+              >
+                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/lf1xwx6w_prop2.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
+                    <Wrench className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm font-medium text-orange-300">One-Tap Fixes</span>
+                </div>
+                <h3 className="text-xl font-bold mb-1">Maintenance Magic</h3>
+                <p className="text-sm text-white/80">Click. Assigned. Done.</p>
+              </div>
+            </div>
+
+            {/* Video 5: Whole Team */}
+            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+              <video 
+                className="w-full aspect-[9/16] object-cover"
+                autoPlay 
+                loop 
+                muted 
+                playsInline
+              >
+                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fyzgszf2_prop1.mp4" type="video/mp4" />
+              </video>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
+                    <Users className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm font-medium text-purple-300">Team Sync</span>
+                </div>
+                <h3 className="text-xl font-bold mb-1">Whole Team</h3>
+                <p className="text-sm text-white/80">Get your whole team on the same page.</p>
+              </div>
+            </div>
+
+            {/* CTA Card */}
+            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-primary/80 shadow-lg flex flex-col items-center justify-center p-8 text-white aspect-[9/16]">
+              <div className="text-center">
+                <Play className="w-16 h-16 mx-auto mb-6 opacity-80" />
+                <h3 className="text-2xl font-bold mb-2">Ready to Transform Your Workflow?</h3>
+                <p className="text-white/80 mb-6">Join 500+ property managers who made the switch</p>
+                <Link to="/register">
+                  <Button size="lg" variant="secondary" className="font-semibold">
+                    Start Free Trial
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Financial Infographic Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8" data-testid="infographic-section">
         <div className="max-w-7xl mx-auto">
