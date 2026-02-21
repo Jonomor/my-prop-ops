@@ -46,6 +46,7 @@ JWT_EXPIRATION_HOURS = 24
 
 # Stripe Configuration
 STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY", "sk_test_emergent")
+STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 
 # Subscription Plan Pricing (amounts in USD)
 SUBSCRIPTION_PLANS = {
