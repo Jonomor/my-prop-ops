@@ -130,6 +130,11 @@ function AppRoutes() {
       <Route path="/terms" element={<Terms />} />
       <Route path="/security" element={<Security />} />
       
+      {/* Contractor Portal Routes (separate auth) */}
+      <Route path="/contractor/login" element={<ContractorLogin />} />
+      <Route path="/contractor/register" element={<ContractorRegister />} />
+      <Route path="/contractor/dashboard" element={<ContractorDashboard />} />
+      
       {/* Protected Routes */}
       <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/properties" element={<ProtectedRoute><Properties /></ProtectedRoute>} />
