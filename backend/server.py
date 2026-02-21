@@ -1757,6 +1757,100 @@ async def download_tenant_document(doc_id: str, tenant = Depends(get_current_ten
     
     return FileResponse(file_path, filename=doc['original_filename'])
 
+# Document Templates
+TEMPLATE_DIR = ROOT_DIR / "templates"
+
+@api_router.get("/tenant-portal/templates/{template_name}")
+async def download_template(template_name: str):
+    """Download authorization form templates"""
+    valid_templates = {
+        "background_check_authorization": "Background_Check_Authorization.html",
+        "credit_check_authorization": "Credit_Check_Authorization.html"
+    }
+    
+    if template_name not in valid_templates:
+        raise HTTPException(status_code=404, detail="Template not found")
+    
+    file_path = TEMPLATE_DIR / f"{template_name}.html"
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Template file not found")
+    
+    return FileResponse(
+        file_path, 
+        filename=valid_templates[template_name],
+        media_type="text/html"
+    )
+
+@api_router.get("/tenant-portal/templates")
+async def list_templates():
+    """List available document templates"""
+    return {
+        "templates": [
+            {
+                "id": "background_check_authorization",
+                "name": "Background Check Authorization",
+                "description": "Authorization form for criminal background check",
+                "download_url": "/api/tenant-portal/templates/background_check_authorization"
+            },
+            {
+                "id": "credit_check_authorization", 
+                "name": "Credit Check Authorization",
+                "description": "Authorization form for credit report check",
+                "download_url": "/api/tenant-portal/templates/credit_check_authorization"
+            }
+        ]
+    }
+
+# Document Request from Landlord
+class DocumentRequestCreate(BaseModel):
+    message: Optional[str] = None
+
+@api_router.post("/tenant-portal/checklist/{item_id}/request")
+async def request_document_from_landlord(item_id: str, data: DocumentRequestCreate, tenant = Depends(get_current_tenant)):
+    """Request a document from the landlord/property manager"""
+    checklist = tenant.get('document_checklist', [])
+    
+    item_index = None
+    item = None
+    for i, doc in enumerate(checklist):
+        if doc['id'] == item_id:
+            item_index = i
+            item = doc
+            break
+    
+    if item is None:
+        raise HTTPException(status_code=404, detail="Checklist item not found")
+    
+    # Update the checklist item with request info
+    checklist[item_index]['requested_at'] = datetime.now(timezone.utc).isoformat()
+    checklist[item_index]['request_message'] = data.message
+    checklist[item_index]['status'] = 'requested'
+    
+    await db.tenant_portal_users.update_one(
+        {"id": tenant['id']},
+        {"$set": {"document_checklist": checklist}}
+    )
+    
+    # Create a notification/message to landlord if connected to an org
+    if tenant.get('connected_org_id'):
+        # Create a document request record
+        request_record = {
+            "id": str(uuid.uuid4()),
+            "tenant_portal_id": tenant['id'],
+            "tenant_name": tenant['name'],
+            "org_id": tenant['connected_org_id'],
+            "document_name": item['name'],
+            "message": data.message,
+            "status": "pending",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.document_requests.insert_one(request_record)
+    
+    return {
+        "message": f"Request sent for {item['name']}",
+        "requested_at": checklist[item_index]['requested_at']
+    }
+
 # Application Status
 @api_router.get("/tenant-portal/application-status")
 async def get_application_status(tenant = Depends(get_current_tenant)):
