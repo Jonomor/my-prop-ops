@@ -2206,6 +2206,8 @@ async def send_landlord_message(org_id: str, conversation_id: str, data: Message
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.tenant_messages.insert_one(message)
+    # Remove MongoDB _id to avoid serialization issues
+    message.pop('_id', None)
     
     # Update conversation with unread count for tenant
     await db.tenant_conversations.update_one(
