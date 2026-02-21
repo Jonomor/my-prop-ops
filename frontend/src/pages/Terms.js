@@ -117,7 +117,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold font-heading mb-4">4. Subscription Plans and Billing</h2>
+              <h2 className="text-2xl font-semibold font-heading mb-4">5. Subscription Plans and Billing</h2>
               
               <h3 className="text-xl font-semibold mt-6 mb-3">4.1 Free Plan</h3>
               <p className="text-muted-foreground leading-relaxed">
