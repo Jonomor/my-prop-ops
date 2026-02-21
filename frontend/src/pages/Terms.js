@@ -163,7 +163,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold font-heading mb-4">6. Your Content</h2>
+              <h2 className="text-2xl font-semibold font-heading mb-4">7. Your Content</h2>
               
               <h3 className="text-xl font-semibold mt-6 mb-3">6.1 Ownership</h3>
               <p className="text-muted-foreground leading-relaxed">
