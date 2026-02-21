@@ -110,7 +110,7 @@ const Terms = () => {
                 You are responsible for all activities that occur under your account. You must immediately notify us of any unauthorized use of your account or any other breach of security.
               </p>
 
-              <h3 className="text-xl font-semibold mt-6 mb-3">3.3 Organizations</h3>
+              <h3 className="text-xl font-semibold mt-6 mb-3">4.3 Organizations</h3>
               <p className="text-muted-foreground leading-relaxed">
                 When you create or join an organization, you agree to the organization's internal policies and acknowledge that organization administrators may have access to your account activity within that organization.
               </p>
