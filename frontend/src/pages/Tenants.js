@@ -233,19 +233,28 @@ const Tenants = () => {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="unit">Assign Unit</Label>
-                    <Select value={formData.unit_id} onValueChange={(val) => setFormData({ ...formData, unit_id: val })}>
-                      <SelectTrigger data-testid="tenant-unit-select">
-                        <SelectValue placeholder="Select a unit (optional)" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="none">No unit assigned</SelectItem>
-                        {vacantUnits.map(unit => (
-                          <SelectItem key={unit.id} value={unit.id}>
-                            Unit {unit.unit_number}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    {vacantUnits.length === 0 && units.length === 0 ? (
+                      <div className="rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 p-3 text-sm">
+                        <p className="text-amber-800 dark:text-amber-200 font-medium">No units available</p>
+                        <p className="text-amber-600 dark:text-amber-400 text-xs mt-1">
+                          Create units in the Properties section first, or leave unassigned for now.
+                        </p>
+                      </div>
+                    ) : (
+                      <Select value={formData.unit_id} onValueChange={(val) => setFormData({ ...formData, unit_id: val })}>
+                        <SelectTrigger data-testid="tenant-unit-select">
+                          <SelectValue placeholder="Select a unit (optional)" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">No unit assigned</SelectItem>
+                          {vacantUnits.map(unit => (
+                            <SelectItem key={unit.id} value={unit.id}>
+                              {getPropertyName(unit.property_id)} - Unit {unit.unit_number}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
