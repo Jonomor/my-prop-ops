@@ -259,7 +259,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold font-heading mb-4">12. Governing Law</h2>
+              <h2 className="text-2xl font-semibold font-heading mb-4">13. Governing Law</h2>
               <p className="text-muted-foreground leading-relaxed">
                 These Terms shall be governed by and construed in accordance with the laws of the State of California, without regard to its conflict of law provisions.
               </p>
