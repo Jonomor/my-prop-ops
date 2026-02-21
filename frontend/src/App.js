@@ -27,6 +27,8 @@ import MemberDirectory from './pages/MemberDirectory';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Security from './pages/Security';
+import Billing from './pages/Billing';
+import Maintenance from './pages/Maintenance';
 
 // Tenant Portal Pages
 import TenantLogin from './pages/TenantLogin';
