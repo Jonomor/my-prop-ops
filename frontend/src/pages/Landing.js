@@ -25,7 +25,13 @@ import {
   Lock,
   X,
   Wrench,
-  MessageCircle
+  MessageCircle,
+  Download,
+  Headphones,
+  CreditCard,
+  ShieldCheck,
+  BadgeCheck,
+  Globe
 } from 'lucide-react';
 
 const features = [
