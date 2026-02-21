@@ -52,6 +52,12 @@ const features = [
     benefit: 'Find any doc in seconds'
   },
   {
+    icon: Wrench,
+    title: 'Maintenance Requests',
+    description: 'Track and manage work orders from submission to completion. Assign tasks, set priorities, and monitor progress.',
+    benefit: 'Faster response times'
+  },
+  {
     icon: Bell,
     title: 'Smart Notifications',
     description: 'Get alerts for lease expirations, upcoming inspections, and team activities. Never miss a deadline.',
@@ -62,6 +68,12 @@ const features = [
     title: 'Team Access Control',
     description: 'Invite your team with Admin, Manager, or Staff roles. Control exactly who can view and edit what.',
     benefit: 'Secure & organized'
+  },
+  {
+    icon: MessageCircle,
+    title: 'Tenant Portal',
+    description: 'Give tenants a dedicated portal to submit requests, upload documents, and communicate securely.',
+    benefit: 'Happy tenants, less calls'
   }
 ];
 
