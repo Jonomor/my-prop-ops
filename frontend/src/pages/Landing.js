@@ -100,12 +100,12 @@ const pricingPlans = {
   monthly: {
     free: { price: 0, period: '/month' },
     standard: { price: 29, period: '/month' },
-    pro: { price: 79, period: '/month' }
+    pro: { price: 74, period: '/month' }
   },
   annual: {
     free: { price: 0, period: '/month' },
     standard: { price: 24, period: '/month', savings: 'Save $60/year' },
-    pro: { price: 66, period: '/month', savings: 'Save $156/year' }
+    pro: { price: 62, period: '/month', savings: 'Save $144/year' }
   }
 };
 
@@ -113,24 +113,15 @@ const planFeatures = {
   free: [
     { text: 'Up to 2 properties', included: true },
     { text: 'Up to 5 units', included: true },
-    { text: 'Up to 3 team members', included: true },
-    { text: 'Basic inspection tracking', included: true },
-    { text: 'Document storage (500MB)', included: true },
-    { text: 'Email support', included: true },
-    { text: 'Advanced analytics', included: false },
-    { text: 'Priority support', included: false },
-    { text: 'API access', included: false }
+    { text: '1 team member', included: true }
   ],
   standard: [
     { text: 'Up to 20 properties', included: true },
     { text: 'Up to 40 units', included: true },
-    { text: 'Unlimited team members', included: true },
+    { text: '5 team members', included: true },
     { text: 'Full inspection workflows', included: true },
     { text: 'Document storage (10GB)', included: true },
-    { text: 'Priority email support', included: true },
-    { text: 'Advanced analytics', included: true },
-    { text: 'Calendar integrations', included: true },
-    { text: 'API access', included: false }
+    { text: 'Calendar integrations', included: true }
   ],
   pro: [
     { text: 'Unlimited properties', included: true },
