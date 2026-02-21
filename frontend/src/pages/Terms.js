@@ -175,7 +175,7 @@ const Terms = () => {
                 By uploading Your Content, you grant us a limited license to store, process, and display Your Content solely for the purpose of providing the Service to you and your organization.
               </p>
 
-              <h3 className="text-xl font-semibold mt-6 mb-3">6.3 Responsibility</h3>
+              <h3 className="text-xl font-semibold mt-6 mb-3">7.3 Responsibility</h3>
               <p className="text-muted-foreground leading-relaxed">
                 You are solely responsible for Your Content and the consequences of uploading it. You represent that you have all necessary rights to upload Your Content and that it does not violate any third-party rights.
               </p>
