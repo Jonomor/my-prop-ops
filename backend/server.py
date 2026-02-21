@@ -855,6 +855,12 @@ async def get_organization(org_id: str, user = Depends(get_current_user)):
         org['plan'] = OrganizationPlan.FREE
     return OrganizationResponse(**org)
 
+@api_router.get("/organizations/{org_id}/usage")
+async def get_organization_usage(org_id: str, user = Depends(get_current_user)):
+    """Get current usage and plan limits for an organization"""
+    await get_user_membership(user['id'], org_id)
+    return await get_org_usage(org_id)
+
 # ============== TEAM INVITATION ROUTES ==============
 @api_router.post("/organizations/{org_id}/invites", response_model=InviteResponse)
 async def create_invite(org_id: str, data: InviteCreate, user = Depends(get_current_user)):
