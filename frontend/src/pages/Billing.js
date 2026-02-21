@@ -6,20 +6,20 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { toast } from 'sonner';
+import EmbeddedCheckoutForm from '../components/EmbeddedCheckout';
 import { 
   CreditCard, 
   Check, 
   Zap, 
   Crown, 
   Building2, 
-  Users, 
-  HardDrive,
   ArrowRight,
   Loader2,
   CheckCircle,
-  AlertCircle,
-  Sparkles
+  Sparkles,
+  X
 } from 'lucide-react';
 
 const Billing = () => {
@@ -30,22 +30,18 @@ const Billing = () => {
   const [subscription, setSubscription] = useState(null);
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [upgrading, setUpgrading] = useState(null);
   const [checkingPayment, setCheckingPayment] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
 
   useEffect(() => {
     fetchData();
     
-    // Check for payment success/cancel
-    const payment = searchParams.get('payment');
+    // Check for payment success from embedded checkout return
     const sessionId = searchParams.get('session_id');
     
-    if (payment === 'success' && sessionId) {
+    if (sessionId) {
       checkPaymentStatus(sessionId);
-    } else if (payment === 'cancelled') {
-      toast.error('Payment was cancelled');
-      // Clear params
-      navigate('/billing', { replace: true });
     }
   }, []);
 
@@ -74,16 +70,25 @@ const Billing = () => {
     
     const poll = async () => {
       try {
-        const res = await api.get(`/billing/checkout-status/${sessionId}`);
+        const res = await api.get(`/billing/session-status/${sessionId}`);
         
         if (res.data.payment_status === 'paid') {
-          toast.success(`Successfully upgraded to ${res.data.new_plan} plan!`);
+          toast.success('Successfully upgraded your plan!');
           await fetchData(); // Refresh subscription data
           navigate('/billing', { replace: true });
+          setCheckingPayment(false);
           return;
         } else if (res.data.status === 'expired') {
           toast.error('Payment session expired. Please try again.');
           navigate('/billing', { replace: true });
+          setCheckingPayment(false);
+          return;
+        } else if (res.data.status === 'complete') {
+          // Session complete but payment might be processing
+          toast.success('Payment successful!');
+          await fetchData();
+          navigate('/billing', { replace: true });
+          setCheckingPayment(false);
           return;
         }
         
@@ -93,38 +98,40 @@ const Billing = () => {
         } else {
           toast.info('Payment is still processing. Please refresh the page.');
           navigate('/billing', { replace: true });
+          setCheckingPayment(false);
         }
       } catch (error) {
         console.error('Error checking payment status:', error);
+        // Try to get status from checkout-status endpoint as fallback
+        try {
+          const fallbackRes = await api.get(`/billing/checkout-status/${sessionId}`);
+          if (fallbackRes.data.payment_status === 'paid') {
+            toast.success(`Successfully upgraded your plan!`);
+            await fetchData();
+            navigate('/billing', { replace: true });
+            setCheckingPayment(false);
+            return;
+          }
+        } catch (fallbackError) {
+          console.error('Fallback check also failed:', fallbackError);
+        }
         toast.error('Failed to verify payment status');
         navigate('/billing', { replace: true });
-      } finally {
-        if (attempts >= maxAttempts - 1) {
-          setCheckingPayment(false);
-        }
+        setCheckingPayment(false);
       }
     };
     
     poll();
   };
 
-  const handleUpgrade = async (planId) => {
-    const fullPlanId = `${planId}_${billingPeriod}`;
-    setUpgrading(fullPlanId);
-    
-    try {
-      const res = await api.post('/billing/create-checkout', {
-        plan_id: fullPlanId,
-        origin_url: window.location.origin
-      });
-      
-      // Redirect to Stripe Checkout
-      window.location.href = res.data.checkout_url;
-    } catch (error) {
-      console.error('Failed to create checkout:', error);
-      toast.error(error.response?.data?.detail || 'Failed to start checkout');
-      setUpgrading(null);
-    }
+  const handleUpgrade = (planId) => {
+    setSelectedPlan(planId);
+    setCheckoutOpen(true);
+  };
+
+  const handleCheckoutError = (error) => {
+    toast.error(error);
+    setCheckoutOpen(false);
   };
 
   const getPrice = (plan) => {
@@ -258,6 +265,7 @@ const Billing = () => {
                   ? 'bg-background shadow text-foreground' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
+              data-testid="billing-period-monthly"
             >
               Monthly
             </button>
@@ -268,6 +276,7 @@ const Billing = () => {
                   ? 'bg-background shadow text-foreground' 
                   : 'text-muted-foreground hover:text-foreground'
               }`}
+              data-testid="billing-period-annual"
             >
               Annual
               <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
@@ -285,6 +294,7 @@ const Billing = () => {
               className={`relative overflow-hidden ${
                 plan.popular ? 'border-primary shadow-lg' : ''
               } ${isCurrentPlan(plan.id) ? 'ring-2 ring-primary' : ''}`}
+              data-testid={`plan-card-${plan.id}`}
             >
               {plan.popular && (
                 <div className="absolute top-0 right-0">
@@ -327,7 +337,7 @@ const Billing = () => {
               
               <CardFooter>
                 {isCurrentPlan(plan.id) ? (
-                  <Button className="w-full" variant="outline" disabled>
+                  <Button className="w-full" variant="outline" disabled data-testid={`current-plan-${plan.id}`}>
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Current Plan
                   </Button>
@@ -335,19 +345,10 @@ const Billing = () => {
                   <Button 
                     className="w-full" 
                     onClick={() => handleUpgrade(plan.id)}
-                    disabled={upgrading === `${plan.id}_${billingPeriod}`}
+                    data-testid={`upgrade-btn-${plan.id}`}
                   >
-                    {upgrading === `${plan.id}_${billingPeriod}` ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        Upgrade
-                        <ArrowRight className="w-4 h-4 ml-2" />
-                      </>
-                    )}
+                    Upgrade
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 ) : (
                   <Button className="w-full" variant="secondary" disabled>
@@ -387,6 +388,27 @@ const Billing = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Embedded Checkout Modal */}
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="max-w-lg sm:max-w-xl md:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CreditCard className="w-5 h-5" />
+              Complete Your Upgrade
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedPlan && (
+            <EmbeddedCheckoutForm 
+              planId={selectedPlan}
+              billingPeriod={billingPeriod}
+              returnUrl={`${window.location.origin}/billing`}
+              onError={handleCheckoutError}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
