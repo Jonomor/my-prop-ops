@@ -35,6 +35,11 @@ import TenantLogin from './pages/TenantLogin';
 import TenantRegister from './pages/TenantRegister';
 import TenantPortal from './pages/TenantPortal';
 
+// Contractor Portal Pages
+import ContractorLogin from './pages/ContractorLogin';
+import ContractorRegister from './pages/ContractorRegister';
+import ContractorDashboard from './pages/ContractorDashboard';
+
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
