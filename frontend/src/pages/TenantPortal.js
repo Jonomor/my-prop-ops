@@ -1334,6 +1334,41 @@ const TenantPortal = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Connect Organization Dialog */}
+      <Dialog open={connectOrgDialogOpen} onOpenChange={setConnectOrgDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Connect to Property Manager</DialogTitle>
+            <DialogDescription>
+              Enter the organization code provided by your property manager to connect your account.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Organization Code</Label>
+              <Input
+                placeholder="e.g., ABC123"
+                value={orgCode}
+                onChange={(e) => setOrgCode(e.target.value.toUpperCase())}
+                maxLength={6}
+                className="text-center text-2xl tracking-widest font-mono"
+              />
+              <p className="text-xs text-muted-foreground">
+                This code is provided by your landlord or property manager.
+              </p>
+            </div>
+            <Button 
+              className="w-full bg-emerald-600 hover:bg-emerald-700" 
+              onClick={handleConnectOrg}
+              disabled={loading || !orgCode.trim()}
+            >
+              {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Connect
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
