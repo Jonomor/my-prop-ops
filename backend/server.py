@@ -124,13 +124,6 @@ api_router = APIRouter(prefix="/api")
 # Security
 security = HTTPBearer()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-logger = logging.getLogger(__name__)
-
 
 # ============== FEATURE FLAGS ==============
 # All advanced features default to OFF for monetization readiness
