@@ -267,12 +267,12 @@ const Maintenance = () => {
                   </div>
                   <div className="space-y-2">
                     <Label>Unit</Label>
-                    <Select value={form.unit_id} onValueChange={v => setForm({ ...form, unit_id: v })}>
+                    <Select value={form.unit_id || "none"} onValueChange={v => setForm({ ...form, unit_id: v === "none" ? "" : v })}>
                       <SelectTrigger>
                         <SelectValue placeholder="Select unit" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No specific unit</SelectItem>
+                        <SelectItem value="none">No specific unit</SelectItem>
                         {units.map(u => (
                           <SelectItem key={u.id} value={u.id}>{u.unit_number}</SelectItem>
                         ))}
@@ -337,12 +337,12 @@ const Maintenance = () => {
 
                 <div className="space-y-2">
                   <Label>Tenant</Label>
-                  <Select value={form.tenant_id} onValueChange={v => setForm({ ...form, tenant_id: v })}>
+                  <Select value={form.tenant_id || "none"} onValueChange={v => setForm({ ...form, tenant_id: v === "none" ? "" : v })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select tenant (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No tenant</SelectItem>
+                      <SelectItem value="none">No tenant</SelectItem>
                       {tenants.map(t => (
                         <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
                       ))}
