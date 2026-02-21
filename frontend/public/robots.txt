@@ -1,0 +1,32 @@
+# robots.txt for MyPropOps
+# https://mypropops.com/robots.txt
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /properties
+Disallow: /tenants
+Disallow: /inspections
+Disallow: /documents
+Disallow: /settings
+Disallow: /team
+Disallow: /members
+Disallow: /invites
+Disallow: /audit-logs
+Disallow: /notifications
+Disallow: /calendar
+Disallow: /tenant-portal
+
+# Allow crawling of public pages
+Allow: /login
+Allow: /register
+Allow: /privacy
+Allow: /terms
+Allow: /security
+
+# Sitemap
+Sitemap: https://mypropops.com/sitemap.xml
+
+# Crawl-delay (optional, be nice to servers)
+Crawl-delay: 1
