@@ -19,6 +19,17 @@ from enum import Enum
 import shutil
 import secrets
 
+# Stripe Integration
+from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+
+# Mailchimp Integration (optional - only if keys are provided)
+try:
+    import mailchimp_marketing as MailchimpMarketing
+    import mailchimp_transactional as MailchimpTransactional
+    MAILCHIMP_AVAILABLE = True
+except ImportError:
+    MAILCHIMP_AVAILABLE = False
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
