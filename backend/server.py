@@ -486,18 +486,18 @@ class ConversationResponse(BaseModel):
 
 # Default document checklist for housing programs
 DEFAULT_DOCUMENT_CHECKLIST = [
-    {"name": "Government-Issued ID", "description": "Valid driver's license, passport, or state ID for all adult household members", "required": True},
-    {"name": "Social Security Cards", "description": "Social Security cards for all household members", "required": True},
-    {"name": "Birth Certificates", "description": "Birth certificates for all household members", "required": True},
-    {"name": "Proof of Income", "description": "Pay stubs, employer letter, or benefit statements from the last 30 days", "required": True},
-    {"name": "Housing Voucher", "description": "Section 8 voucher, HUD certificate, or other housing program documentation", "required": True},
-    {"name": "Bank Statements", "description": "Last 3 months of bank statements for all accounts", "required": True},
-    {"name": "Tax Returns", "description": "Most recent federal tax return (1040) or tax transcript", "required": False},
-    {"name": "Proof of Assets", "description": "Documentation of any assets (stocks, bonds, property)", "required": False},
-    {"name": "Previous Landlord References", "description": "Contact information and reference letters from previous landlords", "required": False},
-    {"name": "Criminal Background Authorization", "description": "Signed authorization for background check", "required": True},
-    {"name": "Credit Check Authorization", "description": "Signed authorization for credit check", "required": True},
-    {"name": "Disability Verification", "description": "If applicable, documentation of disability status", "required": False},
+    {"name": "Government-Issued ID", "description": "Valid driver's license, passport, or state ID for all adult household members", "required": True, "source_type": "tenant_provided", "template": None, "help_text": "You can obtain this from your state's DMV or use a valid passport"},
+    {"name": "Social Security Cards", "description": "Social Security cards for all household members", "required": True, "source_type": "tenant_provided", "template": None, "help_text": "Request replacement cards at ssa.gov if needed"},
+    {"name": "Birth Certificates", "description": "Birth certificates for all household members", "required": True, "source_type": "tenant_provided", "template": None, "help_text": "Order certified copies from your state's vital records office"},
+    {"name": "Proof of Income", "description": "Pay stubs, employer letter, or benefit statements from the last 30 days", "required": True, "source_type": "tenant_provided", "template": None, "help_text": "Get pay stubs from employer or benefit statements from your benefits provider"},
+    {"name": "Housing Voucher", "description": "Section 8 voucher, HUD certificate, or other housing program documentation", "required": True, "source_type": "request_from_landlord", "template": None, "help_text": "Your local Public Housing Authority (PHA) issues these documents"},
+    {"name": "Bank Statements", "description": "Last 3 months of bank statements for all accounts", "required": True, "source_type": "tenant_provided", "template": None, "help_text": "Download from your bank's online portal or request from your bank"},
+    {"name": "Tax Returns", "description": "Most recent federal tax return (1040) or tax transcript", "required": False, "source_type": "tenant_provided", "template": None, "help_text": "Request transcripts free at irs.gov if you need copies"},
+    {"name": "Proof of Assets", "description": "Documentation of any assets (stocks, bonds, property)", "required": False, "source_type": "tenant_provided", "template": None, "help_text": "Statements from financial institutions showing account balances"},
+    {"name": "Previous Landlord References", "description": "Contact information and reference letters from previous landlords", "required": False, "source_type": "request_from_landlord", "template": None, "help_text": "Request a reference letter from your previous landlord"},
+    {"name": "Criminal Background Authorization", "description": "Download, sign, and upload authorization form", "required": True, "source_type": "download_sign", "template": "background_check_authorization", "help_text": "Download the form below, print, sign, and upload"},
+    {"name": "Credit Check Authorization", "description": "Download, sign, and upload authorization form", "required": True, "source_type": "download_sign", "template": "credit_check_authorization", "help_text": "Download the form below, print, sign, and upload"},
+    {"name": "Disability Verification", "description": "If applicable, documentation of disability status", "required": False, "source_type": "tenant_provided", "template": None, "help_text": "Medical provider documentation or SSA disability determination letter"},
 ]
 
 # Application stages with descriptions
