@@ -1918,6 +1918,8 @@ async def send_tenant_message(conversation_id: str, data: MessageCreate, tenant 
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.tenant_messages.insert_one(message)
+    # Remove MongoDB _id to avoid serialization issues
+    message.pop('_id', None)
     
     # Update conversation
     await db.tenant_conversations.update_one(
