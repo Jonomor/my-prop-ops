@@ -23,7 +23,9 @@ import {
   Target,
   Award,
   Lock,
-  X
+  X,
+  Wrench,
+  MessageCircle
 } from 'lucide-react';
 
 const features = [
