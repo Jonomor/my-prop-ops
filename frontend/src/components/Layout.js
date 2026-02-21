@@ -32,18 +32,22 @@ import {
   Plus,
   Calendar,
   UserPlus,
-  Mail
+  Mail,
+  CreditCard,
+  Wrench
 } from 'lucide-react';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: Home },
   { path: '/properties', label: 'Properties', icon: Building2 },
   { path: '/tenants', label: 'Tenants', icon: Users },
+  { path: '/maintenance', label: 'Maintenance', icon: Wrench },
   { path: '/inspections', label: 'Inspections', icon: ClipboardCheck },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/documents', label: 'Documents', icon: FileText },
   { path: '/team', label: 'Team', icon: UserPlus },
   { path: '/members', label: 'Members', icon: Users },
+  { path: '/billing', label: 'Billing', icon: CreditCard },
   { path: '/audit-logs', label: 'Audit Logs', icon: History },
 ];
 
