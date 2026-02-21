@@ -71,6 +71,44 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// Tenant Portal Protected Route
+const TenantProtectedRoute = ({ children }) => {
+  const { tenant, loading } = useTenantAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+  
+  if (!tenant) {
+    return <Navigate to="/tenant-portal/login" replace />;
+  }
+  
+  return children;
+};
+
+// Tenant Portal Public Route (redirect to portal if logged in)
+const TenantPublicRoute = ({ children }) => {
+  const { tenant, loading } = useTenantAuth();
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+      </div>
+    );
+  }
+  
+  if (tenant) {
+    return <Navigate to="/tenant-portal" replace />;
+  }
+  
+  return children;
+};
+
 function AppRoutes() {
   const { user } = useAuth();
   
