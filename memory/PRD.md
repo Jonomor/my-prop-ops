@@ -116,15 +116,15 @@ Build a full-stack SaaS web application for property and housing operations mana
 - **How It Works:** 3 simple steps
 - **Features Grid:** 6 features with specific benefits
 - **Testimonials:** 3 customer quotes with star ratings
-- **Pricing Section (3-Tier with Monthly/Annual Toggle):**
-  - Free: $0/month (2 properties, 5 units, 3 team members, 500MB storage)
-  - Standard (MOST POPULAR): $29/month or $24/month annually (20 properties, 40 units, unlimited team, 10GB storage)
-  - Pro: $79/month or $66/month annually (unlimited everything, 24/7 support, API access, 100GB storage)
+- **Pricing Section (3-Tier with Monthly/Annual Toggle) - UPDATED Dec 2026:**
+  - Free: $0/month (2 properties, 5 units, 1 team member)
+  - Standard (MOST POPULAR): $29/month or $24/month annually (20 properties, 40 units, 5 team members, 10GB storage, full inspection workflows, calendar integrations)
+  - Pro: $99/month or $82/month annually (unlimited everything, 24/7 support, API access, 100GB storage, **Tenant Portal access**, **Real-time tenant messaging**)
   - Annual billing saves 17%
   - "Free forever, not a trial" messaging
+- **Navigation:** Features, Pricing, Reviews, FAQ, **"For Tenants"** link
 - **FAQ Section:** 6 collapsible questions addressing objections
 - **Final CTA:** Reiterates free offer
-- **Navigation:** Features, Pricing, Reviews, FAQ anchor links
 
 ### 10. Legal Pages ✅ (Feb 2026)
 - **Privacy Policy** (/privacy): Comprehensive data collection, usage, sharing, and rights
@@ -135,6 +135,79 @@ Build a full-stack SaaS web application for property and housing operations mana
 - When creating a property with total_units > 0, units are auto-created
 - Reduces friction for new users
 - Units numbered 1, 2, 3... by default
+
+---
+
+## PHASE 6 — TENANT PORTAL ✅ (COMPLETED Dec 2026)
+
+### 12. Tenant Portal - Separate User System ✅
+- **Route**: /tenant-portal/*
+- **Authentication**: Separate JWT tokens with `type='tenant'`
+- **Database**: `tenant_portal_users` collection
+
+### 13. Tenant Portal Features ✅
+- **Registration & Login** (/tenant-portal/register, /tenant-portal/login)
+  - Separate account system for tenants
+  - Email, password, name, phone
+  - JWT token with tenant-specific payload
+  
+- **Dashboard** (/tenant-portal)
+  - Document submission count (X/12)
+  - Application status card
+  - Upcoming appointments count
+  - Unread messages count
+  - Application progress tracker with stages
+  - Quick action buttons
+  
+- **Document Checklist**
+  - 12 standard housing program documents
+  - Status tracking: not_started, uploaded, verified, rejected
+  - File upload capability
+  - Download previously uploaded documents
+  - Required vs optional document flagging
+  
+- **Application Status Tracker**
+  - 8 application stages:
+    1. Not Started
+    2. Application Submitted
+    3. Documents Under Review
+    4. Background Check
+    5. Inspection Scheduled
+    6. Inspection Complete
+    7. Approved
+    8. Denied
+  - Visual progress indicator
+  - Stage descriptions
+  
+- **Appointments**
+  - Create appointment reminders
+  - Track inspection dates, interviews, orientations
+  - Date, time, location, type fields
+  
+- **Secure Messaging**
+  - Conversation-based messaging with landlords
+  - Real-time message display
+  - Send/receive functionality
+  - Unread message count
+  
+- **Profile Management**
+  - Personal information (name, email, phone, address)
+  - Housing program selection (Section 8, HUD, LIHTC, etc.)
+  - Voucher number
+  - Household size and members
+  - Annual income and sources
+  - Emergency contact
+  
+- **Housing Resources**
+  - 5 Housing programs guide (Section 8, Public Housing, LIHTC, HUD, Veterans Affairs)
+  - 6 Tenant rights information
+  - 6 FAQs about housing programs
+
+### 14. Landlord/Manager Integration ✅
+- GET /api/organizations/{org_id}/tenant-portal-users (view connected tenants)
+- PUT /api/organizations/{org_id}/tenant-portal-users/{id}/stage (update application stage)
+- PUT /api/organizations/{org_id}/tenant-portal-users/{id}/checklist/{item_id}/verify (verify documents)
+- POST /api/organizations/{org_id}/tenant-portal-users/{id}/conversations/{conv_id}/messages (send messages)
 
 ---
 
