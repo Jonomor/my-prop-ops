@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import uuid
 
 class PropOpsAPITester:
-    def __init__(self, base_url="https://tenant-portal-test-2.preview.emergentagent.com"):
+    def __init__(self, base_url="https://mypropops-billing.preview.emergentagent.com"):
         self.base_url = base_url
         self.token = None
         self.user_id = None
