@@ -3378,6 +3378,202 @@ async def get_available_plans():
         ]
     }
 
+# ============== EMBEDDED CHECKOUT ENDPOINTS ==============
+
+class EmbeddedCheckoutRequest(BaseModel):
+    plan_id: str = Field(..., description="Plan ID: standard_monthly, standard_annual, pro_monthly, pro_annual")
+    return_url: str = Field(..., description="Return URL after checkout completes")
+
+class EmbeddedCheckoutResponse(BaseModel):
+    client_secret: str
+    session_id: str
+    publishable_key: str
+
+@api_router.post("/billing/create-embedded-checkout", response_model=EmbeddedCheckoutResponse)
+async def create_embedded_checkout_session(
+    request: EmbeddedCheckoutRequest,
+    http_request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Create a Stripe embedded checkout session that returns client_secret"""
+    user = await get_current_user(credentials)
+    
+    # Get user's current organization
+    membership = await db.memberships.find_one(
+        {"user_id": user["id"]},
+        {"_id": 0, "org_id": 1, "role": 1}
+    )
+    
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found. Please create one first.")
+    
+    if membership["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only organization admins can manage billing")
+    
+    # Validate plan
+    if request.plan_id not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail=f"Invalid plan ID. Valid options: {list(SUBSCRIPTION_PLANS.keys())}")
+    
+    plan_details = SUBSCRIPTION_PLANS[request.plan_id]
+    
+    # Check if already on this plan or higher
+    org = await db.organizations.find_one({"id": membership["org_id"]}, {"_id": 0, "plan": 1})
+    current_plan = org.get("plan", "free") if org else "free"
+    
+    plan_hierarchy = {"free": 0, "standard": 1, "pro": 2, "enterprise": 3}
+    if plan_hierarchy.get(plan_details["plan"], 0) <= plan_hierarchy.get(current_plan, 0):
+        if plan_details["plan"] == current_plan:
+            raise HTTPException(status_code=400, detail=f"You're already on the {current_plan} plan")
+    
+    try:
+        # Configure Stripe with API key
+        stripe.api_key = STRIPE_API_KEY
+        
+        # Create embedded checkout session
+        session = stripe.checkout.Session.create(
+            ui_mode="embedded",
+            mode="payment",
+            return_url=f"{request.return_url}?session_id={{CHECKOUT_SESSION_ID}}",
+            line_items=[
+                {
+                    "price_data": {
+                        "currency": "usd",
+                        "product_data": {
+                            "name": f"MyPropOps {plan_details['plan'].title()} Plan",
+                            "description": f"{plan_details['period'].title()} subscription"
+                        },
+                        "unit_amount": int(plan_details["amount"] * 100),  # Convert to cents
+                    },
+                    "quantity": 1
+                }
+            ],
+            metadata={
+                "org_id": membership["org_id"],
+                "user_id": user["id"],
+                "plan_id": request.plan_id,
+                "plan_name": plan_details["plan"],
+                "billing_period": plan_details["period"]
+            }
+        )
+        
+        # Store payment transaction record
+        transaction = {
+            "id": str(uuid.uuid4()),
+            "session_id": session.id,
+            "org_id": membership["org_id"],
+            "user_id": user["id"],
+            "plan_id": request.plan_id,
+            "amount": plan_details["amount"],
+            "currency": "usd",
+            "status": "pending",
+            "payment_status": "initiated",
+            "checkout_type": "embedded",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.payment_transactions.insert_one(transaction)
+        
+        logger.info(f"Embedded checkout session created for org {membership['org_id']}, plan {request.plan_id}")
+        
+        return EmbeddedCheckoutResponse(
+            client_secret=session.client_secret,
+            session_id=session.id,
+            publishable_key=STRIPE_PUBLISHABLE_KEY
+        )
+        
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error creating embedded checkout: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to create checkout session: {str(e)}")
+    except Exception as e:
+        logger.error(f"Failed to create embedded checkout session: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+@api_router.get("/billing/session-status/{session_id}")
+async def get_session_status(
+    session_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Get the status of an embedded checkout session"""
+    user = await get_current_user(credentials)
+    
+    # Find the transaction
+    transaction = await db.payment_transactions.find_one(
+        {"session_id": session_id},
+        {"_id": 0}
+    )
+    
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # Verify user owns this transaction
+    if transaction["user_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    try:
+        stripe.api_key = STRIPE_API_KEY
+        session = stripe.checkout.Session.retrieve(session_id)
+        
+        # Update transaction with current status
+        update_data = {
+            "status": session.status,
+            "payment_status": session.payment_status or "unpaid",
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": update_data}
+        )
+        
+        # If payment successful, upgrade the organization's plan
+        if session.payment_status == "paid" and transaction.get("payment_status") != "paid":
+            plan_id = transaction.get("plan_id", "")
+            plan_name = plan_id.split("_")[0] if "_" in plan_id else plan_id
+            billing_period = plan_id.split("_")[1] if "_" in plan_id else "monthly"
+            
+            # Update organization plan
+            await db.organizations.update_one(
+                {"id": transaction["org_id"]},
+                {
+                    "$set": {
+                        "plan": plan_name,
+                        "billing_period": billing_period,
+                        "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+                        "subscription_active": True
+                    }
+                }
+            )
+            
+            # Update transaction to paid
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {"$set": {"payment_status": "paid"}}
+            )
+            
+            # Create audit log
+            await db.audit_logs.insert_one({
+                "id": str(uuid.uuid4()),
+                "org_id": transaction["org_id"],
+                "user_id": user["id"],
+                "user_name": user["name"],
+                "action": "plan_upgraded",
+                "entity_type": "subscription",
+                "entity_id": session_id,
+                "details": f"Upgraded to {plan_name} ({billing_period})",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            
+            logger.info(f"Organization {transaction['org_id']} upgraded to {plan_name}")
+        
+        return {
+            "status": session.status,
+            "payment_status": session.payment_status or "unpaid",
+            "customer_email": session.customer_details.email if session.customer_details else None
+        }
+        
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error checking session status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to check session status")
+
 # ============== EMAIL NOTIFICATION HELPERS ==============
 
 async def send_welcome_email(email: str, name: str):
