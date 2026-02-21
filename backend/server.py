@@ -1697,8 +1697,22 @@ async def update_tenant_profile(data: TenantPortalProfileUpdate, tenant = Depend
 # Document Checklist
 @api_router.get("/tenant-portal/checklist")
 async def get_document_checklist(tenant = Depends(get_current_tenant)):
-    """Get tenant's document checklist"""
-    return tenant.get('document_checklist', [])
+    """Get tenant's document checklist with backward compatibility for new fields"""
+    checklist = tenant.get('document_checklist', [])
+    
+    # Add missing fields for backward compatibility
+    default_items_map = {item['name']: item for item in DEFAULT_DOCUMENT_CHECKLIST}
+    
+    for item in checklist:
+        if 'source_type' not in item:
+            default_item = default_items_map.get(item['name'], {})
+            item['source_type'] = default_item.get('source_type', 'tenant_provided')
+            item['template'] = default_item.get('template')
+            item['help_text'] = default_item.get('help_text')
+            item['requested_at'] = None
+            item['request_message'] = None
+    
+    return checklist
 
 @api_router.post("/tenant-portal/checklist/{item_id}/upload")
 async def upload_checklist_document(item_id: str, file: UploadFile = File(...), tenant = Depends(get_current_tenant)):
