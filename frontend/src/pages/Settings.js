@@ -9,7 +9,54 @@ import { toast } from 'sonner';
 import { User, Mail, Calendar, Building2, Users, Copy, RefreshCw, FileText } from 'lucide-react';
 
 const Settings = () => {
-  const { user, organizations, currentOrg } = useAuth();
+  const { user, organizations, currentOrg, api } = useAuth();
+  const [tenantInviteCode, setTenantInviteCode] = useState(null);
+  const [documentRequests, setDocumentRequests] = useState([]);
+  const [loadingCode, setLoadingCode] = useState(false);
+
+  useEffect(() => {
+    if (currentOrg?.org_id) {
+      fetchTenantInviteCode();
+      fetchDocumentRequests();
+    }
+  }, [currentOrg]);
+
+  const fetchTenantInviteCode = async () => {
+    try {
+      const res = await api.get(`/api/organizations/${currentOrg.org_id}/tenant-invite-code`);
+      setTenantInviteCode(res.data.invite_code);
+    } catch (error) {
+      // No code exists yet
+      setTenantInviteCode(null);
+    }
+  };
+
+  const fetchDocumentRequests = async () => {
+    try {
+      const res = await api.get(`/api/organizations/${currentOrg.org_id}/document-requests`);
+      setDocumentRequests(res.data);
+    } catch (error) {
+      console.error('Failed to fetch document requests');
+    }
+  };
+
+  const generateInviteCode = async () => {
+    try {
+      setLoadingCode(true);
+      const res = await api.post(`/api/organizations/${currentOrg.org_id}/tenant-invite-code`);
+      setTenantInviteCode(res.data.invite_code);
+      toast.success('Tenant invite code generated!');
+    } catch (error) {
+      toast.error('Failed to generate code');
+    } finally {
+      setLoadingCode(false);
+    }
+  };
+
+  const copyCode = () => {
+    navigator.clipboard.writeText(tenantInviteCode);
+    toast.success('Code copied to clipboard!');
+  };
 
   return (
     <Layout>
