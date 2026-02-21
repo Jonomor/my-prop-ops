@@ -3157,7 +3157,546 @@ async def tenant_list_maintenance_requests(
     
     return requests
 
-# ============== BILLING & SUBSCRIPTION ENDPOINTS ==============
+# Tenant Portal - Submit Maintenance Request with Photos
+@api_router.post("/portal/maintenance-requests/with-photos")
+async def tenant_submit_maintenance_with_photos(
+    category: str = Form(...),
+    priority: str = Form("medium"),
+    title: str = Form(...),
+    description: str = Form(...),
+    preferred_access_time: Optional[str] = Form(None),
+    permission_to_enter: bool = Form(False),
+    photos: List[UploadFile] = File(default=[]),
+    background_tasks: BackgroundTasks = BackgroundTasks(),
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Tenant submits a maintenance request with photos through the portal"""
+    tenant = await get_current_tenant(credentials)
+    
+    if not tenant.get("org_id"):
+        raise HTTPException(status_code=400, detail="Not connected to any organization")
+    
+    org_id = tenant["org_id"]
+    property_id = tenant.get("property_id")
+    unit_id = tenant.get("unit_id")
+    
+    # Get property info
+    property_doc = None
+    if property_id:
+        property_doc = await db.properties.find_one(
+            {"id": property_id, "org_id": org_id},
+            {"_id": 0, "name": 1, "address": 1}
+        )
+    
+    # Save uploaded photos
+    photo_urls = []
+    request_id = str(uuid.uuid4())
+    
+    for photo in photos[:5]:  # Limit to 5 photos
+        if photo.filename:
+            # Validate file type
+            allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/heic']
+            if photo.content_type not in allowed_types:
+                continue
+            
+            ext = photo.filename.split('.')[-1] if '.' in photo.filename else 'jpg'
+            filename = f"maintenance_{request_id}_{len(photo_urls)}.{ext}"
+            file_path = UPLOAD_DIR / filename
+            
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(photo.file, buffer)
+            
+            photo_urls.append(f"/api/uploads/{filename}")
+    
+    request_doc = {
+        "id": request_id,
+        "org_id": org_id,
+        "property_id": property_id,
+        "property_name": property_doc.get("name") if property_doc else None,
+        "unit_id": unit_id,
+        "tenant_portal_id": tenant["id"],
+        "tenant_id": tenant.get("linked_tenant_id"),
+        "tenant_name": tenant["name"],
+        "tenant_phone": tenant.get("phone"),
+        "category": category,
+        "priority": priority,
+        "status": MaintenanceStatus.OPEN.value,
+        "title": title,
+        "description": description,
+        "photos": photo_urls,
+        "preferred_access_time": preferred_access_time,
+        "permission_to_enter": permission_to_enter,
+        "assigned_to": None,
+        "contractor_id": None,
+        "contractor_name": None,
+        "created_by": tenant["id"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": None,
+        "source": "tenant_portal"
+    }
+    
+    await db.maintenance_requests.insert_one(request_doc)
+    
+    # Create notification for property managers
+    admin_memberships = await db.memberships.find(
+        {"org_id": org_id, "role": {"$in": ["admin", "manager"]}},
+        {"_id": 0, "user_id": 1}
+    ).to_list(10)
+    
+    for membership in admin_memberships:
+        await db.notifications.insert_one({
+            "id": str(uuid.uuid4()),
+            "org_id": org_id,
+            "user_id": membership["user_id"],
+            "title": "New Maintenance Request",
+            "message": f"Tenant {tenant['name']} submitted: {title}",
+            "is_read": False,
+            "link": f"/maintenance/{request_id}",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    
+    # Send email notification in background
+    background_tasks.add_task(
+        send_maintenance_request_email,
+        tenant.get("email", ""),
+        tenant["name"],
+        title,
+        description,
+        property_doc.get("name") if property_doc else "Your Property",
+        priority,
+        True
+    )
+    
+    return {
+        "message": "Maintenance request submitted successfully",
+        "request_id": request_id,
+        "photos_uploaded": len(photo_urls)
+    }
+
+# ============== CONTRACTOR PORTAL ROUTES ==============
+
+def create_contractor_token(contractor_id: str, email: str) -> str:
+    """Create JWT for contractor portal"""
+    expiration = datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS * 7)  # 7 days
+    payload = {
+        "contractor_id": contractor_id,
+        "email": email,
+        "type": "contractor",
+        "exp": expiration
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
+async def get_current_contractor(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Verify contractor JWT and return contractor data"""
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        if payload.get("type") != "contractor":
+            raise HTTPException(status_code=401, detail="Invalid contractor token")
+        contractor_id = payload.get("contractor_id")
+        contractor = await db.contractors.find_one({"id": contractor_id}, {"_id": 0, "hashed_password": 0})
+        if not contractor:
+            raise HTTPException(status_code=401, detail="Contractor not found")
+        return contractor
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@api_router.post("/contractor/register")
+async def contractor_register(data: ContractorRegister):
+    """Register a new contractor"""
+    existing = await db.contractors.find_one({"email": data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    contractor_id = str(uuid.uuid4())
+    contractor = {
+        "id": contractor_id,
+        "email": data.email,
+        "hashed_password": hash_password(data.password),
+        "name": data.name,
+        "company_name": data.company_name,
+        "phone": data.phone,
+        "specialties": [s.value for s in data.specialties],
+        "service_area": data.service_area,
+        "hourly_rate": data.hourly_rate,
+        "license_number": data.license_number,
+        "status": ContractorStatus.AVAILABLE.value,
+        "rating": None,
+        "jobs_completed": 0,
+        "connected_orgs": [],  # Orgs that have approved this contractor
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.contractors.insert_one(contractor)
+    
+    token = create_contractor_token(contractor_id, data.email)
+    
+    return {
+        "token": token,
+        "contractor": ContractorResponse(
+            id=contractor_id,
+            email=data.email,
+            name=data.name,
+            company_name=data.company_name,
+            phone=data.phone,
+            specialties=[s.value for s in data.specialties],
+            service_area=data.service_area,
+            hourly_rate=data.hourly_rate,
+            license_number=data.license_number,
+            status=ContractorStatus.AVAILABLE.value,
+            rating=None,
+            jobs_completed=0,
+            created_at=contractor["created_at"]
+        )
+    }
+
+@api_router.post("/contractor/login")
+async def contractor_login(data: ContractorLogin):
+    """Contractor login"""
+    contractor = await db.contractors.find_one({"email": data.email})
+    if not contractor or not verify_password(data.password, contractor["hashed_password"]):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token = create_contractor_token(contractor["id"], data.email)
+    
+    return {
+        "token": token,
+        "contractor": ContractorResponse(
+            id=contractor["id"],
+            email=contractor["email"],
+            name=contractor["name"],
+            company_name=contractor.get("company_name"),
+            phone=contractor["phone"],
+            specialties=contractor["specialties"],
+            service_area=contractor.get("service_area"),
+            hourly_rate=contractor.get("hourly_rate"),
+            license_number=contractor.get("license_number"),
+            status=contractor["status"],
+            rating=contractor.get("rating"),
+            jobs_completed=contractor.get("jobs_completed", 0),
+            created_at=contractor["created_at"]
+        )
+    }
+
+@api_router.get("/contractor/me", response_model=ContractorResponse)
+async def contractor_profile(contractor = Depends(get_current_contractor)):
+    """Get current contractor profile"""
+    return ContractorResponse(**contractor)
+
+@api_router.put("/contractor/me", response_model=ContractorResponse)
+async def update_contractor_profile(
+    data: ContractorProfileUpdate,
+    contractor = Depends(get_current_contractor)
+):
+    """Update contractor profile"""
+    update_data = {}
+    if data.name:
+        update_data["name"] = data.name
+    if data.company_name is not None:
+        update_data["company_name"] = data.company_name
+    if data.phone:
+        update_data["phone"] = data.phone
+    if data.specialties:
+        update_data["specialties"] = [s.value for s in data.specialties]
+    if data.service_area is not None:
+        update_data["service_area"] = data.service_area
+    if data.hourly_rate is not None:
+        update_data["hourly_rate"] = data.hourly_rate
+    if data.status:
+        update_data["status"] = data.status.value
+    
+    if update_data:
+        await db.contractors.update_one(
+            {"id": contractor["id"]},
+            {"$set": update_data}
+        )
+    
+    updated = await db.contractors.find_one({"id": contractor["id"]}, {"_id": 0, "hashed_password": 0})
+    return ContractorResponse(**updated)
+
+@api_router.get("/contractor/jobs")
+async def contractor_list_jobs(
+    status: Optional[str] = None,
+    contractor = Depends(get_current_contractor)
+):
+    """List jobs assigned to contractor"""
+    query = {"contractor_id": contractor["id"]}
+    if status:
+        query["status"] = status
+    
+    jobs = await db.maintenance_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    
+    result = []
+    for job in jobs:
+        # Get property address
+        property_doc = await db.properties.find_one(
+            {"id": job.get("property_id")},
+            {"_id": 0, "address": 1}
+        )
+        
+        result.append(ContractorJobResponse(
+            id=job["id"],
+            maintenance_request_id=job["id"],
+            org_id=job["org_id"],
+            property_name=job.get("property_name", ""),
+            property_address=property_doc.get("address") if property_doc else None,
+            unit_number=job.get("unit_number"),
+            category=job["category"],
+            priority=job["priority"],
+            status=job["status"],
+            title=job["title"],
+            description=job["description"],
+            photos=job.get("photos", []),
+            tenant_name=job.get("tenant_name"),
+            tenant_phone=job.get("tenant_phone"),
+            scheduled_date=job.get("scheduled_date"),
+            assigned_at=job.get("assigned_at", job["created_at"]),
+            completed_at=job.get("completed_at"),
+            notes=job.get("notes")
+        ))
+    
+    return result
+
+@api_router.get("/contractor/jobs/{job_id}", response_model=ContractorJobResponse)
+async def contractor_get_job(job_id: str, contractor = Depends(get_current_contractor)):
+    """Get specific job details"""
+    job = await db.maintenance_requests.find_one(
+        {"id": job_id, "contractor_id": contractor["id"]},
+        {"_id": 0}
+    )
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    property_doc = await db.properties.find_one(
+        {"id": job.get("property_id")},
+        {"_id": 0, "address": 1}
+    )
+    
+    return ContractorJobResponse(
+        id=job["id"],
+        maintenance_request_id=job["id"],
+        org_id=job["org_id"],
+        property_name=job.get("property_name", ""),
+        property_address=property_doc.get("address") if property_doc else None,
+        unit_number=job.get("unit_number"),
+        category=job["category"],
+        priority=job["priority"],
+        status=job["status"],
+        title=job["title"],
+        description=job["description"],
+        photos=job.get("photos", []),
+        tenant_name=job.get("tenant_name"),
+        tenant_phone=job.get("tenant_phone"),
+        scheduled_date=job.get("scheduled_date"),
+        assigned_at=job.get("assigned_at", job["created_at"]),
+        completed_at=job.get("completed_at"),
+        notes=job.get("notes")
+    )
+
+@api_router.put("/contractor/jobs/{job_id}")
+async def contractor_update_job(
+    job_id: str,
+    data: ContractorJobUpdate,
+    contractor = Depends(get_current_contractor)
+):
+    """Contractor updates job status"""
+    job = await db.maintenance_requests.find_one(
+        {"id": job_id, "contractor_id": contractor["id"]},
+        {"_id": 0}
+    )
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    if data.status:
+        update_data["status"] = data.status.value
+        if data.status == MaintenanceStatus.COMPLETED:
+            update_data["completed_at"] = datetime.now(timezone.utc).isoformat()
+            # Increment contractor's jobs_completed
+            await db.contractors.update_one(
+                {"id": contractor["id"]},
+                {"$inc": {"jobs_completed": 1}}
+            )
+    
+    if data.notes:
+        update_data["notes"] = data.notes
+    if data.completion_notes:
+        update_data["completion_notes"] = data.completion_notes
+    
+    await db.maintenance_requests.update_one(
+        {"id": job_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Job updated successfully"}
+
+@api_router.get("/contractor/stats")
+async def contractor_stats(contractor = Depends(get_current_contractor)):
+    """Get contractor statistics"""
+    total_jobs = await db.maintenance_requests.count_documents({"contractor_id": contractor["id"]})
+    active_jobs = await db.maintenance_requests.count_documents({
+        "contractor_id": contractor["id"],
+        "status": {"$in": ["open", "in_progress", "scheduled"]}
+    })
+    completed_jobs = await db.maintenance_requests.count_documents({
+        "contractor_id": contractor["id"],
+        "status": "completed"
+    })
+    
+    return {
+        "total_jobs": total_jobs,
+        "active_jobs": active_jobs,
+        "completed_jobs": completed_jobs,
+        "jobs_completed_count": contractor.get("jobs_completed", 0),
+        "rating": contractor.get("rating"),
+        "status": contractor["status"]
+    }
+
+# ============== LANDLORD - CONTRACTOR MANAGEMENT ==============
+
+@api_router.get("/organizations/{org_id}/contractors")
+async def list_org_contractors(org_id: str, user = Depends(get_current_user)):
+    """List contractors available to the organization"""
+    await get_user_membership(user['id'], org_id)
+    
+    # Get contractors connected to this org
+    contractors = await db.contractors.find(
+        {"connected_orgs": org_id},
+        {"_id": 0, "hashed_password": 0}
+    ).to_list(100)
+    
+    return [ContractorResponse(**c) for c in contractors]
+
+@api_router.post("/organizations/{org_id}/contractors/invite")
+async def invite_contractor(
+    org_id: str,
+    contractor_email: str = Form(...),
+    user = Depends(get_current_user)
+):
+    """Invite a contractor to work with the organization"""
+    membership = await get_user_membership(user['id'], org_id)
+    if membership['role'] not in ['admin', 'manager']:
+        raise HTTPException(status_code=403, detail="Only admins and managers can invite contractors")
+    
+    contractor = await db.contractors.find_one({"email": contractor_email})
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found. They need to register first.")
+    
+    if org_id in contractor.get("connected_orgs", []):
+        raise HTTPException(status_code=400, detail="Contractor already connected to this organization")
+    
+    # Add org to contractor's connected orgs
+    await db.contractors.update_one(
+        {"id": contractor["id"]},
+        {"$addToSet": {"connected_orgs": org_id}}
+    )
+    
+    return {"message": f"Contractor {contractor['name']} has been added to your organization"}
+
+@api_router.post("/maintenance-requests/{request_id}/assign-contractor")
+async def assign_contractor_to_request(
+    request_id: str,
+    data: AssignContractorRequest,
+    background_tasks: BackgroundTasks,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Assign a contractor to a maintenance request"""
+    user = await get_current_user(credentials)
+    
+    # Get the maintenance request
+    request = await db.maintenance_requests.find_one({"id": request_id}, {"_id": 0})
+    if not request:
+        raise HTTPException(status_code=404, detail="Maintenance request not found")
+    
+    # Verify user has access to this org
+    membership = await get_user_membership(user['id'], request["org_id"])
+    if membership['role'] not in ['admin', 'manager']:
+        raise HTTPException(status_code=403, detail="Only admins and managers can assign contractors")
+    
+    # Verify contractor exists and is connected to org
+    contractor = await db.contractors.find_one(
+        {"id": data.contractor_id, "connected_orgs": request["org_id"]},
+        {"_id": 0, "hashed_password": 0}
+    )
+    if not contractor:
+        raise HTTPException(status_code=404, detail="Contractor not found or not connected to your organization")
+    
+    # Update the maintenance request
+    update_data = {
+        "contractor_id": contractor["id"],
+        "contractor_name": contractor["name"],
+        "status": MaintenanceStatus.SCHEDULED.value if data.scheduled_date else MaintenanceStatus.IN_PROGRESS.value,
+        "assigned_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if data.scheduled_date:
+        update_data["scheduled_date"] = data.scheduled_date
+    if data.notes:
+        update_data["notes"] = data.notes
+    
+    await db.maintenance_requests.update_one(
+        {"id": request_id},
+        {"$set": update_data}
+    )
+    
+    # Create notification for contractor (stored for when they log in)
+    await db.contractor_notifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "contractor_id": contractor["id"],
+        "title": "New Job Assigned",
+        "message": f"You've been assigned to: {request['title']}",
+        "request_id": request_id,
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    # Send email to contractor
+    background_tasks.add_task(
+        send_notification_email,
+        contractor.get("email", ""),
+        contractor["name"],
+        "New Job Assignment - MyPropOps",
+        f"""
+        <p>You've been assigned a new maintenance job:</p>
+        <p><strong>Title:</strong> {request['title']}</p>
+        <p><strong>Property:</strong> {request.get('property_name', 'N/A')}</p>
+        <p><strong>Priority:</strong> {request['priority'].upper()}</p>
+        <p><strong>Description:</strong> {request['description']}</p>
+        {f"<p><strong>Scheduled:</strong> {data.scheduled_date}</p>" if data.scheduled_date else ""}
+        <p>Log in to your Contractor Portal to view details and update the job status.</p>
+        """,
+        "job_assignment"
+    )
+    
+    return {
+        "message": f"Job assigned to {contractor['name']}",
+        "contractor_name": contractor["name"],
+        "status": update_data["status"]
+    }
+
+@api_router.get("/contractor/notifications")
+async def contractor_notifications(contractor = Depends(get_current_contractor)):
+    """Get contractor notifications"""
+    notifications = await db.contractor_notifications.find(
+        {"contractor_id": contractor["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return notifications
+
+@api_router.put("/contractor/notifications/{notification_id}/read")
+async def mark_contractor_notification_read(
+    notification_id: str,
+    contractor = Depends(get_current_contractor)
+):
+    """Mark contractor notification as read"""
+    await db.contractor_notifications.update_one(
+        {"id": notification_id, "contractor_id": contractor["id"]},
+        {"$set": {"is_read": True}}
+    )
+    return {"message": "Notification marked as read"}
 
 class CreateCheckoutRequest(BaseModel):
     plan_id: str = Field(..., description="Plan ID: standard_monthly, standard_annual, pro_monthly, pro_annual")
