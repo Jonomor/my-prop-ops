@@ -79,12 +79,14 @@ const Tenants = () => {
     if (!currentOrg) return;
     setLoading(true);
     try {
-      const [tenantsRes, unitsRes] = await Promise.all([
+      const [tenantsRes, unitsRes, propertiesRes] = await Promise.all([
         api.get(`/organizations/${currentOrg.org_id}/tenants`),
-        api.get(`/organizations/${currentOrg.org_id}/units`)
+        api.get(`/organizations/${currentOrg.org_id}/units`),
+        api.get(`/organizations/${currentOrg.org_id}/properties`)
       ]);
       setTenants(tenantsRes.data);
       setUnits(unitsRes.data);
+      setProperties(propertiesRes.data);
     } catch (error) {
       console.error('Failed to fetch tenants:', error);
       toast.error('Failed to load tenants');
