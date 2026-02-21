@@ -170,7 +170,7 @@ const Terms = () => {
                 You retain ownership of all content you upload, submit, or create through the Service ("Your Content"). We do not claim ownership of Your Content.
               </p>
 
-              <h3 className="text-xl font-semibold mt-6 mb-3">6.2 License</h3>
+              <h3 className="text-xl font-semibold mt-6 mb-3">7.2 License</h3>
               <p className="text-muted-foreground leading-relaxed">
                 By uploading Your Content, you grant us a limited license to store, process, and display Your Content solely for the purpose of providing the Service to you and your organization.
               </p>
