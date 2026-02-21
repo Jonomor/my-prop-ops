@@ -23,6 +23,9 @@ import TeamManagement from './pages/TeamManagement';
 import AcceptInvite from './pages/AcceptInvite';
 import PendingInvites from './pages/PendingInvites';
 import MemberDirectory from './pages/MemberDirectory';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
+import Security from './pages/Security';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
