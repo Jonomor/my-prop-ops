@@ -1870,6 +1870,121 @@ async def request_document_from_landlord(item_id: str, data: DocumentRequestCrea
         "requested_at": checklist[item_index]['requested_at']
     }
 
+# Connect Tenant to Organization
+class ConnectOrgRequest(BaseModel):
+    org_code: str
+
+@api_router.post("/tenant-portal/connect-organization")
+async def connect_to_organization(data: ConnectOrgRequest, tenant = Depends(get_current_tenant)):
+    """Connect tenant to a property management organization via invite code"""
+    # Look up organization by invite code
+    org = await db.organizations.find_one({"tenant_invite_code": data.org_code}, {"_id": 0})
+    
+    if not org:
+        raise HTTPException(status_code=404, detail="Invalid organization code. Please check with your property manager.")
+    
+    # Update tenant with connected org
+    await db.tenant_portal_users.update_one(
+        {"id": tenant['id']},
+        {"$set": {
+            "connected_org_id": org['id'],
+            "connected_org_name": org['name'],
+            "connected_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {
+        "message": f"Successfully connected to {org['name']}",
+        "organization": {
+            "id": org['id'],
+            "name": org['name']
+        }
+    }
+
+@api_router.delete("/tenant-portal/disconnect-organization")
+async def disconnect_from_organization(tenant = Depends(get_current_tenant)):
+    """Disconnect tenant from their organization"""
+    await db.tenant_portal_users.update_one(
+        {"id": tenant['id']},
+        {"$set": {
+            "connected_org_id": None,
+            "connected_org_name": None,
+            "connected_at": None
+        }}
+    )
+    return {"message": "Disconnected from organization"}
+
+# Generate tenant invite code for organization
+@api_router.post("/organizations/{org_id}/tenant-invite-code")
+async def generate_tenant_invite_code(org_id: str, user = Depends(get_current_user)):
+    """Generate a tenant invite code for the organization"""
+    membership = await db.memberships.find_one({
+        "org_id": org_id,
+        "user_id": user['id'],
+        "role": {"$in": ["admin", "manager"]}
+    })
+    if not membership:
+        raise HTTPException(status_code=403, detail="Admin or manager access required")
+    
+    # Generate a simple 6-character code
+    invite_code = ''.join(random.choices('ABCDEFGHJKLMNPQRSTUVWXYZ23456789', k=6))
+    
+    await db.organizations.update_one(
+        {"id": org_id},
+        {"$set": {"tenant_invite_code": invite_code}}
+    )
+    
+    return {"invite_code": invite_code}
+
+@api_router.get("/organizations/{org_id}/tenant-invite-code")
+async def get_tenant_invite_code(org_id: str, user = Depends(get_current_user)):
+    """Get the tenant invite code for the organization"""
+    membership = await db.memberships.find_one({
+        "org_id": org_id,
+        "user_id": user['id'],
+        "role": {"$in": ["admin", "manager"]}
+    })
+    if not membership:
+        raise HTTPException(status_code=403, detail="Admin or manager access required")
+    
+    org = await db.organizations.find_one({"id": org_id}, {"_id": 0, "tenant_invite_code": 1})
+    return {"invite_code": org.get('tenant_invite_code')}
+
+# View Document Requests (for landlords/managers)
+@api_router.get("/organizations/{org_id}/document-requests")
+async def get_document_requests(org_id: str, user = Depends(get_current_user)):
+    """Get all document requests from tenants for this organization"""
+    membership = await db.memberships.find_one({
+        "org_id": org_id,
+        "user_id": user['id']
+    })
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    requests = await db.document_requests.find(
+        {"org_id": org_id},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(100)
+    
+    return requests
+
+@api_router.put("/organizations/{org_id}/document-requests/{request_id}")
+async def update_document_request(org_id: str, request_id: str, status: str, user = Depends(get_current_user)):
+    """Update a document request status (fulfilled, rejected)"""
+    membership = await db.memberships.find_one({
+        "org_id": org_id,
+        "user_id": user['id']
+    })
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.document_requests.update_one(
+        {"id": request_id, "org_id": org_id},
+        {"$set": {"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Request updated"}
+
 # Application Status
 @api_router.get("/tenant-portal/application-status")
 async def get_application_status(tenant = Depends(get_current_tenant)):
