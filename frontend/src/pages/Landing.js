@@ -21,7 +21,9 @@ import {
   Play,
   TrendingUp,
   Target,
-  Award
+  Award,
+  Lock,
+  X
 } from 'lucide-react';
 
 const features = [
@@ -94,53 +96,87 @@ const stats = [
   { value: '4.9/5', label: 'Customer rating', icon: Star }
 ];
 
-const freeIncludes = [
-  'Up to 5 properties',
-  'Up to 25 units',
-  'Unlimited team members',
-  'All core features included',
-  'Document storage (1GB)',
-  'Email support'
-];
+const pricingPlans = {
+  monthly: {
+    free: { price: 0, period: '/month' },
+    standard: { price: 29, period: '/month' },
+    pro: { price: 79, period: '/month' }
+  },
+  annual: {
+    free: { price: 0, period: '/month' },
+    standard: { price: 24, period: '/month', savings: 'Save $60/year' },
+    pro: { price: 66, period: '/month', savings: 'Save $156/year' }
+  }
+};
 
-const proIncludes = [
-  'Unlimited properties',
-  'Unlimited units',
-  'Priority support',
-  'Advanced analytics',
-  'Document storage (50GB)',
-  'API access'
-];
+const planFeatures = {
+  free: [
+    { text: 'Up to 2 properties', included: true },
+    { text: 'Up to 5 units', included: true },
+    { text: 'Up to 3 team members', included: true },
+    { text: 'Basic inspection tracking', included: true },
+    { text: 'Document storage (500MB)', included: true },
+    { text: 'Email support', included: true },
+    { text: 'Advanced analytics', included: false },
+    { text: 'Priority support', included: false },
+    { text: 'API access', included: false }
+  ],
+  standard: [
+    { text: 'Up to 20 properties', included: true },
+    { text: 'Up to 40 units', included: true },
+    { text: 'Unlimited team members', included: true },
+    { text: 'Full inspection workflows', included: true },
+    { text: 'Document storage (10GB)', included: true },
+    { text: 'Priority email support', included: true },
+    { text: 'Advanced analytics', included: true },
+    { text: 'Calendar integrations', included: true },
+    { text: 'API access', included: false }
+  ],
+  pro: [
+    { text: 'Unlimited properties', included: true },
+    { text: 'Unlimited units', included: true },
+    { text: 'Unlimited team members', included: true },
+    { text: 'Full inspection workflows', included: true },
+    { text: 'Document storage (100GB)', included: true },
+    { text: '24/7 priority support', included: true },
+    { text: 'Advanced analytics', included: true },
+    { text: 'Calendar integrations', included: true },
+    { text: 'Full API access', included: true }
+  ]
+};
 
 const faqs = [
   {
     q: "How long is the free plan available?",
-    a: "The free plan is available forever, not a trial. You can use PropOps completely free for up to 5 properties and 25 units with no time limit. When you're ready to scale, upgrade to Pro."
+    a: "The free plan is available forever, not a trial. You can use PropOps completely free for up to 2 properties and 5 units with no time limit. When you're ready to scale, upgrade to Standard or Pro."
   },
   {
     q: "Do I need a credit card to start?",
     a: "No credit card required. Sign up with just your email and start using PropOps immediately. We'll only ask for payment info if you choose to upgrade."
   },
   {
-    q: "How long does setup take?",
-    a: "Most users are up and running in under 15 minutes. Add your first property, invite your team, and start tracking right away. No complex configuration needed."
+    q: "What's the difference between monthly and annual billing?",
+    a: "Annual billing saves you up to 17% compared to monthly billing. You're billed once per year at the discounted rate. You can switch between billing periods at any time."
   },
   {
-    q: "Can I import my existing data?",
-    a: "Yes! You can manually add properties and tenants through our simple forms, or contact us for bulk import assistance for larger portfolios."
+    q: "Can I upgrade or downgrade at any time?",
+    a: "Yes! You can upgrade instantly and get immediate access to new features. Downgrades take effect at the end of your current billing period. No penalties or fees."
   },
   {
     q: "Is my data secure?",
-    a: "Absolutely. We use industry-standard encryption, secure cloud infrastructure, and role-based access controls. Your data is backed up daily."
+    a: "Absolutely. We use industry-standard AES-256 encryption, secure cloud infrastructure on AWS, and role-based access controls. Your data is backed up daily across multiple regions."
   },
   {
-    q: "What if I need help?",
-    a: "Free plan users get email support. Pro users get priority support with faster response times. We also have detailed documentation and video tutorials."
+    q: "What payment methods do you accept?",
+    a: "We accept all major credit cards (Visa, Mastercard, American Express), as well as ACH bank transfers for annual plans. Enterprise customers can pay via invoice."
   }
 ];
 
+const INFOGRAPHIC_URL = "https://static.prod-images.emergentagent.com/jobs/ff35c095-fb57-42ce-8736-9575eebfd0f0/images/5ca2ef321c3dcea8216d1adf042c7bddee42a822013fb9c6c1a207d96df22cd9.png";
+
 const Landing = () => {
   const [openFaq, setOpenFaq] = React.useState(null);
+  const [billingPeriod, setBillingPeriod] = React.useState('annual');
 
   return (
     <div className="min-h-screen bg-background">
@@ -201,7 +237,7 @@ const Landing = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                  <span className="text-sm">Free up to 25 units</span>
+                  <span className="text-sm">Free up to 5 units</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
@@ -292,8 +328,34 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Financial Infographic Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8" data-testid="infographic-section">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading">
+              See your portfolio at a glance
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Real-time analytics and insights to help you make smarter property decisions
+            </p>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10 rounded-3xl blur-2xl" />
+            <Card className="relative glass overflow-hidden">
+              <CardContent className="p-4 sm:p-8">
+                <img 
+                  src={INFOGRAPHIC_URL} 
+                  alt="PropOps Financial Analytics Dashboard showing property metrics, occupancy rates, and revenue insights"
+                  className="w-full h-auto rounded-xl shadow-lg"
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Problem/Solution Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8" data-testid="problem-section">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="problem-section">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold font-heading">
@@ -384,7 +446,7 @@ const Landing = () => {
       </section>
 
       {/* How It Works */}
-      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="how-it-works-section">
+      <section id="how-it-works" className="py-20 px-4 sm:px-6 lg:px-8" data-testid="how-it-works-section">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold font-heading">
@@ -435,7 +497,7 @@ const Landing = () => {
       </section>
 
       {/* Features Grid */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8" data-testid="features-section">
+      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="features-section">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold font-heading">
@@ -466,7 +528,7 @@ const Landing = () => {
       </section>
 
       {/* Testimonials */}
-      <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="testimonials-section">
+      <section id="testimonials" className="py-20 px-4 sm:px-6 lg:px-8" data-testid="testimonials-section">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold font-heading">
@@ -504,9 +566,9 @@ const Landing = () => {
       </section>
 
       {/* Pricing */}
-      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8" data-testid="pricing-section">
+      <section id="pricing" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="pricing-section">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h2 className="text-3xl sm:text-4xl font-bold font-heading">
               Simple, transparent pricing
             </h2>
@@ -514,7 +576,24 @@ const Landing = () => {
               Start free. Upgrade when you're ready. No hidden fees.
             </p>
           </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-4 mb-12">
+            <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
+            <button
+              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
+              className={`relative w-14 h-7 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+              data-testid="billing-toggle"
+            >
+              <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${billingPeriod === 'annual' ? 'translate-x-8' : 'translate-x-1'}`} />
+            </button>
+            <span className={`text-sm font-medium ${billingPeriod === 'annual' ? 'text-foreground' : 'text-muted-foreground'}`}>
+              Annual
+              <span className="ml-2 text-xs text-green-600 font-semibold">Save 17%</span>
+            </span>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free Plan */}
             <Card className="glass relative overflow-hidden">
               <CardContent className="p-8">
@@ -523,18 +602,22 @@ const Landing = () => {
                   <p className="text-muted-foreground">Perfect for getting started</p>
                 </div>
                 <div className="mb-6">
-                  <span className="text-5xl font-bold font-heading">$0</span>
-                  <span className="text-muted-foreground">/month</span>
+                  <span className="text-5xl font-bold font-heading">${pricingPlans[billingPeriod].free.price}</span>
+                  <span className="text-muted-foreground">{pricingPlans[billingPeriod].free.period}</span>
                 </div>
                 <p className="text-sm text-green-600 font-medium mb-6 flex items-center gap-2">
                   <CheckCircle className="w-4 h-4" />
                   Free forever, not a trial
                 </p>
                 <ul className="space-y-3 mb-8">
-                  {freeIncludes.map((item, i) => (
+                  {planFeatures.free.map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span>{item}</span>
+                      {item.included ? (
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <X className="w-5 h-5 text-muted-foreground/50 flex-shrink-0" />
+                      )}
+                      <span className={item.included ? '' : 'text-muted-foreground/50'}>{item.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -546,33 +629,77 @@ const Landing = () => {
               </CardContent>
             </Card>
             
-            {/* Pro Plan */}
-            <Card className="glass relative overflow-hidden border-primary">
-              <div className="absolute top-0 right-0 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-bl-lg">
+            {/* Standard Plan */}
+            <Card className="glass relative overflow-hidden border-primary border-2 scale-105">
+              <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-center text-sm font-medium py-1.5">
                 MOST POPULAR
               </div>
-              <CardContent className="p-8">
+              <CardContent className="p-8 pt-12">
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold font-heading">Pro</h3>
+                  <h3 className="text-2xl font-bold font-heading">Standard</h3>
                   <p className="text-muted-foreground">For growing portfolios</p>
                 </div>
-                <div className="mb-6">
-                  <span className="text-5xl font-bold font-heading">$29</span>
-                  <span className="text-muted-foreground">/month</span>
+                <div className="mb-2">
+                  <span className="text-5xl font-bold font-heading">${pricingPlans[billingPeriod].standard.price}</span>
+                  <span className="text-muted-foreground">{pricingPlans[billingPeriod].standard.period}</span>
                 </div>
+                {pricingPlans[billingPeriod].standard.savings && (
+                  <p className="text-sm text-green-600 font-medium mb-4">
+                    {pricingPlans[billingPeriod].standard.savings}
+                  </p>
+                )}
                 <p className="text-sm text-muted-foreground mb-6">
-                  Billed monthly. Cancel anytime.
+                  {billingPeriod === 'annual' ? 'Billed annually' : 'Billed monthly'}. Cancel anytime.
                 </p>
                 <ul className="space-y-3 mb-8">
-                  {proIncludes.map((item, i) => (
+                  {planFeatures.standard.map((item, i) => (
                     <li key={i} className="flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      <span>{item}</span>
+                      {item.included ? (
+                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <X className="w-5 h-5 text-muted-foreground/50 flex-shrink-0" />
+                      )}
+                      <span className={item.included ? '' : 'text-muted-foreground/50'}>{item.text}</span>
                     </li>
                   ))}
                 </ul>
                 <Link to="/register" className="block">
-                  <Button className="w-full btn-active" size="lg" data-testid="pricing-pro-btn">
+                  <Button className="w-full btn-active" size="lg" data-testid="pricing-standard-btn">
+                    Start Free, Upgrade Later
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Pro Plan */}
+            <Card className="glass relative overflow-hidden">
+              <CardContent className="p-8">
+                <div className="mb-6">
+                  <h3 className="text-2xl font-bold font-heading">Pro</h3>
+                  <p className="text-muted-foreground">For large portfolios</p>
+                </div>
+                <div className="mb-2">
+                  <span className="text-5xl font-bold font-heading">${pricingPlans[billingPeriod].pro.price}</span>
+                  <span className="text-muted-foreground">{pricingPlans[billingPeriod].pro.period}</span>
+                </div>
+                {pricingPlans[billingPeriod].pro.savings && (
+                  <p className="text-sm text-green-600 font-medium mb-4">
+                    {pricingPlans[billingPeriod].pro.savings}
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground mb-6">
+                  {billingPeriod === 'annual' ? 'Billed annually' : 'Billed monthly'}. Cancel anytime.
+                </p>
+                <ul className="space-y-3 mb-8">
+                  {planFeatures.pro.map((item, i) => (
+                    <li key={i} className="flex items-center gap-3">
+                      <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                      <span>{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/register" className="block">
+                  <Button className="w-full" size="lg" variant="outline" data-testid="pricing-pro-btn">
                     Start Free, Upgrade Later
                   </Button>
                 </Link>
@@ -586,7 +713,7 @@ const Landing = () => {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="faq-section">
+      <section id="faq" className="py-20 px-4 sm:px-6 lg:px-8" data-testid="faq-section">
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold font-heading">
@@ -617,7 +744,7 @@ const Landing = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8" data-testid="cta-section">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="cta-section">
         <div className="max-w-4xl mx-auto text-center">
           <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-3xl p-12 border border-primary/20">
             <h2 className="text-3xl sm:text-4xl font-bold font-heading mb-4">
@@ -627,7 +754,7 @@ const Landing = () => {
               Join 500+ property managers who've ditched the spreadsheets.
             </p>
             <p className="text-sm text-muted-foreground mb-8">
-              Free forever for up to 5 properties • No credit card required • Setup in 15 minutes
+              Free forever for up to 2 properties • No credit card required • Setup in 15 minutes
             </p>
             <Link to="/register">
               <Button size="lg" className="btn-active text-base px-8" data-testid="cta-get-started">
@@ -678,9 +805,9 @@ const Landing = () => {
             <div>
               <h4 className="font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-foreground">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-foreground">Security</a></li>
+                <li><Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
+                <li><Link to="/terms" className="hover:text-foreground">Terms of Service</Link></li>
+                <li><Link to="/security" className="hover:text-foreground">Security</Link></li>
               </ul>
             </div>
           </div>
