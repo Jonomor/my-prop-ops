@@ -107,23 +107,31 @@ Build a full-stack SaaS web application for property and housing operations mana
 - **Hero Section:**
   - Badge: "Free forever for small portfolios"
   - Headline: "Stop drowning in spreadsheets. Start managing."
-  - Value props: Setup in 15 min, No credit card, Free up to 25 units
+  - Value props: Setup in 15 min, No credit card, Free up to 5 units
   - First-person CTA: "Start My Free Account"
   - Social proof: "Join 500+ property managers"
 - **Stats Bar:** 10+ hours saved, 100% compliance, 15 min setup, 4.9/5 rating
+- **Financial Infographic:** 4K analytics dashboard showing rental income, occupancy rates, income breakdown
 - **Problem/Solution:** "The old way" vs "The PropOps way" comparison
 - **How It Works:** 3 simple steps
 - **Features Grid:** 6 features with specific benefits
 - **Testimonials:** 3 customer quotes with star ratings
-- **Pricing Section:**
-  - Free: $0/month (5 properties, 25 units, unlimited team, email support)
-  - Pro: $29/month (unlimited everything, priority support, API access)
+- **Pricing Section (3-Tier with Monthly/Annual Toggle):**
+  - Free: $0/month (2 properties, 5 units, 3 team members, 500MB storage)
+  - Standard (MOST POPULAR): $29/month or $24/month annually (20 properties, 40 units, unlimited team, 10GB storage)
+  - Pro: $79/month or $66/month annually (unlimited everything, 24/7 support, API access, 100GB storage)
+  - Annual billing saves 17%
   - "Free forever, not a trial" messaging
 - **FAQ Section:** 6 collapsible questions addressing objections
 - **Final CTA:** Reiterates free offer
 - **Navigation:** Features, Pricing, Reviews, FAQ anchor links
 
-### 10. Auto-Unit Generation ✅ (Feb 2026)
+### 10. Legal Pages ✅ (Feb 2026)
+- **Privacy Policy** (/privacy): Comprehensive data collection, usage, sharing, and rights
+- **Terms of Service** (/terms): Service description, billing, acceptable use, liability
+- **Security** (/security): Encryption, infrastructure, compliance, certifications, responsible disclosure
+
+### 11. Auto-Unit Generation ✅ (Feb 2026)
 - When creating a property with total_units > 0, units are auto-created
 - Reduces friction for new users
 - Units numbered 1, 2, 3... by default
