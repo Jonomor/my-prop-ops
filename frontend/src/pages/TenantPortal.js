@@ -67,6 +67,24 @@ const TenantPortal = () => {
   const [applicationStatus, setApplicationStatus] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [conversations, setConversations] = useState([]);
+  const [resources, setResources] = useState([]);
+  const [maintenanceRequests, setMaintenanceRequests] = useState([]);
+  
+  // Maintenance request form
+  const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false);
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    category: 'other',
+    priority: 'medium',
+    title: '',
+    description: '',
+    permission_to_enter: false
+  });
+  const [maintenancePhotos, setMaintenancePhotos] = useState([]);
+  const [submittingMaintenance, setSubmittingMaintenance] = useState(false);
+  const [checklist, setChecklist] = useState([]);
+  const [applicationStatus, setApplicationStatus] = useState(null);
+  const [appointments, setAppointments] = useState([]);
+  const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
   const [resources, setResources] = useState(null);
   const [selectedConversation, setSelectedConversation] = useState(null);
