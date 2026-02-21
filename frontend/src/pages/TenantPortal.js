@@ -921,6 +921,46 @@ const TenantPortal = () => {
                     </CardContent>
                   </Card>
 
+                  {/* Connected Organization Card */}
+                  <Card className="md:col-span-2 border-2 border-dashed border-emerald-200 dark:border-emerald-800">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Home className="w-5 h-5 text-emerald-600" />
+                        Property Manager Connection
+                      </CardTitle>
+                      <CardDescription>
+                        Connect with your property manager to submit document requests and communicate directly.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {tenant?.connected_org_id ? (
+                        <div className="flex items-center justify-between p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                          <div>
+                            <p className="font-medium text-emerald-700 dark:text-emerald-300">
+                              Connected to: {tenant.connected_org_name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              You can now request documents and send messages to your property manager.
+                            </p>
+                          </div>
+                          <Button variant="outline" size="sm" onClick={handleDisconnectOrg} className="text-red-600 border-red-200 hover:bg-red-50">
+                            Disconnect
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center py-4">
+                          <p className="text-muted-foreground mb-4">
+                            Ask your property manager for an organization code to connect your account.
+                          </p>
+                          <Button onClick={() => setConnectOrgDialogOpen(true)} className="bg-emerald-600 hover:bg-emerald-700">
+                            <Plus className="w-4 h-4 mr-1" />
+                            Enter Organization Code
+                          </Button>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
                   <Card className="md:col-span-2">
                     <CardHeader className="flex flex-row items-center justify-between">
                       <CardTitle>Household Members</CardTitle>
