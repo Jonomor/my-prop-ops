@@ -224,6 +224,36 @@ const TenantPortal = () => {
     navigate('/tenant-portal/login');
   };
 
+  const handleConnectOrg = async () => {
+    if (!orgCode.trim()) {
+      toast.error('Please enter an organization code');
+      return;
+    }
+    try {
+      setLoading(true);
+      const res = await api.post('/api/tenant-portal/connect-organization', { org_code: orgCode.toUpperCase() });
+      toast.success(res.data.message);
+      setConnectOrgDialogOpen(false);
+      setOrgCode('');
+      // Refresh tenant data
+      window.location.reload();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to connect to organization');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDisconnectOrg = async () => {
+    try {
+      await api.delete('/api/tenant-portal/disconnect-organization');
+      toast.success('Disconnected from organization');
+      window.location.reload();
+    } catch (error) {
+      toast.error('Failed to disconnect');
+    }
+  };
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'verified': return <CheckCircle2 className="w-5 h-5 text-green-500" />;
