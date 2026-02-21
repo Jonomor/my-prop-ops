@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Layout } from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Separator } from '../components/ui/separator';
-import { User, Mail, Calendar, Building2 } from 'lucide-react';
+import { Button } from '../components/ui/button';
+import { toast } from 'sonner';
+import { User, Mail, Calendar, Building2, Users, Copy, RefreshCw, FileText } from 'lucide-react';
 
 const Settings = () => {
   const { user, organizations, currentOrg } = useAuth();
