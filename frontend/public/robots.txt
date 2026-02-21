@@ -2,7 +2,18 @@
 # https://mypropops.com/robots.txt
 
 User-agent: *
-Allow: /
+
+# Allow all public pages
+Allow: /$
+Allow: /login
+Allow: /register
+Allow: /privacy
+Allow: /terms
+Allow: /security
+Allow: /tenant-portal/login
+Allow: /tenant-portal/register
+
+# Block private/authenticated areas
 Disallow: /api/
 Disallow: /dashboard
 Disallow: /properties
@@ -16,17 +27,8 @@ Disallow: /invites
 Disallow: /audit-logs
 Disallow: /notifications
 Disallow: /calendar
-Disallow: /tenant-portal
-
-# Allow crawling of public pages
-Allow: /login
-Allow: /register
-Allow: /privacy
-Allow: /terms
-Allow: /security
+Disallow: /tenant-portal$
+Disallow: /organizations
 
 # Sitemap
 Sitemap: https://mypropops.com/sitemap.xml
-
-# Crawl-delay (optional, be nice to servers)
-Crawl-delay: 1
