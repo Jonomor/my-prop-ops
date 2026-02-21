@@ -71,9 +71,11 @@ const TenantPortal = () => {
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
   const [householdDialogOpen, setHouseholdDialogOpen] = useState(false);
   const [appointmentDialogOpen, setAppointmentDialogOpen] = useState(false);
+  const [connectOrgDialogOpen, setConnectOrgDialogOpen] = useState(false);
   
   // Form states
   const [profileForm, setProfileForm] = useState({});
+  const [orgCode, setOrgCode] = useState('');
   const [householdMember, setHouseholdMember] = useState({
     name: '', relationship: 'other', date_of_birth: '', income: '', income_source: ''
   });
