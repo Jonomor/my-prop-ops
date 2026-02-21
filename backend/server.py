@@ -21,6 +21,7 @@ import secrets
 
 # Stripe Integration
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
+import stripe
 
 # Mailchimp Integration (optional - only if keys are provided)
 try:
