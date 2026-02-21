@@ -116,8 +116,36 @@ class InviteStatus(str, Enum):
 
 class OrganizationPlan(str, Enum):
     FREE = "free"
+    STANDARD = "standard"
     PRO = "pro"
     ENTERPRISE = "enterprise"
+
+# Tenant Portal Enums
+class ApplicationStage(str, Enum):
+    NOT_STARTED = "not_started"
+    APPLICATION_SUBMITTED = "application_submitted"
+    DOCUMENTS_UNDER_REVIEW = "documents_under_review"
+    BACKGROUND_CHECK = "background_check"
+    INSPECTION_SCHEDULED = "inspection_scheduled"
+    INSPECTION_COMPLETE = "inspection_complete"
+    APPROVED = "approved"
+    DENIED = "denied"
+
+class DocumentChecklistStatus(str, Enum):
+    NOT_STARTED = "not_started"
+    UPLOADED = "uploaded"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+
+class HousingProgram(str, Enum):
+    SECTION_8 = "section_8"
+    HUD = "hud"
+    LIHTC = "lihtc"
+    PUBLIC_HOUSING = "public_housing"
+    HOME = "home"
+    HOPWA = "hopwa"
+    VASH = "vash"
+    OTHER = "other"
 
 # ============== INSPECTION STATUS STATE MACHINE ==============
 VALID_TRANSITIONS = {
