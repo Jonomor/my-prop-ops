@@ -335,6 +335,7 @@ Build a full-stack SaaS web application for property and housing operations mana
 - [x] Calendar view
 - [x] Team invitations
 - [x] Member directory
+- [x] **Tenant Portal** (separate user system for housing program applicants)
 
 ### Monetization Ready
 - [x] Organization plan field
