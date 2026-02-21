@@ -189,5 +189,11 @@ Build a full-stack SaaS web application for property and housing operations mana
 ## Project Health
 - **Working:** All core features, authentication, tenant portal, billing, maintenance
 - **Configured:** Stripe embedded checkout (TEST MODE with real keys)
-- **Needs Keys:** Mailchimp email integration (placeholders in .env)
+- **Configured:** Mailchimp Marketing & Mandrill Transactional emails
 - **Needs Work:** Backend architecture (modularization)
+
+## Legal & IP Protection
+- **Terms of Service:** Updated with Software License Grant, IP protection, and trademark notices
+- **Privacy Policy:** Comprehensive data handling and user rights documentation
+- **Trademark:** "#1 Property Management Software" and MyPropOps registered
+- **Site Description:** Marketing copy and SEO keywords at `/app/SITE_DESCRIPTION.md`
