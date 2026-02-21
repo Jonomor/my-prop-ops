@@ -133,8 +133,9 @@ const Maintenance = () => {
   };
 
   const fetchUnitsForProperty = async (propertyId) => {
+    if (!currentOrg) return;
     try {
-      const res = await api.get(`/properties/${propertyId}/units`);
+      const res = await api.get(`/organizations/${currentOrg.org_id}/units?property_id=${propertyId}`);
       setUnits(res.data);
     } catch (error) {
       setUnits([]);
