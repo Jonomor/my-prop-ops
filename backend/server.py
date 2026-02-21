@@ -3518,8 +3518,7 @@ async def create_embedded_checkout_session(
                 "plan_name": plan_details["plan"],
                 "billing_period": plan_details["period"]
             },
-            automatic_tax={"enabled": False},
-            customer_creation="always"
+            automatic_tax={"enabled": False}
         )
         
         # Store payment transaction record
