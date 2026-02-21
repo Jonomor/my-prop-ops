@@ -209,6 +209,25 @@ const Maintenance = () => {
     }
   };
 
+  const handleAssignContractor = async (requestId, contractorId) => {
+    if (!contractorId) return;
+    setAssigningContractor(true);
+    try {
+      await api.post(`/maintenance-requests/${requestId}/assign-contractor`, {
+        contractor_id: contractorId,
+        scheduled_date: null,
+        notes: null
+      });
+      toast.success('Contractor assigned! They will receive an email notification.');
+      fetchData();
+      setEditDialogOpen(false);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to assign contractor');
+    } finally {
+      setAssigningContractor(false);
+    }
+  };
+
   const filteredRequests = requests.filter(req => {
     if (filterStatus !== 'all' && req.status !== filterStatus) return false;
     if (filterPriority !== 'all' && req.priority !== filterPriority) return false;
