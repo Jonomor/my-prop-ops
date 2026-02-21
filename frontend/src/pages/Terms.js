@@ -65,6 +65,38 @@ const Terms = () => {
               </ul>
             </section>
 
+            <section className="bg-blue-50 dark:bg-blue-950/30 -mx-4 p-6 rounded-lg border border-blue-200 dark:border-blue-800">
+              <h2 className="text-2xl font-semibold font-heading mb-4 text-blue-900 dark:text-blue-100">3. Software License Grant</h2>
+              <p className="text-blue-800 dark:text-blue-200 leading-relaxed mb-4">
+                <strong>IMPORTANT:</strong> MyPropOps is provided as a Software-as-a-Service (SaaS) subscription. You are granted a LICENSE to use the software, NOT ownership of the software itself.
+              </p>
+              
+              <h3 className="text-xl font-semibold mt-6 mb-3 text-blue-900 dark:text-blue-100">3.1 License Grant</h3>
+              <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
+                Subject to your compliance with these Terms and payment of applicable fees, MyPropOps, Inc. grants you a <strong>limited, non-exclusive, non-transferable, revocable, subscription-based license</strong> to access and use the Service solely for your internal business purposes related to property management operations.
+              </p>
+
+              <h3 className="text-xl font-semibold mt-6 mb-3 text-blue-900 dark:text-blue-100">3.2 License Restrictions</h3>
+              <p className="text-blue-800 dark:text-blue-200 leading-relaxed mb-3">
+                You expressly agree that you will NOT:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-blue-800 dark:text-blue-200">
+                <li>Copy, modify, adapt, or create derivative works of the Software or Service</li>
+                <li>Reverse engineer, decompile, disassemble, or attempt to derive the source code of the Software</li>
+                <li>Rent, lease, lend, sell, redistribute, sublicense, or transfer the Software or access to the Service</li>
+                <li>Remove, alter, or obscure any proprietary notices, labels, or marks on the Software</li>
+                <li>Use the Software or Service to develop a competing product or service</li>
+                <li>Access the Software or Service to build a similar or competitive product</li>
+                <li>Use automated systems to access the Service in a manner that exceeds reasonable request volumes</li>
+                <li>Share your account credentials or allow multiple users to access a single account</li>
+              </ul>
+
+              <h3 className="text-xl font-semibold mt-6 mb-3 text-blue-900 dark:text-blue-100">3.3 Reservation of Rights</h3>
+              <p className="text-blue-800 dark:text-blue-200 leading-relaxed">
+                All rights not expressly granted to you are reserved by MyPropOps, Inc. This license does not grant you any rights to use MyPropOps's trademarks, service marks, or trade dress.
+              </p>
+            </section>
+
             <section>
               <h2 className="text-2xl font-semibold font-heading mb-4">3. User Accounts</h2>
               
