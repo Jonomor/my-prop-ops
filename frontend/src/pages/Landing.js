@@ -100,12 +100,12 @@ const pricingPlans = {
   monthly: {
     free: { price: 0, period: '/month' },
     standard: { price: 29, period: '/month' },
-    pro: { price: 74, period: '/month' }
+    pro: { price: 79, period: '/month' }
   },
   annual: {
     free: { price: 0, period: '/month' },
     standard: { price: 24, period: '/month', savings: 'Save $60/year' },
-    pro: { price: 62, period: '/month', savings: 'Save $144/year' }
+    pro: { price: 66, period: '/month', savings: 'Save $156/year' }
   }
 };
 
