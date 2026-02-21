@@ -229,7 +229,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold font-heading mb-4">9. Termination</h2>
+              <h2 className="text-2xl font-semibold font-heading mb-4">10. Termination</h2>
               <p className="text-muted-foreground leading-relaxed">
                 We may terminate or suspend your account immediately, without prior notice or liability, for any reason, including if you breach these Terms. Upon termination, your right to use the Service will immediately cease.
               </p>
