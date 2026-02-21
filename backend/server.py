@@ -648,6 +648,95 @@ APPLICATION_STAGES = [
     {"stage": "denied", "label": "Denied", "description": "Unfortunately, your application was not approved"},
 ]
 
+# ============== MAINTENANCE REQUEST MODELS ==============
+class MaintenancePriority(str, Enum):
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    EMERGENCY = "emergency"
+
+class MaintenanceStatus(str, Enum):
+    OPEN = "open"
+    IN_PROGRESS = "in_progress"
+    PENDING_PARTS = "pending_parts"
+    SCHEDULED = "scheduled"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+class MaintenanceCategory(str, Enum):
+    PLUMBING = "plumbing"
+    ELECTRICAL = "electrical"
+    HVAC = "hvac"
+    APPLIANCES = "appliances"
+    STRUCTURAL = "structural"
+    PEST_CONTROL = "pest_control"
+    LANDSCAPING = "landscaping"
+    OTHER = "other"
+
+class MaintenanceRequestCreate(BaseModel):
+    property_id: str
+    unit_id: Optional[str] = None
+    tenant_id: Optional[str] = None
+    category: MaintenanceCategory
+    priority: MaintenancePriority = MaintenancePriority.MEDIUM
+    title: str
+    description: str
+    preferred_access_time: Optional[str] = None
+    permission_to_enter: bool = False
+
+class MaintenanceRequestUpdate(BaseModel):
+    status: Optional[MaintenanceStatus] = None
+    priority: Optional[MaintenancePriority] = None
+    assigned_to: Optional[str] = None
+    notes: Optional[str] = None
+    scheduled_date: Optional[str] = None
+    completion_notes: Optional[str] = None
+
+class MaintenanceRequestResponse(BaseModel):
+    id: str
+    org_id: str
+    property_id: str
+    property_name: Optional[str] = None
+    unit_id: Optional[str]
+    unit_number: Optional[str] = None
+    tenant_id: Optional[str]
+    tenant_name: Optional[str] = None
+    category: str
+    priority: str
+    status: str
+    title: str
+    description: str
+    preferred_access_time: Optional[str]
+    permission_to_enter: bool
+    assigned_to: Optional[str]
+    assigned_to_name: Optional[str] = None
+    notes: Optional[str]
+    scheduled_date: Optional[str]
+    completion_notes: Optional[str]
+    created_by: str
+    created_at: str
+    updated_at: Optional[str]
+
+# Tenant Screening Models (inspired by competitors like Yardi ScreeningWorks)
+class ScreeningRequestCreate(BaseModel):
+    tenant_id: str
+    screening_type: str = "standard"  # basic, standard, comprehensive
+
+class ScreeningResponse(BaseModel):
+    id: str
+    org_id: str
+    tenant_id: str
+    tenant_name: str
+    screening_type: str
+    status: str  # pending, in_progress, completed, failed
+    credit_score: Optional[int] = None
+    background_clear: Optional[bool] = None
+    eviction_history: Optional[bool] = None
+    income_verified: Optional[bool] = None
+    recommendation: Optional[str] = None  # approved, conditional, denied
+    created_at: str
+    completed_at: Optional[str] = None
+
 # ============== HELPER FUNCTIONS ==============
 def hash_password(password: str) -> str:
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
