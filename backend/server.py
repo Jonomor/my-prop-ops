@@ -1532,6 +1532,689 @@ async def get_feature_flags(user = Depends(get_current_user)):
     """Get current feature flag states"""
     return FeatureFlagsResponse(**FEATURE_FLAGS)
 
+# ============== TENANT PORTAL ROUTES ==============
+
+# Tenant Portal Auth
+@api_router.post("/tenant-portal/register")
+async def tenant_portal_register(data: TenantPortalRegister):
+    """Register a new tenant portal user"""
+    existing = await db.tenant_portal_users.find_one({"email": data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    
+    tenant_id = str(uuid.uuid4())
+    
+    # Initialize document checklist
+    checklist = []
+    for item in DEFAULT_DOCUMENT_CHECKLIST:
+        checklist.append({
+            "id": str(uuid.uuid4()),
+            "name": item["name"],
+            "description": item["description"],
+            "required": item["required"],
+            "status": DocumentChecklistStatus.NOT_STARTED.value,
+            "document_id": None,
+            "uploaded_at": None,
+            "verified_at": None,
+            "notes": None
+        })
+    
+    tenant = {
+        "id": tenant_id,
+        "email": data.email,
+        "hashed_password": hash_password(data.password),
+        "name": data.name,
+        "phone": data.phone,
+        "address": None,
+        "housing_program": None,
+        "voucher_number": None,
+        "household_size": 1,
+        "household_members": [],
+        "annual_income": None,
+        "income_sources": None,
+        "emergency_contact_name": None,
+        "emergency_contact_phone": None,
+        "application_stage": ApplicationStage.NOT_STARTED.value,
+        "document_checklist": checklist,
+        "connected_org_id": None,
+        "connected_property_id": None,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.tenant_portal_users.insert_one(tenant)
+    
+    token = create_tenant_token(tenant_id, data.email)
+    
+    return {
+        "token": token,
+        "tenant": TenantPortalProfileResponse(
+            id=tenant_id,
+            email=data.email,
+            name=data.name,
+            phone=data.phone,
+            address=None,
+            housing_program=None,
+            voucher_number=None,
+            household_size=1,
+            household_members=[],
+            annual_income=None,
+            income_sources=None,
+            emergency_contact_name=None,
+            emergency_contact_phone=None,
+            application_stage=ApplicationStage.NOT_STARTED.value,
+            created_at=tenant["created_at"]
+        )
+    }
+
+@api_router.post("/tenant-portal/login")
+async def tenant_portal_login(data: TenantPortalLogin):
+    """Login to tenant portal"""
+    tenant = await db.tenant_portal_users.find_one({"email": data.email}, {"_id": 0})
+    if not tenant or not verify_password(data.password, tenant['hashed_password']):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token = create_tenant_token(tenant['id'], tenant['email'])
+    
+    return {
+        "token": token,
+        "tenant": TenantPortalProfileResponse(
+            id=tenant['id'],
+            email=tenant['email'],
+            name=tenant['name'],
+            phone=tenant.get('phone'),
+            address=tenant.get('address'),
+            housing_program=tenant.get('housing_program'),
+            voucher_number=tenant.get('voucher_number'),
+            household_size=tenant.get('household_size', 1),
+            household_members=tenant.get('household_members', []),
+            annual_income=tenant.get('annual_income'),
+            income_sources=tenant.get('income_sources'),
+            emergency_contact_name=tenant.get('emergency_contact_name'),
+            emergency_contact_phone=tenant.get('emergency_contact_phone'),
+            application_stage=tenant.get('application_stage', ApplicationStage.NOT_STARTED.value),
+            created_at=tenant['created_at']
+        )
+    }
+
+@api_router.get("/tenant-portal/me")
+async def tenant_portal_me(tenant = Depends(get_current_tenant)):
+    """Get current tenant portal user profile"""
+    return TenantPortalProfileResponse(
+        id=tenant['id'],
+        email=tenant['email'],
+        name=tenant['name'],
+        phone=tenant.get('phone'),
+        address=tenant.get('address'),
+        housing_program=tenant.get('housing_program'),
+        voucher_number=tenant.get('voucher_number'),
+        household_size=tenant.get('household_size', 1),
+        household_members=tenant.get('household_members', []),
+        annual_income=tenant.get('annual_income'),
+        income_sources=tenant.get('income_sources'),
+        emergency_contact_name=tenant.get('emergency_contact_name'),
+        emergency_contact_phone=tenant.get('emergency_contact_phone'),
+        application_stage=tenant.get('application_stage', ApplicationStage.NOT_STARTED.value),
+        created_at=tenant['created_at']
+    )
+
+@api_router.put("/tenant-portal/profile")
+async def update_tenant_profile(data: TenantPortalProfileUpdate, tenant = Depends(get_current_tenant)):
+    """Update tenant portal profile"""
+    update_data = {k: v for k, v in data.dict().items() if v is not None}
+    
+    if 'household_members' in update_data:
+        update_data['household_members'] = [m.dict() if hasattr(m, 'dict') else m for m in update_data['household_members']]
+    
+    if update_data:
+        await db.tenant_portal_users.update_one(
+            {"id": tenant['id']},
+            {"$set": update_data}
+        )
+    
+    updated = await db.tenant_portal_users.find_one({"id": tenant['id']}, {"_id": 0})
+    return TenantPortalProfileResponse(
+        id=updated['id'],
+        email=updated['email'],
+        name=updated['name'],
+        phone=updated.get('phone'),
+        address=updated.get('address'),
+        housing_program=updated.get('housing_program'),
+        voucher_number=updated.get('voucher_number'),
+        household_size=updated.get('household_size', 1),
+        household_members=updated.get('household_members', []),
+        annual_income=updated.get('annual_income'),
+        income_sources=updated.get('income_sources'),
+        emergency_contact_name=updated.get('emergency_contact_name'),
+        emergency_contact_phone=updated.get('emergency_contact_phone'),
+        application_stage=updated.get('application_stage', ApplicationStage.NOT_STARTED.value),
+        created_at=updated['created_at']
+    )
+
+# Document Checklist
+@api_router.get("/tenant-portal/checklist")
+async def get_document_checklist(tenant = Depends(get_current_tenant)):
+    """Get tenant's document checklist"""
+    return tenant.get('document_checklist', [])
+
+@api_router.post("/tenant-portal/checklist/{item_id}/upload")
+async def upload_checklist_document(item_id: str, file: UploadFile = File(...), tenant = Depends(get_current_tenant)):
+    """Upload a document for checklist item"""
+    checklist = tenant.get('document_checklist', [])
+    item_index = next((i for i, item in enumerate(checklist) if item['id'] == item_id), None)
+    
+    if item_index is None:
+        raise HTTPException(status_code=404, detail="Checklist item not found")
+    
+    # Save file
+    doc_id = str(uuid.uuid4())
+    file_ext = file.filename.split('.')[-1] if '.' in file.filename else ''
+    filename = f"tenant_{tenant['id']}_{doc_id}.{file_ext}"
+    file_path = UPLOAD_DIR / filename
+    
+    content = await file.read()
+    with open(file_path, 'wb') as f:
+        f.write(content)
+    
+    # Store document reference
+    doc = {
+        "id": doc_id,
+        "tenant_portal_id": tenant['id'],
+        "checklist_item_id": item_id,
+        "filename": filename,
+        "original_filename": file.filename,
+        "content_type": file.content_type,
+        "size": len(content),
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.tenant_portal_documents.insert_one(doc)
+    
+    # Update checklist item
+    checklist[item_index]['status'] = DocumentChecklistStatus.UPLOADED.value
+    checklist[item_index]['document_id'] = doc_id
+    checklist[item_index]['uploaded_at'] = datetime.now(timezone.utc).isoformat()
+    
+    await db.tenant_portal_users.update_one(
+        {"id": tenant['id']},
+        {"$set": {"document_checklist": checklist}}
+    )
+    
+    return checklist[item_index]
+
+@api_router.get("/tenant-portal/documents/{doc_id}/download")
+async def download_tenant_document(doc_id: str, tenant = Depends(get_current_tenant)):
+    """Download a tenant's document"""
+    doc = await db.tenant_portal_documents.find_one({"id": doc_id, "tenant_portal_id": tenant['id']}, {"_id": 0})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    file_path = UPLOAD_DIR / doc['filename']
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(file_path, filename=doc['original_filename'])
+
+# Application Status
+@api_router.get("/tenant-portal/application-status")
+async def get_application_status(tenant = Depends(get_current_tenant)):
+    """Get tenant's application status"""
+    current_stage = tenant.get('application_stage', ApplicationStage.NOT_STARTED.value)
+    
+    stages = []
+    stage_order = [s['stage'] for s in APPLICATION_STAGES]
+    current_index = stage_order.index(current_stage) if current_stage in stage_order else 0
+    
+    for i, stage in enumerate(APPLICATION_STAGES):
+        stages.append({
+            **stage,
+            "completed": i < current_index,
+            "current": i == current_index,
+            "upcoming": i > current_index
+        })
+    
+    return {
+        "stage": current_stage,
+        "stages": stages,
+        "updated_at": tenant.get('stage_updated_at', tenant['created_at'])
+    }
+
+@api_router.put("/tenant-portal/application-status")
+async def update_application_status(stage: ApplicationStage, tenant = Depends(get_current_tenant)):
+    """Update application stage (self-update for certain stages)"""
+    allowed_self_updates = [ApplicationStage.APPLICATION_SUBMITTED]
+    
+    if stage not in allowed_self_updates and stage != ApplicationStage.NOT_STARTED:
+        raise HTTPException(status_code=403, detail="Cannot self-update to this stage")
+    
+    await db.tenant_portal_users.update_one(
+        {"id": tenant['id']},
+        {"$set": {
+            "application_stage": stage.value,
+            "stage_updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"stage": stage.value, "message": "Application status updated"}
+
+# Appointments
+@api_router.get("/tenant-portal/appointments")
+async def get_tenant_appointments(tenant = Depends(get_current_tenant)):
+    """Get tenant's appointments"""
+    appointments = await db.tenant_appointments.find(
+        {"tenant_portal_id": tenant['id']},
+        {"_id": 0}
+    ).sort("date", 1).to_list(100)
+    return appointments
+
+@api_router.post("/tenant-portal/appointments")
+async def create_tenant_appointment(data: AppointmentCreate, tenant = Depends(get_current_tenant)):
+    """Create a new appointment"""
+    appointment = {
+        "id": str(uuid.uuid4()),
+        "tenant_portal_id": tenant['id'],
+        "title": data.title,
+        "description": data.description,
+        "date": data.date,
+        "time": data.time,
+        "location": data.location,
+        "type": data.type,
+        "status": "scheduled",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.tenant_appointments.insert_one(appointment)
+    return appointment
+
+# Messaging System
+@api_router.get("/tenant-portal/conversations")
+async def get_tenant_conversations(tenant = Depends(get_current_tenant)):
+    """Get tenant's conversations"""
+    conversations = await db.tenant_conversations.find(
+        {"tenant_portal_id": tenant['id']},
+        {"_id": 0}
+    ).sort("last_message_at", -1).to_list(50)
+    return conversations
+
+@api_router.post("/tenant-portal/conversations/{org_id}")
+async def create_or_get_conversation(org_id: str, tenant = Depends(get_current_tenant)):
+    """Create or get existing conversation with an organization"""
+    existing = await db.tenant_conversations.find_one({
+        "tenant_portal_id": tenant['id'],
+        "org_id": org_id
+    }, {"_id": 0})
+    
+    if existing:
+        return existing
+    
+    org = await db.organizations.find_one({"id": org_id}, {"_id": 0})
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    owner = await db.users.find_one({"id": org['owner_id']}, {"_id": 0})
+    
+    conversation = {
+        "id": str(uuid.uuid4()),
+        "tenant_portal_id": tenant['id'],
+        "org_id": org_id,
+        "property_id": None,
+        "tenant_name": tenant['name'],
+        "landlord_name": owner['name'] if owner else "Property Manager",
+        "last_message": None,
+        "last_message_at": None,
+        "unread_count": 0,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.tenant_conversations.insert_one(conversation)
+    return conversation
+
+@api_router.get("/tenant-portal/conversations/{conversation_id}/messages")
+async def get_conversation_messages(conversation_id: str, tenant = Depends(get_current_tenant)):
+    """Get messages in a conversation"""
+    conv = await db.tenant_conversations.find_one({
+        "id": conversation_id,
+        "tenant_portal_id": tenant['id']
+    }, {"_id": 0})
+    
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    messages = await db.tenant_messages.find(
+        {"conversation_id": conversation_id},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(200)
+    
+    # Mark messages as read
+    await db.tenant_messages.update_many(
+        {"conversation_id": conversation_id, "sender_type": "landlord", "is_read": False},
+        {"$set": {"is_read": True}}
+    )
+    await db.tenant_conversations.update_one(
+        {"id": conversation_id},
+        {"$set": {"unread_count": 0}}
+    )
+    
+    return messages
+
+@api_router.post("/tenant-portal/conversations/{conversation_id}/messages")
+async def send_tenant_message(conversation_id: str, data: MessageCreate, tenant = Depends(get_current_tenant)):
+    """Send a message in a conversation"""
+    conv = await db.tenant_conversations.find_one({
+        "id": conversation_id,
+        "tenant_portal_id": tenant['id']
+    }, {"_id": 0})
+    
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    message = {
+        "id": str(uuid.uuid4()),
+        "conversation_id": conversation_id,
+        "sender_id": tenant['id'],
+        "sender_name": tenant['name'],
+        "sender_type": "tenant",
+        "content": data.content,
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.tenant_messages.insert_one(message)
+    
+    # Update conversation
+    await db.tenant_conversations.update_one(
+        {"id": conversation_id},
+        {"$set": {
+            "last_message": data.content[:100],
+            "last_message_at": message['created_at']
+        }}
+    )
+    
+    return MessageResponse(**message)
+
+# Educational Resources
+@api_router.get("/tenant-portal/resources")
+async def get_housing_resources():
+    """Get educational resources about housing programs"""
+    return {
+        "programs": [
+            {
+                "id": "section_8",
+                "name": "Section 8 Housing Choice Voucher Program",
+                "description": "The Housing Choice Voucher Program is the federal government's major program for assisting very low-income families, the elderly, and the disabled to afford decent, safe, and sanitary housing in the private market.",
+                "eligibility": "Generally, the family's income may not exceed 50% of the median income for the county or metropolitan area in which the family chooses to live.",
+                "process": [
+                    "Apply to your local Public Housing Agency (PHA)",
+                    "Get placed on the waiting list",
+                    "Receive your voucher when selected",
+                    "Find a suitable rental unit",
+                    "PHA inspects the unit",
+                    "Sign lease and move in"
+                ],
+                "timeline": "Wait times vary from months to years depending on local demand",
+                "link": "https://www.hud.gov/topics/housing_choice_voucher_program_section_8"
+            },
+            {
+                "id": "public_housing",
+                "name": "Public Housing",
+                "description": "Public housing provides decent and safe rental housing for eligible low-income families, the elderly, and persons with disabilities.",
+                "eligibility": "Eligibility is based on annual gross income, whether you qualify as elderly, disabled, or as a family, and U.S. citizenship or eligible immigration status.",
+                "process": [
+                    "Contact your local Public Housing Agency",
+                    "Submit an application",
+                    "Provide required documentation",
+                    "Wait for available unit",
+                    "Accept unit assignment"
+                ],
+                "timeline": "Wait times vary by location and unit availability",
+                "link": "https://www.hud.gov/topics/rental_assistance/phprog"
+            },
+            {
+                "id": "lihtc",
+                "name": "Low-Income Housing Tax Credit (LIHTC)",
+                "description": "LIHTC properties are privately owned apartments that offer reduced rents to qualifying low-income residents.",
+                "eligibility": "Income limits typically range from 50-60% of Area Median Income (AMI)",
+                "process": [
+                    "Find LIHTC properties in your area",
+                    "Contact property management",
+                    "Submit application and income documentation",
+                    "Complete income certification",
+                    "Sign lease if approved"
+                ],
+                "timeline": "Application processing typically takes 1-4 weeks",
+                "link": "https://www.huduser.gov/portal/datasets/lihtc.html"
+            },
+            {
+                "id": "hud_assisted",
+                "name": "HUD-Assisted Housing",
+                "description": "HUD provides funding to apartment owners who offer reduced rents to low-income tenants.",
+                "eligibility": "Based on income limits set by HUD for your area",
+                "process": [
+                    "Search for HUD-assisted properties",
+                    "Apply directly to the property",
+                    "Provide income and household documentation",
+                    "Complete HUD income certification"
+                ],
+                "timeline": "Varies by property availability",
+                "link": "https://www.hud.gov/topics/rental_assistance"
+            },
+            {
+                "id": "vash",
+                "name": "HUD-VASH (Veterans Affairs Supportive Housing)",
+                "description": "HUD-VASH combines Housing Choice Voucher rental assistance with VA case management and clinical services for homeless veterans.",
+                "eligibility": "Must be a veteran, homeless, and in need of case management services",
+                "process": [
+                    "Contact your local VA Medical Center",
+                    "Complete VA assessment",
+                    "Receive voucher referral",
+                    "Find housing with VA support"
+                ],
+                "timeline": "Varies based on VA assessment and voucher availability",
+                "link": "https://www.va.gov/homeless/hud-vash.asp"
+            }
+        ],
+        "tenant_rights": [
+            {
+                "title": "Right to Fair Housing",
+                "description": "You cannot be discriminated against based on race, color, national origin, religion, sex, familial status, or disability."
+            },
+            {
+                "title": "Right to Habitable Housing",
+                "description": "Your landlord must maintain the rental property in a safe and habitable condition."
+            },
+            {
+                "title": "Right to Privacy",
+                "description": "Your landlord must provide reasonable notice (usually 24-48 hours) before entering your unit, except in emergencies."
+            },
+            {
+                "title": "Right to Security Deposit Return",
+                "description": "You have the right to receive your security deposit back, minus legitimate deductions, within the timeframe specified by state law."
+            },
+            {
+                "title": "Right to Proper Eviction Process",
+                "description": "You cannot be evicted without proper legal notice and court proceedings."
+            },
+            {
+                "title": "Right to Organize",
+                "description": "You have the right to form or join a tenants' organization without retaliation."
+            }
+        ],
+        "faqs": [
+            {
+                "question": "How long does the Section 8 application process take?",
+                "answer": "The waiting list can range from a few months to several years depending on your local Public Housing Agency's demand. Once you receive a voucher, you typically have 60-120 days to find housing."
+            },
+            {
+                "question": "What documents do I need for my housing application?",
+                "answer": "Generally, you'll need: government-issued ID for all adults, Social Security cards for all household members, birth certificates, proof of income (pay stubs, benefit letters), bank statements, and your housing voucher if applicable."
+            },
+            {
+                "question": "Can a landlord refuse to accept my Section 8 voucher?",
+                "answer": "It depends on your state and local laws. Some jurisdictions prohibit discrimination based on source of income, meaning landlords must accept vouchers. Check your local fair housing laws."
+            },
+            {
+                "question": "What happens during a housing inspection?",
+                "answer": "An inspector will check that the unit meets Housing Quality Standards (HQS), including working utilities, safety features, adequate space, and general habitability. Any issues must be fixed before you can move in."
+            },
+            {
+                "question": "How much rent will I pay with Section 8?",
+                "answer": "Generally, you'll pay about 30% of your adjusted monthly income toward rent. The voucher covers the difference between your payment and the approved rent amount."
+            },
+            {
+                "question": "Can I be evicted from Section 8 housing?",
+                "answer": "Yes, you can be evicted for lease violations, non-payment of your portion of rent, or program violations. However, proper legal eviction procedures must be followed."
+            }
+        ]
+    }
+
+# Landlord access to tenant portal data (for property managers)
+@api_router.get("/organizations/{org_id}/tenant-portal-users")
+async def get_tenant_portal_users_for_org(org_id: str, user = Depends(get_current_user)):
+    """Get all tenant portal users connected to this organization"""
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
+    
+    # Get tenants who have conversations with this org
+    conversations = await db.tenant_conversations.find({"org_id": org_id}, {"_id": 0}).to_list(100)
+    tenant_ids = [c['tenant_portal_id'] for c in conversations]
+    
+    tenants = []
+    for tid in tenant_ids:
+        tenant = await db.tenant_portal_users.find_one({"id": tid}, {"_id": 0, "hashed_password": 0})
+        if tenant:
+            tenants.append(tenant)
+    
+    return tenants
+
+@api_router.get("/organizations/{org_id}/tenant-portal-users/{tenant_id}")
+async def get_tenant_portal_user_detail(org_id: str, tenant_id: str, user = Depends(get_current_user)):
+    """Get detailed tenant portal user info (for landlords)"""
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
+    
+    tenant = await db.tenant_portal_users.find_one({"id": tenant_id}, {"_id": 0, "hashed_password": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    return tenant
+
+@api_router.put("/organizations/{org_id}/tenant-portal-users/{tenant_id}/stage")
+async def update_tenant_stage_by_landlord(org_id: str, tenant_id: str, stage: ApplicationStage, user = Depends(get_current_user)):
+    """Update tenant's application stage (landlord action)"""
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
+    
+    result = await db.tenant_portal_users.update_one(
+        {"id": tenant_id},
+        {"$set": {
+            "application_stage": stage.value,
+            "stage_updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.modified_count == 0:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    return {"message": "Stage updated", "stage": stage.value}
+
+@api_router.put("/organizations/{org_id}/tenant-portal-users/{tenant_id}/checklist/{item_id}/verify")
+async def verify_checklist_item(org_id: str, tenant_id: str, item_id: str, verified: bool, user = Depends(get_current_user)):
+    """Verify or reject a tenant's checklist document (landlord action)"""
+    membership = await get_user_membership(user['id'], org_id)
+    require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
+    
+    tenant = await db.tenant_portal_users.find_one({"id": tenant_id}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    checklist = tenant.get('document_checklist', [])
+    item_index = next((i for i, item in enumerate(checklist) if item['id'] == item_id), None)
+    
+    if item_index is None:
+        raise HTTPException(status_code=404, detail="Checklist item not found")
+    
+    checklist[item_index]['status'] = DocumentChecklistStatus.VERIFIED.value if verified else DocumentChecklistStatus.REJECTED.value
+    checklist[item_index]['verified_at'] = datetime.now(timezone.utc).isoformat() if verified else None
+    
+    await db.tenant_portal_users.update_one(
+        {"id": tenant_id},
+        {"$set": {"document_checklist": checklist}}
+    )
+    
+    return checklist[item_index]
+
+# Landlord messaging
+@api_router.get("/organizations/{org_id}/conversations")
+async def get_org_conversations(org_id: str, user = Depends(get_current_user)):
+    """Get all conversations for an organization"""
+    membership = await get_user_membership(user['id'], org_id)
+    
+    conversations = await db.tenant_conversations.find(
+        {"org_id": org_id},
+        {"_id": 0}
+    ).sort("last_message_at", -1).to_list(100)
+    
+    return conversations
+
+@api_router.get("/organizations/{org_id}/conversations/{conversation_id}/messages")
+async def get_org_conversation_messages(org_id: str, conversation_id: str, user = Depends(get_current_user)):
+    """Get messages in a conversation (landlord view)"""
+    await get_user_membership(user['id'], org_id)
+    
+    conv = await db.tenant_conversations.find_one({
+        "id": conversation_id,
+        "org_id": org_id
+    }, {"_id": 0})
+    
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    messages = await db.tenant_messages.find(
+        {"conversation_id": conversation_id},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(200)
+    
+    # Mark tenant messages as read
+    await db.tenant_messages.update_many(
+        {"conversation_id": conversation_id, "sender_type": "tenant", "is_read": False},
+        {"$set": {"is_read": True}}
+    )
+    
+    return messages
+
+@api_router.post("/organizations/{org_id}/conversations/{conversation_id}/messages")
+async def send_landlord_message(org_id: str, conversation_id: str, data: MessageCreate, user = Depends(get_current_user)):
+    """Send a message as landlord"""
+    await get_user_membership(user['id'], org_id)
+    
+    conv = await db.tenant_conversations.find_one({
+        "id": conversation_id,
+        "org_id": org_id
+    }, {"_id": 0})
+    
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    message = {
+        "id": str(uuid.uuid4()),
+        "conversation_id": conversation_id,
+        "sender_id": user['id'],
+        "sender_name": user['name'],
+        "sender_type": "landlord",
+        "content": data.content,
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.tenant_messages.insert_one(message)
+    
+    # Update conversation with unread count for tenant
+    await db.tenant_conversations.update_one(
+        {"id": conversation_id},
+        {
+            "$set": {
+                "last_message": data.content[:100],
+                "last_message_at": message['created_at']
+            },
+            "$inc": {"unread_count": 1}
+        }
+    )
+    
+    return MessageResponse(**message)
+
 # Include the router in the main app
 app.include_router(api_router)
 
