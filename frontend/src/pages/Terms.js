@@ -181,13 +181,43 @@ const Terms = () => {
               </p>
             </section>
 
-            <section>
-              <h2 className="text-2xl font-semibold font-heading mb-4">7. Intellectual Property</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                The Service and its original content (excluding Your Content), features, and functionality are and will remain the exclusive property of MyPropOps. The Service is protected by copyright, trademark, and other laws.
+            <section className="bg-amber-50 dark:bg-amber-950/30 -mx-4 p-6 rounded-lg border border-amber-200 dark:border-amber-800">
+              <h2 className="text-2xl font-semibold font-heading mb-4 text-amber-900 dark:text-amber-100">8. Intellectual Property Rights</h2>
+              
+              <div className="bg-amber-100 dark:bg-amber-900/50 rounded-lg p-4 mb-4">
+                <p className="text-amber-900 dark:text-amber-100 font-semibold text-sm">
+                  OWNERSHIP NOTICE: MyPropOps, Inc. exclusively owns all intellectual property rights in and to the Service.
+                </p>
+              </div>
+              
+              <h3 className="text-xl font-semibold mt-6 mb-3 text-amber-900 dark:text-amber-100">8.1 Our Intellectual Property</h3>
+              <p className="text-amber-800 dark:text-amber-200 leading-relaxed mb-3">
+                The following are the exclusive property of MyPropOps, Inc. and its licensors:
               </p>
-              <p className="text-muted-foreground leading-relaxed mt-4">
-                Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent.
+              <ul className="list-disc pl-6 space-y-2 text-amber-800 dark:text-amber-200">
+                <li>All software code, including source code, object code, and compiled applications</li>
+                <li>Algorithms, data structures, and technical specifications</li>
+                <li>User interface designs, layouts, visual elements, and user experience flows</li>
+                <li>The MyPropOps name, logo, tagline "#1 Property Management Software," and all related trademarks and service marks</li>
+                <li>Documentation, training materials, help content, and marketing materials</li>
+                <li>APIs, webhooks, integrations, and system architectures</li>
+                <li>Any improvements, modifications, enhancements, or derivatives of the above</li>
+                <li>All patents, patent applications, copyrights, trade secrets, and other intellectual property rights</li>
+              </ul>
+              
+              <h3 className="text-xl font-semibold mt-6 mb-3 text-amber-900 dark:text-amber-100">8.2 Protection of Intellectual Property</h3>
+              <p className="text-amber-800 dark:text-amber-200 leading-relaxed">
+                The Service is protected by copyright, trademark, patent, trade secret, and other intellectual property laws of the United States and foreign countries. You acknowledge that the Service contains proprietary and confidential information that is protected by applicable intellectual property and other laws. Unauthorized copying, distribution, modification, public display, or public performance of the Service is strictly prohibited.
+              </p>
+
+              <h3 className="text-xl font-semibold mt-6 mb-3 text-amber-900 dark:text-amber-100">8.3 Trademark Notice</h3>
+              <p className="text-amber-800 dark:text-amber-200 leading-relaxed">
+                "MyPropOps," the MyPropOps logo, "#1 Property Management Software," and all related names, logos, product and service names, designs, and slogans are trademarks of MyPropOps, Inc. You may not use such marks without our prior written permission. All other names, logos, product and service names, designs, and slogans are the trademarks of their respective owners.
+              </p>
+              
+              <h3 className="text-xl font-semibold mt-6 mb-3 text-amber-900 dark:text-amber-100">8.4 Feedback</h3>
+              <p className="text-amber-800 dark:text-amber-200 leading-relaxed">
+                Any suggestions, ideas, enhancement requests, feedback, or other information you provide regarding the Service ("Feedback") will be the sole and exclusive property of MyPropOps, Inc. You hereby assign all rights in Feedback to us, and we shall be entitled to unrestricted use of Feedback for any purpose without acknowledgment or compensation to you.
               </p>
             </section>
 
