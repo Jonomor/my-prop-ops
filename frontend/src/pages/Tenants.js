@@ -54,6 +54,7 @@ const Tenants = () => {
   const { api, currentOrg } = useAuth();
   const [tenants, setTenants] = useState([]);
   const [units, setUnits] = useState([]);
+  const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
