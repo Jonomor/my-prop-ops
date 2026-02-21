@@ -1820,6 +1820,8 @@ async def create_tenant_appointment(data: AppointmentCreate, tenant = Depends(ge
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.tenant_appointments.insert_one(appointment)
+    # Remove MongoDB _id to avoid serialization issues
+    appointment.pop('_id', None)
     return appointment
 
 # Messaging System
