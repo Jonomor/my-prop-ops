@@ -441,6 +441,22 @@ const TenantPortal = () => {
                   <p className="text-muted-foreground">Upload and track your required documents.</p>
                 </div>
 
+                {/* Legend */}
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-gray-300"></div>
+                    <span>You provide</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                    <span>Download & sign</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+                    <span>Request from landlord</span>
+                  </div>
+                </div>
+
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -461,53 +477,118 @@ const TenantPortal = () => {
                       {checklist.map((item) => (
                         <div 
                           key={item.id} 
-                          className={`flex items-center justify-between p-4 rounded-lg border ${
+                          className={`p-4 rounded-lg border ${
                             item.status === 'verified' ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200' :
                             item.status === 'uploaded' ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200' :
                             item.status === 'rejected' ? 'bg-red-50 dark:bg-red-900/20 border-red-200' :
+                            item.status === 'requested' ? 'bg-purple-50 dark:bg-purple-900/20 border-purple-200' :
                             'bg-gray-50 dark:bg-gray-800/50 border-gray-200'
                           }`}
                         >
-                          <div className="flex items-start gap-4">
-                            {getStatusIcon(item.status)}
-                            <div>
-                              <p className="font-medium flex items-center gap-2">
-                                {item.name}
-                                {item.required && <span className="text-xs text-red-500">*Required</span>}
-                              </p>
-                              <p className="text-sm text-muted-foreground">{item.description}</p>
-                              {item.status === 'uploaded' && (
-                                <p className="text-xs text-amber-600 mt-1">Pending verification</p>
-                              )}
-                              {item.status === 'verified' && (
-                                <p className="text-xs text-green-600 mt-1">Verified</p>
-                              )}
-                              {item.status === 'rejected' && item.notes && (
-                                <p className="text-xs text-red-600 mt-1">{item.notes}</p>
-                              )}
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-4 flex-1">
+                              {getStatusIcon(item.status)}
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <p className="font-medium">{item.name}</p>
+                                  {item.required && <span className="text-xs text-red-500 font-medium">*Required</span>}
+                                  {item.source_type === 'download_sign' && (
+                                    <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">Download & Sign</span>
+                                  )}
+                                  {item.source_type === 'request_from_landlord' && (
+                                    <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">Request from Landlord</span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                                {item.help_text && (
+                                  <p className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                                    <HelpCircle className="w-3 h-3" />
+                                    {item.help_text}
+                                  </p>
+                                )}
+                                {item.status === 'uploaded' && (
+                                  <p className="text-xs text-amber-600 mt-1 font-medium">Pending verification</p>
+                                )}
+                                {item.status === 'verified' && (
+                                  <p className="text-xs text-green-600 mt-1 font-medium">Verified</p>
+                                )}
+                                {item.status === 'rejected' && item.notes && (
+                                  <p className="text-xs text-red-600 mt-1 font-medium">{item.notes}</p>
+                                )}
+                                {item.status === 'requested' && (
+                                  <p className="text-xs text-purple-600 mt-1 font-medium">
+                                    Requested on {new Date(item.requested_at).toLocaleDateString()}
+                                  </p>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {item.document_id && (
-                              <Button variant="ghost" size="sm" asChild>
-                                <a href={`${process.env.REACT_APP_BACKEND_URL}/api/tenant-portal/documents/${item.document_id}/download`} target="_blank" rel="noopener noreferrer">
-                                  <Download className="w-4 h-4" />
-                                </a>
-                              </Button>
-                            )}
-                            <label className="cursor-pointer">
-                              <input
-                                type="file"
-                                className="hidden"
-                                onChange={(e) => e.target.files?.[0] && handleFileUpload(item.id, e.target.files[0])}
-                              />
-                              <Button variant="outline" size="sm" asChild>
-                                <span>
-                                  <Upload className="w-4 h-4 mr-1" />
-                                  {item.status === 'not_started' ? 'Upload' : 'Replace'}
-                                </span>
-                              </Button>
-                            </label>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {/* Download template button for download_sign type */}
+                              {item.source_type === 'download_sign' && item.template && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                                  asChild
+                                >
+                                  <a 
+                                    href={`${process.env.REACT_APP_BACKEND_URL}/api/tenant-portal/templates/${item.template}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                  >
+                                    <Download className="w-4 h-4 mr-1" />
+                                    Template
+                                  </a>
+                                </Button>
+                              )}
+                              
+                              {/* Request from landlord button */}
+                              {item.source_type === 'request_from_landlord' && item.status === 'not_started' && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="text-purple-600 border-purple-200 hover:bg-purple-50"
+                                  onClick={async () => {
+                                    try {
+                                      await api.post(`/api/tenant-portal/checklist/${item.id}/request`, {
+                                        message: `Please provide ${item.name} for my housing application.`
+                                      });
+                                      toast.success(`Request sent for ${item.name}`);
+                                      fetchData();
+                                    } catch (error) {
+                                      toast.error('Failed to send request');
+                                    }
+                                  }}
+                                >
+                                  <Mail className="w-4 h-4 mr-1" />
+                                  Request
+                                </Button>
+                              )}
+                              
+                              {/* Download uploaded document */}
+                              {item.document_id && (
+                                <Button variant="ghost" size="sm" asChild>
+                                  <a href={`${process.env.REACT_APP_BACKEND_URL}/api/tenant-portal/documents/${item.document_id}/download`} target="_blank" rel="noopener noreferrer">
+                                    <Download className="w-4 h-4" />
+                                  </a>
+                                </Button>
+                              )}
+                              
+                              {/* Upload button */}
+                              <label className="cursor-pointer">
+                                <input
+                                  type="file"
+                                  className="hidden"
+                                  onChange={(e) => e.target.files?.[0] && handleFileUpload(item.id, e.target.files[0])}
+                                />
+                                <Button variant="outline" size="sm" className="bg-emerald-50 hover:bg-emerald-100 border-emerald-200" asChild>
+                                  <span>
+                                    <Upload className="w-4 h-4 mr-1" />
+                                    {item.status === 'not_started' || item.status === 'requested' ? 'Upload' : 'Replace'}
+                                  </span>
+                                </Button>
+                              </label>
+                            </div>
                           </div>
                         </div>
                       ))}
