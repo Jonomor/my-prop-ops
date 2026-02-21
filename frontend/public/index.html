@@ -139,5 +139,22 @@
                 },
             });
         </script>
+        <script>
+            // Remove Emergent badge after DOM loads
+            function removeEmergentBadge() {
+                const badge = document.getElementById('emergent-badge');
+                if (badge) badge.remove();
+                // Also remove any element with emergent in href
+                document.querySelectorAll('a[href*="emergent.sh"]').forEach(el => el.remove());
+            }
+            // Run immediately and after delays to catch dynamically injected elements
+            removeEmergentBadge();
+            setTimeout(removeEmergentBadge, 100);
+            setTimeout(removeEmergentBadge, 500);
+            setTimeout(removeEmergentBadge, 1000);
+            // Also observe for new elements
+            const observer = new MutationObserver(removeEmergentBadge);
+            observer.observe(document.body, { childList: true, subtree: true });
+        </script>
     </body>
 </html>
