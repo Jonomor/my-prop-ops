@@ -1119,6 +1119,11 @@ async def list_units(org_id: str, property_id: Optional[str] = None, user = Depe
 async def create_unit(org_id: str, data: UnitCreate, user = Depends(get_current_user)):
     await get_user_membership(user['id'], org_id)
     
+    # Check unit limit
+    can_create, error_msg = await check_unit_limit(org_id)
+    if not can_create:
+        raise HTTPException(status_code=402, detail=error_msg)
+    
     # Verify property exists and belongs to org
     prop = await db.properties.find_one({"id": data.property_id, "org_id": org_id})
     if not prop:
