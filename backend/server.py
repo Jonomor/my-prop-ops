@@ -3657,6 +3657,170 @@ async def send_notification_email(email: str, name: str, subject: str, content: 
         logger.error(f"Failed to send notification email: {str(e)}")
         return False
 
+async def send_maintenance_request_email(email: str, name: str, request_title: str, request_description: str, property_name: str, priority: str, is_tenant: bool = False):
+    """Send maintenance request notification email"""
+    if not mailchimp_transactional_client:
+        logger.info(f"Mailchimp not configured - skipping maintenance email to {email}")
+        return False
+    
+    priority_color = {
+        "low": "#22c55e",
+        "medium": "#3b82f6",
+        "high": "#f97316",
+        "emergency": "#ef4444"
+    }.get(priority, "#3b82f6")
+    
+    subject = f"{'New' if not is_tenant else 'Your'} Maintenance Request: {request_title}"
+    
+    try:
+        message = {
+            "from_email": MAILCHIMP_FROM_EMAIL,
+            "subject": subject,
+            "html": f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 30px 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0; font-size: 24px;">Maintenance Request</h1>
+                    </div>
+                    <div style="padding: 30px 20px;">
+                        <p>Hi {name},</p>
+                        <p>{'A new maintenance request has been submitted' if not is_tenant else 'Your maintenance request has been received'}:</p>
+                        
+                        <div style="background: #f8fafc; border-left: 4px solid {priority_color}; padding: 20px; margin: 20px 0;">
+                            <p style="margin: 0 0 10px 0;"><strong>Title:</strong> {request_title}</p>
+                            <p style="margin: 0 0 10px 0;"><strong>Property:</strong> {property_name}</p>
+                            <p style="margin: 0 0 10px 0;"><strong>Priority:</strong> <span style="color: {priority_color}; font-weight: bold;">{priority.upper()}</span></p>
+                            <p style="margin: 0;"><strong>Description:</strong></p>
+                            <p style="margin: 5px 0 0 0; color: #64748b;">{request_description}</p>
+                        </div>
+                        
+                        <p>{'Log in to your MyPropOps dashboard to manage this request.' if not is_tenant else 'We will keep you updated on the progress of your request.'}</p>
+                        
+                        <p style="margin-top: 30px;">Best regards,<br>The MyPropOps Team</p>
+                    </div>
+                    <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+                        <p>You're receiving this email because of a maintenance request on MyPropOps.</p>
+                    </div>
+                </body>
+            </html>
+            """,
+            "to": [{"email": email, "name": name, "type": "to"}],
+            "tags": ["maintenance", priority]
+        }
+        
+        result = mailchimp_transactional_client.messages.send({"message": message})
+        logger.info(f"Maintenance request email sent to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send maintenance request email: {str(e)}")
+        return False
+
+async def send_subscription_upgraded_email(email: str, name: str, plan_name: str, billing_period: str):
+    """Send email when user upgrades their subscription"""
+    if not mailchimp_transactional_client:
+        logger.info(f"Mailchimp not configured - skipping subscription email to {email}")
+        return False
+    
+    plan_features = {
+        "standard": ["Up to 20 properties", "Up to 40 units", "5 team members", "Full inspection workflows", "10GB document storage"],
+        "pro": ["Unlimited properties", "Unlimited units", "Unlimited team members", "Tenant Portal", "24/7 priority support", "API access"]
+    }
+    
+    features = plan_features.get(plan_name, [])
+    features_html = "".join([f"<li style='margin: 5px 0;'>{f}</li>" for f in features])
+    
+    try:
+        message = {
+            "from_email": MAILCHIMP_FROM_EMAIL,
+            "subject": f"Welcome to MyPropOps {plan_name.title()}!",
+            "html": f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">You're Upgraded!</h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0;">Welcome to {plan_name.title()}</p>
+                    </div>
+                    <div style="padding: 40px 20px;">
+                        <p>Hi {name},</p>
+                        <p>Thank you for upgrading to the <strong>{plan_name.title()}</strong> plan! Your subscription is now active.</p>
+                        
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                            <p style="margin: 0 0 10px 0; font-weight: bold; color: #166534;">Your new features include:</p>
+                            <ul style="margin: 0; padding-left: 20px; color: #166534;">
+                                {features_html}
+                            </ul>
+                        </div>
+                        
+                        <p><strong>Billing:</strong> You will be billed {billing_period} at the current rate.</p>
+                        
+                        <p>If you have any questions about your new features, our support team is here to help!</p>
+                        
+                        <p style="margin-top: 30px;">Best regards,<br>The MyPropOps Team</p>
+                    </div>
+                    <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+                        <p>Manage your subscription in your MyPropOps dashboard.</p>
+                    </div>
+                </body>
+            </html>
+            """,
+            "to": [{"email": email, "name": name, "type": "to"}],
+            "tags": ["subscription", "upgrade", plan_name]
+        }
+        
+        result = mailchimp_transactional_client.messages.send({"message": message})
+        logger.info(f"Subscription upgraded email sent to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send subscription upgraded email: {str(e)}")
+        return False
+
+async def send_team_invite_email(email: str, inviter_name: str, org_name: str, role: str, invite_link: str):
+    """Send team invitation email"""
+    if not mailchimp_transactional_client:
+        logger.info(f"Mailchimp not configured - skipping invite email to {email}")
+        return False
+    
+    try:
+        message = {
+            "from_email": MAILCHIMP_FROM_EMAIL,
+            "subject": f"You're invited to join {org_name} on MyPropOps",
+            "html": f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 40px 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">You're Invited!</h1>
+                    </div>
+                    <div style="padding: 40px 20px;">
+                        <p>Hi there,</p>
+                        <p><strong>{inviter_name}</strong> has invited you to join <strong>{org_name}</strong> on MyPropOps as a <strong>{role}</strong>.</p>
+                        
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="{invite_link}" style="background: #3b82f6; color: white; padding: 15px 30px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">Accept Invitation</a>
+                        </div>
+                        
+                        <p style="color: #64748b; font-size: 14px;">This invitation will expire in 7 days.</p>
+                        
+                        <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+                        
+                        <p style="margin-top: 30px;">Best regards,<br>The MyPropOps Team</p>
+                    </div>
+                    <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+                        <p>MyPropOps - Property Management Made Simple</p>
+                    </div>
+                </body>
+            </html>
+            """,
+            "to": [{"email": email, "type": "to"}],
+            "tags": ["invitation", "team"]
+        }
+        
+        result = mailchimp_transactional_client.messages.send({"message": message})
+        logger.info(f"Team invite email sent to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send team invite email: {str(e)}")
+        return False
+
 # Include the router in the main app
 app.include_router(api_router)
 
