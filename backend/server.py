@@ -48,6 +48,13 @@ JWT_EXPIRATION_HOURS = 24
 STRIPE_API_KEY = os.environ.get("STRIPE_API_KEY", "sk_test_emergent")
 STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY", "")
 
+# Configure logging early
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
+
 # Subscription Plan Pricing (amounts in USD)
 SUBSCRIPTION_PLANS = {
     "standard_monthly": {"amount": 29.00, "plan": "standard", "period": "monthly"},
