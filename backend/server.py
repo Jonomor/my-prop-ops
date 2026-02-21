@@ -862,7 +862,7 @@ async def create_notification(org_id: str, user_id: str, title: str, message: st
 
 # ============== AUTH ROUTES ==============
 @api_router.post("/auth/register", response_model=TokenResponse)
-async def register(data: UserCreate):
+async def register(data: UserCreate, background_tasks: BackgroundTasks):
     # Check if user exists
     existing = await db.users.find_one({"email": data.email})
     if existing:
@@ -898,6 +898,9 @@ async def register(data: UserCreate):
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.memberships.insert_one(membership)
+    
+    # Send welcome email in background
+    background_tasks.add_task(send_welcome_email, data.email, data.name)
     
     token = create_token(user_id, data.email)
     return TokenResponse(
