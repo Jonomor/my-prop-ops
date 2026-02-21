@@ -146,7 +146,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold font-heading mb-4">5. Acceptable Use</h2>
+              <h2 className="text-2xl font-semibold font-heading mb-4">6. Acceptable Use</h2>
               <p className="text-muted-foreground leading-relaxed">
                 You agree not to use the Service to:
               </p>
