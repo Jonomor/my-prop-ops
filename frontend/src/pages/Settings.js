@@ -23,7 +23,7 @@ const Settings = () => {
 
   const fetchTenantInviteCode = async () => {
     try {
-      const res = await api.get(`/api/organizations/${currentOrg.org_id}/tenant-invite-code`);
+      const res = await api.get(`/organizations/${currentOrg.org_id}/tenant-invite-code`);
       setTenantInviteCode(res.data.invite_code);
     } catch (error) {
       // No code exists yet
@@ -33,7 +33,7 @@ const Settings = () => {
 
   const fetchDocumentRequests = async () => {
     try {
-      const res = await api.get(`/api/organizations/${currentOrg.org_id}/document-requests`);
+      const res = await api.get(`/organizations/${currentOrg.org_id}/document-requests`);
       setDocumentRequests(res.data);
     } catch (error) {
       console.error('Failed to fetch document requests');
@@ -47,7 +47,7 @@ const Settings = () => {
     }
     try {
       setLoadingCode(true);
-      const res = await api.post(`/api/organizations/${currentOrg.org_id}/tenant-invite-code`);
+      const res = await api.post(`/organizations/${currentOrg.org_id}/tenant-invite-code`);
       setTenantInviteCode(res.data.invite_code);
       toast.success('Tenant invite code generated!');
     } catch (error) {
