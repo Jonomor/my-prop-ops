@@ -2703,6 +2703,315 @@ async def send_landlord_message(org_id: str, conversation_id: str, data: Message
     
     return MessageResponse(**message)
 
+# ============== MAINTENANCE REQUEST ENDPOINTS ==============
+
+@api_router.post("/maintenance-requests", response_model=MaintenanceRequestResponse)
+async def create_maintenance_request(
+    data: MaintenanceRequestCreate,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Create a new maintenance request"""
+    user = await get_current_user(credentials)
+    membership = await db.memberships.find_one({"user_id": user["id"]}, {"_id": 0, "org_id": 1})
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found")
+    
+    org_id = membership["org_id"]
+    
+    # Verify property belongs to org
+    property_doc = await db.properties.find_one(
+        {"id": data.property_id, "org_id": org_id},
+        {"_id": 0, "name": 1}
+    )
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    # Get unit and tenant info if provided
+    unit_number = None
+    tenant_name = None
+    
+    if data.unit_id:
+        unit = await db.units.find_one({"id": data.unit_id, "org_id": org_id}, {"_id": 0, "unit_number": 1})
+        if unit:
+            unit_number = unit.get("unit_number")
+    
+    if data.tenant_id:
+        tenant = await db.tenants.find_one({"id": data.tenant_id, "org_id": org_id}, {"_id": 0, "name": 1})
+        if tenant:
+            tenant_name = tenant.get("name")
+    
+    request_doc = {
+        "id": str(uuid.uuid4()),
+        "org_id": org_id,
+        "property_id": data.property_id,
+        "property_name": property_doc.get("name"),
+        "unit_id": data.unit_id,
+        "unit_number": unit_number,
+        "tenant_id": data.tenant_id,
+        "tenant_name": tenant_name,
+        "category": data.category.value,
+        "priority": data.priority.value,
+        "status": MaintenanceStatus.OPEN.value,
+        "title": data.title,
+        "description": data.description,
+        "preferred_access_time": data.preferred_access_time,
+        "permission_to_enter": data.permission_to_enter,
+        "assigned_to": None,
+        "assigned_to_name": None,
+        "notes": None,
+        "scheduled_date": None,
+        "completion_notes": None,
+        "created_by": user["id"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": None
+    }
+    
+    await db.maintenance_requests.insert_one(request_doc)
+    request_doc.pop("_id", None)
+    
+    # Create notification
+    await db.notifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "org_id": org_id,
+        "user_id": user["id"],
+        "title": "New Maintenance Request",
+        "message": f"Maintenance request created: {data.title}",
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return MaintenanceRequestResponse(**request_doc)
+
+@api_router.get("/maintenance-requests", response_model=List[MaintenanceRequestResponse])
+async def list_maintenance_requests(
+    status: Optional[str] = None,
+    priority: Optional[str] = None,
+    property_id: Optional[str] = None,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """List maintenance requests for the organization"""
+    user = await get_current_user(credentials)
+    membership = await db.memberships.find_one({"user_id": user["id"]}, {"_id": 0, "org_id": 1})
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found")
+    
+    query = {"org_id": membership["org_id"]}
+    
+    if status:
+        query["status"] = status
+    if priority:
+        query["priority"] = priority
+    if property_id:
+        query["property_id"] = property_id
+    
+    requests = await db.maintenance_requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return [MaintenanceRequestResponse(**r) for r in requests]
+
+@api_router.get("/maintenance-requests/{request_id}", response_model=MaintenanceRequestResponse)
+async def get_maintenance_request(
+    request_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Get a specific maintenance request"""
+    user = await get_current_user(credentials)
+    membership = await db.memberships.find_one({"user_id": user["id"]}, {"_id": 0, "org_id": 1})
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found")
+    
+    request_doc = await db.maintenance_requests.find_one(
+        {"id": request_id, "org_id": membership["org_id"]},
+        {"_id": 0}
+    )
+    
+    if not request_doc:
+        raise HTTPException(status_code=404, detail="Maintenance request not found")
+    
+    return MaintenanceRequestResponse(**request_doc)
+
+@api_router.put("/maintenance-requests/{request_id}", response_model=MaintenanceRequestResponse)
+async def update_maintenance_request(
+    request_id: str,
+    data: MaintenanceRequestUpdate,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Update a maintenance request"""
+    user = await get_current_user(credentials)
+    membership = await db.memberships.find_one({"user_id": user["id"]}, {"_id": 0, "org_id": 1})
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found")
+    
+    request_doc = await db.maintenance_requests.find_one(
+        {"id": request_id, "org_id": membership["org_id"]},
+        {"_id": 0}
+    )
+    
+    if not request_doc:
+        raise HTTPException(status_code=404, detail="Maintenance request not found")
+    
+    update_data = {"updated_at": datetime.now(timezone.utc).isoformat()}
+    
+    if data.status:
+        update_data["status"] = data.status.value
+    if data.priority:
+        update_data["priority"] = data.priority.value
+    if data.assigned_to is not None:
+        update_data["assigned_to"] = data.assigned_to
+        # Get assigned user name
+        if data.assigned_to:
+            assigned_user = await db.users.find_one({"id": data.assigned_to}, {"_id": 0, "name": 1})
+            update_data["assigned_to_name"] = assigned_user.get("name") if assigned_user else None
+        else:
+            update_data["assigned_to_name"] = None
+    if data.notes is not None:
+        update_data["notes"] = data.notes
+    if data.scheduled_date is not None:
+        update_data["scheduled_date"] = data.scheduled_date
+    if data.completion_notes is not None:
+        update_data["completion_notes"] = data.completion_notes
+    
+    await db.maintenance_requests.update_one(
+        {"id": request_id},
+        {"$set": update_data}
+    )
+    
+    # Fetch updated document
+    updated = await db.maintenance_requests.find_one({"id": request_id}, {"_id": 0})
+    
+    # Create audit log
+    await db.audit_logs.insert_one({
+        "id": str(uuid.uuid4()),
+        "org_id": membership["org_id"],
+        "user_id": user["id"],
+        "user_name": user["name"],
+        "action": "updated",
+        "entity_type": "maintenance_request",
+        "entity_id": request_id,
+        "details": f"Updated maintenance request: {request_doc.get('title')}",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return MaintenanceRequestResponse(**updated)
+
+@api_router.delete("/maintenance-requests/{request_id}")
+async def delete_maintenance_request(
+    request_id: str,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Delete a maintenance request"""
+    user = await get_current_user(credentials)
+    membership = await db.memberships.find_one({"user_id": user["id"]}, {"_id": 0, "org_id": 1, "role": 1})
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found")
+    
+    if membership["role"] not in ["admin", "manager"]:
+        raise HTTPException(status_code=403, detail="Only admins and managers can delete maintenance requests")
+    
+    result = await db.maintenance_requests.delete_one(
+        {"id": request_id, "org_id": membership["org_id"]}
+    )
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Maintenance request not found")
+    
+    return {"message": "Maintenance request deleted"}
+
+@api_router.get("/maintenance-requests/stats/summary")
+async def get_maintenance_stats(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Get maintenance request statistics"""
+    user = await get_current_user(credentials)
+    membership = await db.memberships.find_one({"user_id": user["id"]}, {"_id": 0, "org_id": 1})
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found")
+    
+    org_id = membership["org_id"]
+    
+    total = await db.maintenance_requests.count_documents({"org_id": org_id})
+    open_count = await db.maintenance_requests.count_documents({"org_id": org_id, "status": "open"})
+    in_progress = await db.maintenance_requests.count_documents({"org_id": org_id, "status": "in_progress"})
+    completed = await db.maintenance_requests.count_documents({"org_id": org_id, "status": "completed"})
+    emergency = await db.maintenance_requests.count_documents({"org_id": org_id, "priority": "emergency", "status": {"$ne": "completed"}})
+    
+    # Get by category
+    categories = {}
+    for cat in MaintenanceCategory:
+        categories[cat.value] = await db.maintenance_requests.count_documents({"org_id": org_id, "category": cat.value})
+    
+    return {
+        "total": total,
+        "open": open_count,
+        "in_progress": in_progress,
+        "completed": completed,
+        "emergency": emergency,
+        "by_category": categories
+    }
+
+# Tenant Portal - Submit Maintenance Request
+@api_router.post("/portal/maintenance-requests")
+async def tenant_submit_maintenance_request(
+    data: MaintenanceRequestCreate,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Tenant submits a maintenance request through the portal"""
+    tenant = await get_current_tenant(credentials)
+    
+    if not tenant.get("org_id"):
+        raise HTTPException(status_code=400, detail="Not connected to any organization")
+    
+    org_id = tenant["org_id"]
+    
+    # Verify property belongs to the tenant's organization
+    property_doc = await db.properties.find_one(
+        {"id": data.property_id, "org_id": org_id},
+        {"_id": 0, "name": 1}
+    )
+    if not property_doc:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    request_doc = {
+        "id": str(uuid.uuid4()),
+        "org_id": org_id,
+        "property_id": data.property_id,
+        "property_name": property_doc.get("name"),
+        "unit_id": data.unit_id,
+        "tenant_portal_id": tenant["id"],
+        "tenant_name": tenant["name"],
+        "category": data.category.value,
+        "priority": data.priority.value,
+        "status": MaintenanceStatus.OPEN.value,
+        "title": data.title,
+        "description": data.description,
+        "preferred_access_time": data.preferred_access_time,
+        "permission_to_enter": data.permission_to_enter,
+        "assigned_to": None,
+        "created_by": tenant["id"],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "source": "tenant_portal"
+    }
+    
+    await db.maintenance_requests.insert_one(request_doc)
+    request_doc.pop("_id", None)
+    
+    return {"message": "Maintenance request submitted", "request_id": request_doc["id"]}
+
+@api_router.get("/portal/maintenance-requests")
+async def tenant_list_maintenance_requests(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Tenant views their submitted maintenance requests"""
+    tenant = await get_current_tenant(credentials)
+    
+    if not tenant.get("org_id"):
+        return []
+    
+    requests = await db.maintenance_requests.find(
+        {"tenant_portal_id": tenant["id"]},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(50)
+    
+    return requests
+
 # ============== BILLING & SUBSCRIPTION ENDPOINTS ==============
 
 class CreateCheckoutRequest(BaseModel):
