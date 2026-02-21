@@ -132,7 +132,9 @@ const planFeatures = {
     { text: '24/7 priority support', included: true },
     { text: 'Advanced analytics', included: true },
     { text: 'Calendar integrations', included: true },
-    { text: 'Full API access', included: true }
+    { text: 'Full API access', included: true },
+    { text: 'Tenant Portal access', included: true },
+    { text: 'Real-time tenant messaging', included: true }
   ]
 };
 
