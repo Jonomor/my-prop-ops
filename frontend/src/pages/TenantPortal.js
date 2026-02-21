@@ -582,7 +582,7 @@ const TenantPortal = () => {
                                   className="hidden"
                                   onChange={(e) => e.target.files?.[0] && handleFileUpload(item.id, e.target.files[0])}
                                 />
-                                <Button variant="outline" size="sm" className="bg-emerald-50 hover:bg-emerald-100 border-emerald-200" asChild>
+                                <Button variant="outline" size="sm" className="bg-emerald-500 hover:bg-emerald-600 border-emerald-500 text-white" asChild>
                                   <span>
                                     <Upload className="w-4 h-4 mr-1" />
                                     {item.status === 'not_started' || item.status === 'requested' ? 'Upload' : 'Replace'}
