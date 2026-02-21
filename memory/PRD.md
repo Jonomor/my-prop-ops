@@ -277,6 +277,44 @@ Build a full-stack SaaS web application for property and housing operations mana
 ### Dashboard
 - GET /api/organizations/{org_id}/dashboard
 
+### Tenant Portal (PHASE 6 - NEW)
+**Tenant Auth:**
+- POST /api/tenant-portal/register
+- POST /api/tenant-portal/login
+- GET /api/tenant-portal/me
+
+**Tenant Profile:**
+- PUT /api/tenant-portal/profile
+
+**Document Checklist:**
+- GET /api/tenant-portal/checklist
+- POST /api/tenant-portal/checklist/{item_id}/upload
+- GET /api/tenant-portal/documents/{doc_id}/download
+
+**Application:**
+- GET /api/tenant-portal/application-status
+- PUT /api/tenant-portal/application-status
+
+**Appointments:**
+- GET /api/tenant-portal/appointments
+- POST /api/tenant-portal/appointments
+
+**Messaging:**
+- GET /api/tenant-portal/conversations
+- POST /api/tenant-portal/conversations/{org_id}
+- GET /api/tenant-portal/conversations/{conversation_id}/messages
+- POST /api/tenant-portal/conversations/{conversation_id}/messages
+
+**Resources:**
+- GET /api/tenant-portal/resources
+
+**Manager/Landlord Tenant Management:**
+- GET /api/organizations/{org_id}/tenant-portal-users
+- GET /api/organizations/{org_id}/tenant-portal-users/{tenant_id}
+- PUT /api/organizations/{org_id}/tenant-portal-users/{tenant_id}/stage
+- PUT /api/organizations/{org_id}/tenant-portal-users/{tenant_id}/checklist/{item_id}/verify
+- POST /api/organizations/{org_id}/tenant-portal-users/{tenant_id}/conversations/{conversation_id}/messages
+
 ---
 
 ## MVP READINESS CHECKLIST ✅
