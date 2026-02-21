@@ -4018,7 +4018,8 @@ async def get_available_plans():
                     "Up to 2 properties",
                     "Up to 5 units", 
                     "1 team member",
-                    "Basic document storage"
+                    "Basic document storage",
+                    "Basic maintenance requests"
                 ],
                 "pricing": {"monthly": 0, "annual": 0}
             },
@@ -4032,11 +4033,13 @@ async def get_available_plans():
                     "5 team members",
                     "Full inspection workflows",
                     "10GB document storage",
-                    "Calendar integrations",
-                    "Email notifications"
+                    "Tenant Portal with photo uploads",
+                    "Email notifications",
+                    "Maintenance request system",
+                    "Basic reporting"
                 ],
-                "pricing": {"monthly": 29, "annual": 24},
-                "annual_savings": 60
+                "pricing": {"monthly": 49, "annual": 39},
+                "annual_savings": 120
             },
             {
                 "id": "pro",
@@ -4048,16 +4051,35 @@ async def get_available_plans():
                     "Unlimited team members",
                     "Full inspection workflows",
                     "100GB document storage",
+                    "Tenant Portal with photo uploads",
+                    "Contractor Portal access",
+                    "One-tap contractor assignment",
                     "24/7 priority support",
                     "Advanced analytics",
                     "Full API access",
-                    "Tenant Portal",
-                    "Real-time messaging",
-                    "Maintenance requests"
+                    "Custom branding"
                 ],
-                "pricing": {"monthly": 99, "annual": 82},
-                "annual_savings": 204,
+                "pricing": {"monthly": 149, "annual": 119},
+                "annual_savings": 360,
                 "popular": True
+            },
+            {
+                "id": "enterprise",
+                "name": "Enterprise",
+                "description": "For large property management companies",
+                "features": [
+                    "Everything in Pro",
+                    "Unlimited contractors",
+                    "Dedicated account manager",
+                    "Custom integrations",
+                    "SLA guarantee (99.9% uptime)",
+                    "Advanced security features",
+                    "Custom training",
+                    "White-label options",
+                    "Priority feature requests"
+                ],
+                "pricing": {"monthly": 299, "annual": 239},
+                "annual_savings": 720
             }
         ]
     }
