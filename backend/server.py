@@ -86,6 +86,64 @@ def is_feature_enabled(feature: str) -> bool:
     """Check if a feature flag is enabled"""
     return FEATURE_FLAGS.get(feature, False)
 
+# ============== PLAN LIMITS ==============
+PLAN_LIMITS = {
+    "free": {
+        "max_properties": 2,
+        "max_units": 5,
+        "max_team_members": 1,
+        "document_storage_mb": 500,
+        "tenant_portal": False,
+        "api_access": False,
+    },
+    "standard": {
+        "max_properties": 20,
+        "max_units": 40,
+        "max_team_members": 5,
+        "document_storage_mb": 10240,  # 10GB
+        "tenant_portal": False,
+        "api_access": False,
+    },
+    "pro": {
+        "max_properties": None,  # Unlimited
+        "max_units": None,       # Unlimited
+        "max_team_members": None,
+        "document_storage_mb": 102400,  # 100GB
+        "tenant_portal": True,
+        "api_access": True,
+    }
+}
+
+async def get_org_plan_limits(org_id: str):
+    """Get the plan limits for an organization"""
+    org = await db.organizations.find_one({"id": org_id}, {"_id": 0, "plan": 1})
+    plan = org.get("plan", "free") if org else "free"
+    return PLAN_LIMITS.get(plan, PLAN_LIMITS["free"])
+
+async def check_property_limit(org_id: str):
+    """Check if organization can create more properties"""
+    limits = await get_org_plan_limits(org_id)
+    max_props = limits["max_properties"]
+    if max_props is None:
+        return True, None
+    
+    current_count = await db.properties.count_documents({"org_id": org_id})
+    if current_count >= max_props:
+        return False, f"Property limit reached ({max_props}). Upgrade your plan to add more properties."
+    return True, None
+
+async def check_unit_limit(org_id: str, additional_units: int = 1):
+    """Check if organization can create more units"""
+    limits = await get_org_plan_limits(org_id)
+    max_units = limits["max_units"]
+    if max_units is None:
+        return True, None
+    
+    current_count = await db.units.count_documents({"org_id": org_id})
+    if current_count + additional_units > max_units:
+        return False, f"Unit limit reached ({max_units}). Upgrade your plan to add more units."
+    return True, None
+
 # ============== ENUMS ==============
 class UserRole(str, Enum):
     ADMIN = "admin"
