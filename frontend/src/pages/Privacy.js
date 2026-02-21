@@ -14,7 +14,7 @@ const Privacy = () => {
               <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                 <Building className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold font-heading">PropOps</span>
+              <span className="text-xl font-bold font-heading">MyPropOps</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link to="/login">
@@ -43,10 +43,10 @@ const Privacy = () => {
             <section>
               <h2 className="text-2xl font-semibold font-heading mb-4">1. Introduction</h2>
               <p className="text-muted-foreground leading-relaxed">
-                PropOps ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our property management platform and services.
+                MyPropOps ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our property management platform and services.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-4">
-                By accessing or using PropOps, you agree to this Privacy Policy. If you do not agree with the terms of this policy, please do not access the application.
+                By accessing or using MyPropOps, you agree to this Privacy Policy. If you do not agree with the terms of this policy, please do not access the application.
               </p>
             </section>
 
@@ -161,7 +161,7 @@ const Privacy = () => {
             <section>
               <h2 className="text-2xl font-semibold font-heading mb-4">9. Children's Privacy</h2>
               <p className="text-muted-foreground leading-relaxed">
-                PropOps is not intended for children under 18 years of age. We do not knowingly collect personal information from children under 18.
+                MyPropOps is not intended for children under 18 years of age. We do not knowingly collect personal information from children under 18.
               </p>
             </section>
 
@@ -193,7 +193,7 @@ const Privacy = () => {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Building className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold">PropOps</span>
+            <span className="font-semibold">MyPropOps</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
@@ -201,7 +201,7 @@ const Privacy = () => {
             <Link to="/security" className="hover:text-foreground">Security</Link>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} PropOps. All rights reserved.
+            © {new Date().getFullYear()} MyPropOps. All rights reserved.
           </p>
         </div>
       </footer>

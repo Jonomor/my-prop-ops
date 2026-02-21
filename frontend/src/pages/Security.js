@@ -68,7 +68,7 @@ const Security = () => {
               <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                 <Building className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold font-heading">PropOps</span>
+              <span className="text-xl font-bold font-heading">MyPropOps</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link to="/login">
@@ -94,7 +94,7 @@ const Security = () => {
             <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-6">
               <Shield className="w-10 h-10 text-primary" />
             </div>
-            <h1 className="text-4xl sm:text-5xl font-bold font-heading mb-4">Security at PropOps</h1>
+            <h1 className="text-4xl sm:text-5xl font-bold font-heading mb-4">Security at MyPropOps</h1>
             <p className="text-xl text-muted-foreground">
               Your property data deserves enterprise-grade protection. Here's how we keep it safe.
             </p>
@@ -282,7 +282,7 @@ const Security = () => {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Building className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold">PropOps</span>
+            <span className="font-semibold">MyPropOps</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
@@ -290,7 +290,7 @@ const Security = () => {
             <Link to="/security" className="hover:text-foreground">Security</Link>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} PropOps. All rights reserved.
+            © {new Date().getFullYear()} MyPropOps. All rights reserved.
           </p>
         </div>
       </footer>

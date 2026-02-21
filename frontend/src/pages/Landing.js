@@ -141,11 +141,11 @@ const planFeatures = {
 const faqs = [
   {
     q: "How long is the free plan available?",
-    a: "The free plan is available forever, not a trial. You can use PropOps completely free for up to 2 properties and 5 units with no time limit. When you're ready to scale, upgrade to Standard or Pro."
+    a: "The free plan is available forever, not a trial. You can use MyPropOps completely free for up to 2 properties and 5 units with no time limit. When you're ready to scale, upgrade to Standard or Pro."
   },
   {
     q: "Do I need a credit card to start?",
-    a: "No credit card required. Sign up with just your email and start using PropOps immediately. We'll only ask for payment info if you choose to upgrade."
+    a: "No credit card required. Sign up with just your email and start using MyPropOps immediately. We'll only ask for payment info if you choose to upgrade."
   },
   {
     q: "What's the difference between monthly and annual billing?",
@@ -181,7 +181,7 @@ const Landing = () => {
               <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                 <Building className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold font-heading">PropOps</span>
+              <span className="text-xl font-bold font-heading">MyPropOps</span>
             </Link>
             <div className="hidden md:flex items-center gap-6 text-sm">
               <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a>
@@ -216,7 +216,7 @@ const Landing = () => {
                 <span className="text-primary">Start managing.</span>
               </h1>
               <p className="mt-6 text-xl text-muted-foreground max-w-xl">
-                PropOps replaces your scattered spreadsheets, missed deadlines, and compliance headaches with one simple dashboard your whole team can use.
+                MyPropOps replaces your scattered spreadsheets, missed deadlines, and compliance headaches with one simple dashboard your whole team can use.
               </p>
               
               {/* Value Props */}
@@ -339,7 +339,7 @@ const Landing = () => {
               <CardContent className="p-4 sm:p-8">
                 <img 
                   src={INFOGRAPHIC_URL} 
-                  alt="PropOps Financial Analytics Dashboard showing property metrics, occupancy rates, and revenue insights"
+                  alt="MyPropOps Financial Analytics Dashboard showing property metrics, occupancy rates, and revenue insights"
                   className="w-full h-auto rounded-xl shadow-lg"
                 />
               </CardContent>
@@ -401,7 +401,7 @@ const Landing = () => {
               <CardContent className="p-8">
                 <h3 className="text-xl font-semibold mb-6 text-primary flex items-center gap-2">
                   <span className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm">2</span>
-                  The PropOps way
+                  The MyPropOps way
                 </h3>
                 <ul className="space-y-4">
                   <li className="flex items-start gap-3">
@@ -529,7 +529,7 @@ const Landing = () => {
               Trusted by property managers
             </h2>
             <p className="mt-4 text-lg text-muted-foreground">
-              See why teams are switching to PropOps
+              See why teams are switching to MyPropOps
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -772,7 +772,7 @@ const Landing = () => {
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                   <Building className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="font-semibold">PropOps</span>
+                <span className="font-semibold">MyPropOps</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 Simple property management for modern teams.
@@ -807,7 +807,7 @@ const Landing = () => {
           </div>
           <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} PropOps. All rights reserved.
+              © {new Date().getFullYear()} MyPropOps. All rights reserved.
             </p>
             <p className="text-sm text-muted-foreground">
               Made with care for property managers

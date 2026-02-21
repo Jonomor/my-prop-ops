@@ -117,7 +117,7 @@ const AcceptInvite = () => {
           </div>
           <CardTitle className="text-2xl">You're Invited!</CardTitle>
           <CardDescription>
-            You've been invited to join an organization on PropOps
+            You've been invited to join an organization on MyPropOps
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">

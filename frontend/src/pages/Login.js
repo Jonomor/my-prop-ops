@@ -46,7 +46,7 @@ const Login = () => {
             <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur flex items-center justify-center">
               <Building className="w-7 h-7" />
             </div>
-            <span className="text-2xl font-bold font-heading">PropOps</span>
+            <span className="text-2xl font-bold font-heading">MyPropOps</span>
           </div>
           <div>
             <h1 className="text-4xl font-bold font-heading mb-4">
@@ -57,7 +57,7 @@ const Login = () => {
             </p>
           </div>
           <p className="text-sm text-white/60">
-            © 2024 PropOps. All rights reserved.
+            © 2024 MyPropOps. All rights reserved.
           </p>
         </div>
       </div>

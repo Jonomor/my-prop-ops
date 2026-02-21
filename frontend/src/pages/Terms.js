@@ -14,7 +14,7 @@ const Terms = () => {
               <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                 <Building className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold font-heading">PropOps</span>
+              <span className="text-xl font-bold font-heading">MyPropOps</span>
             </Link>
             <div className="flex items-center gap-4">
               <Link to="/login">
@@ -43,7 +43,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-semibold font-heading mb-4">1. Agreement to Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
-                By accessing or using PropOps ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not access the Service.
+                By accessing or using MyPropOps ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you disagree with any part of these terms, you may not access the Service.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-4">
                 These Terms apply to all visitors, users, and others who access or use the Service.
@@ -53,7 +53,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-semibold font-heading mb-4">2. Description of Service</h2>
               <p className="text-muted-foreground leading-relaxed">
-                PropOps is a cloud-based property management platform that helps property managers and housing operators manage properties, tenants, inspections, and documents. The Service includes:
+                MyPropOps is a cloud-based property management platform that helps property managers and housing operators manage properties, tenants, inspections, and documents. The Service includes:
               </p>
               <ul className="list-disc pl-6 mt-3 space-y-2 text-muted-foreground">
                 <li>Property and unit management</li>
@@ -70,7 +70,7 @@ const Terms = () => {
               
               <h3 className="text-xl font-semibold mt-6 mb-3">3.1 Account Creation</h3>
               <p className="text-muted-foreground leading-relaxed">
-                To use PropOps, you must create an account with accurate, complete, and current information. You are responsible for maintaining the confidentiality of your account credentials.
+                To use MyPropOps, you must create an account with accurate, complete, and current information. You are responsible for maintaining the confidentiality of your account credentials.
               </p>
 
               <h3 className="text-xl font-semibold mt-6 mb-3">3.2 Account Responsibilities</h3>
@@ -152,7 +152,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-semibold font-heading mb-4">7. Intellectual Property</h2>
               <p className="text-muted-foreground leading-relaxed">
-                The Service and its original content (excluding Your Content), features, and functionality are and will remain the exclusive property of PropOps. The Service is protected by copyright, trademark, and other laws.
+                The Service and its original content (excluding Your Content), features, and functionality are and will remain the exclusive property of MyPropOps. The Service is protected by copyright, trademark, and other laws.
               </p>
               <p className="text-muted-foreground leading-relaxed mt-4">
                 Our trademarks and trade dress may not be used in connection with any product or service without our prior written consent.
@@ -234,7 +234,7 @@ const Terms = () => {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Building className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="font-semibold">PropOps</span>
+            <span className="font-semibold">MyPropOps</span>
           </div>
           <div className="flex items-center gap-6 text-sm text-muted-foreground">
             <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
@@ -242,7 +242,7 @@ const Terms = () => {
             <Link to="/security" className="hover:text-foreground">Security</Link>
           </div>
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} PropOps. All rights reserved.
+            © {new Date().getFullYear()} MyPropOps. All rights reserved.
           </p>
         </div>
       </footer>

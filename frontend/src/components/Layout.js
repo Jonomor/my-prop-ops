@@ -131,7 +131,7 @@ export const Layout = ({ children }) => {
               <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                 <Building className="w-6 h-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold font-heading">PropOps</span>
+              <span className="text-xl font-bold font-heading">MyPropOps</span>
             </Link>
           </div>
 
