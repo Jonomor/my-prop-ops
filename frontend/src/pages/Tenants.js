@@ -156,6 +156,11 @@ const Tenants = () => {
     return units.find(u => u.id === unitId);
   };
 
+  const getPropertyName = (propertyId) => {
+    const property = properties.find(p => p.id === propertyId);
+    return property?.name || 'Unknown Property';
+  };
+
   const filteredTenants = tenants.filter(t => {
     const matchesSearch = t.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           t.email.toLowerCase().includes(searchQuery.toLowerCase());
