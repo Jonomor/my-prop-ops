@@ -663,7 +663,7 @@ const Maintenance = () => {
 
                   {teamMembers.length > 0 && (
                     <div className="space-y-2">
-                      <Label>Assign To</Label>
+                      <Label>Assign to Team Member</Label>
                       <Select 
                         value={selectedRequest.assigned_to || ''} 
                         onValueChange={v => handleAssign(selectedRequest.id, v)}
@@ -678,6 +678,75 @@ const Maintenance = () => {
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  )}
+
+                  {/* Contractor Assignment */}
+                  <div className="space-y-2 pt-4 border-t">
+                    <Label className="flex items-center gap-2">
+                      <HardHat className="w-4 h-4 text-orange-500" />
+                      Assign to Contractor
+                    </Label>
+                    {contractors.length > 0 ? (
+                      <div className="space-y-3">
+                        {selectedRequest.contractor_id ? (
+                          <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border border-orange-200 dark:border-orange-800">
+                            <div className="flex items-center gap-2">
+                              <HardHat className="w-5 h-5 text-orange-600" />
+                              <span className="font-medium">{selectedRequest.contractor_name}</span>
+                              <Badge variant="secondary">Assigned</Badge>
+                            </div>
+                          </div>
+                        ) : (
+                          <Select 
+                            value={selectedRequest.contractor_id || ''} 
+                            onValueChange={v => handleAssignContractor(selectedRequest.id, v)}
+                            disabled={assigningContractor}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder={assigningContractor ? "Assigning..." : "Select contractor"} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {contractors.map(c => (
+                                <SelectItem key={c.id} value={c.id}>
+                                  <div className="flex items-center gap-2">
+                                    <span>{c.name}</span>
+                                    {c.company_name && <span className="text-muted-foreground text-xs">({c.company_name})</span>}
+                                  </div>
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Contractors will be notified via email when assigned
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">
+                        No contractors connected. Go to Settings → Contractors to invite contractors.
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Photos from tenant */}
+                  {selectedRequest.photos && selectedRequest.photos.length > 0 && (
+                    <div className="space-y-2 pt-4 border-t">
+                      <Label className="flex items-center gap-2">
+                        <Image className="w-4 h-4" />
+                        Photos from Tenant ({selectedRequest.photos.length})
+                      </Label>
+                      <div className="flex gap-2 overflow-x-auto pb-2">
+                        {selectedRequest.photos.map((photo, idx) => (
+                          <img 
+                            key={idx}
+                            src={`${process.env.REACT_APP_BACKEND_URL}${photo}`}
+                            alt={`Issue photo ${idx + 1}`}
+                            className="w-24 h-24 object-cover rounded-lg border cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => window.open(`${process.env.REACT_APP_BACKEND_URL}${photo}`, '_blank')}
+                          />
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
