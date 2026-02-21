@@ -127,8 +127,8 @@ logger = logging.getLogger(__name__)
 # All advanced features default to OFF for monetization readiness
 FEATURE_FLAGS = {
     "email_invites": False,      # Email delivery for invitations
-    "billing": False,            # Stripe/payment integration
-    "maintenance": False,        # Maintenance request workflows
+    "billing": True,             # Stripe/payment integration - NOW ENABLED
+    "maintenance": True,         # Maintenance request workflows - NOW ENABLED
     "advanced_analytics": False, # Advanced reporting features
     "api_access": False,         # External API access
 }
