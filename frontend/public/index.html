@@ -159,19 +159,41 @@
         }
         </script>
         
-        <!-- Structured Data - Local Business (optional) -->
+        <!-- Structured Data - Organization & Brand -->
         <script type="application/ld+json">
         {
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "MyPropOps",
+            "name": "MyPropOps, Inc.",
+            "alternateName": "MyPropOps",
             "url": "https://mypropops.com",
             "logo": "https://mypropops.com/logo512.png",
+            "slogan": "#1 Property Management Software",
+            "description": "MyPropOps, Inc. is the creator of the #1 property management software platform for modern property managers. Our cloud-based SaaS solution streamlines property operations, tenant management, compliance tracking, and team collaboration.",
+            "foundingDate": "2024",
             "sameAs": [],
             "contactPoint": {
                 "@type": "ContactPoint",
                 "contactType": "customer service",
+                "email": "support@mypropops.com",
                 "availableLanguage": "English"
+            },
+            "address": {
+                "@type": "PostalAddress",
+                "addressCountry": "US"
+            },
+            "brand": {
+                "@type": "Brand",
+                "name": "MyPropOps",
+                "slogan": "#1 Property Management Software"
+            },
+            "makesOffer": {
+                "@type": "Offer",
+                "itemOffered": {
+                    "@type": "SoftwareApplication",
+                    "name": "MyPropOps Property Management Software",
+                    "applicationCategory": "BusinessApplication"
+                }
             }
         }
         </script>
