@@ -41,13 +41,18 @@ const Settings = () => {
   };
 
   const generateInviteCode = async () => {
+    if (!currentOrg?.org_id) {
+      toast.error('Please select an organization first');
+      return;
+    }
     try {
       setLoadingCode(true);
       const res = await api.post(`/api/organizations/${currentOrg.org_id}/tenant-invite-code`);
       setTenantInviteCode(res.data.invite_code);
       toast.success('Tenant invite code generated!');
     } catch (error) {
-      toast.error('Failed to generate code');
+      console.error('Generate code error:', error);
+      toast.error(error.response?.data?.detail || 'Failed to generate code');
     } finally {
       setLoadingCode(false);
     }
