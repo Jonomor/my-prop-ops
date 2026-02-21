@@ -764,6 +764,26 @@ async def create_property(org_id: str, data: PropertyCreate, user = Depends(get_
     }
     await db.properties.insert_one(prop)
     
+    # Auto-create units if total_units is specified
+    if data.total_units and data.total_units > 0:
+        units_to_create = []
+        for i in range(1, data.total_units + 1):
+            unit = {
+                "id": str(uuid.uuid4()),
+                "org_id": org_id,
+                "property_id": prop_id,
+                "unit_number": str(i),
+                "bedrooms": 1,
+                "bathrooms": 1.0,
+                "square_feet": None,
+                "rent_amount": None,
+                "tenant_id": None,
+                "created_at": datetime.now(timezone.utc).isoformat()
+            }
+            units_to_create.append(unit)
+        if units_to_create:
+            await db.units.insert_many(units_to_create)
+    
     await create_audit_log(org_id, user['id'], user['name'], "created", "property", prop_id, f"Created property: {data.name}")
     
     # Notify all org members
