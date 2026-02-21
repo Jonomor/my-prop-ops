@@ -1552,11 +1552,16 @@ async def tenant_portal_register(data: TenantPortalRegister):
             "name": item["name"],
             "description": item["description"],
             "required": item["required"],
+            "source_type": item.get("source_type", "tenant_provided"),
+            "template": item.get("template"),
+            "help_text": item.get("help_text"),
             "status": DocumentChecklistStatus.NOT_STARTED.value,
             "document_id": None,
             "uploaded_at": None,
             "verified_at": None,
-            "notes": None
+            "notes": None,
+            "requested_at": None,
+            "request_message": None
         })
     
     tenant = {
