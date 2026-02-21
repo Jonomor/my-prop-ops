@@ -2614,6 +2614,453 @@ async def send_landlord_message(org_id: str, conversation_id: str, data: Message
     
     return MessageResponse(**message)
 
+# ============== BILLING & SUBSCRIPTION ENDPOINTS ==============
+
+class CreateCheckoutRequest(BaseModel):
+    plan_id: str = Field(..., description="Plan ID: standard_monthly, standard_annual, pro_monthly, pro_annual")
+    origin_url: str = Field(..., description="Frontend origin URL for redirect")
+
+class CheckoutResponse(BaseModel):
+    checkout_url: str
+    session_id: str
+
+class SubscriptionStatusResponse(BaseModel):
+    plan: str
+    status: str
+    billing_period: Optional[str]
+    next_billing_date: Optional[str]
+    usage: dict
+    limits: dict
+
+@api_router.post("/billing/create-checkout", response_model=CheckoutResponse)
+async def create_checkout_session(
+    request: CreateCheckoutRequest,
+    http_request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Create a Stripe checkout session for subscription upgrade"""
+    user = await get_current_user(credentials)
+    
+    # Get user's current organization
+    membership = await db.memberships.find_one(
+        {"user_id": user["id"]},
+        {"_id": 0, "org_id": 1, "role": 1}
+    )
+    
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found. Please create one first.")
+    
+    if membership["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Only organization admins can manage billing")
+    
+    # Validate plan
+    if request.plan_id not in SUBSCRIPTION_PLANS:
+        raise HTTPException(status_code=400, detail=f"Invalid plan ID. Valid options: {list(SUBSCRIPTION_PLANS.keys())}")
+    
+    plan_details = SUBSCRIPTION_PLANS[request.plan_id]
+    
+    # Check if already on this plan or higher
+    org = await db.organizations.find_one({"id": membership["org_id"]}, {"_id": 0, "plan": 1})
+    current_plan = org.get("plan", "free") if org else "free"
+    
+    plan_hierarchy = {"free": 0, "standard": 1, "pro": 2, "enterprise": 3}
+    if plan_hierarchy.get(plan_details["plan"], 0) <= plan_hierarchy.get(current_plan, 0):
+        if plan_details["plan"] == current_plan:
+            raise HTTPException(status_code=400, detail=f"You're already on the {current_plan} plan")
+    
+    try:
+        # Initialize Stripe checkout
+        host_url = str(http_request.base_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        # Build success and cancel URLs
+        success_url = f"{request.origin_url}/settings?payment=success&session_id={{CHECKOUT_SESSION_ID}}"
+        cancel_url = f"{request.origin_url}/settings?payment=cancelled"
+        
+        # Create checkout session
+        checkout_request = CheckoutSessionRequest(
+            amount=plan_details["amount"],
+            currency="usd",
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={
+                "org_id": membership["org_id"],
+                "user_id": user["id"],
+                "plan_id": request.plan_id,
+                "plan_name": plan_details["plan"],
+                "billing_period": plan_details["period"]
+            }
+        )
+        
+        session = await stripe_checkout.create_checkout_session(checkout_request)
+        
+        # Store payment transaction record
+        transaction = {
+            "id": str(uuid.uuid4()),
+            "session_id": session.session_id,
+            "org_id": membership["org_id"],
+            "user_id": user["id"],
+            "plan_id": request.plan_id,
+            "amount": plan_details["amount"],
+            "currency": "usd",
+            "status": "pending",
+            "payment_status": "initiated",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.payment_transactions.insert_one(transaction)
+        
+        logger.info(f"Checkout session created for org {membership['org_id']}, plan {request.plan_id}")
+        
+        return CheckoutResponse(
+            checkout_url=session.url,
+            session_id=session.session_id
+        )
+        
+    except Exception as e:
+        logger.error(f"Failed to create checkout session: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+@api_router.get("/billing/checkout-status/{session_id}")
+async def get_checkout_status(
+    session_id: str,
+    http_request: Request,
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Check the status of a checkout session and update subscription if successful"""
+    user = await get_current_user(credentials)
+    
+    # Find the transaction
+    transaction = await db.payment_transactions.find_one(
+        {"session_id": session_id},
+        {"_id": 0}
+    )
+    
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # Verify user owns this transaction
+    if transaction["user_id"] != user["id"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # If already processed successfully, return cached status
+    if transaction.get("payment_status") == "paid":
+        return {
+            "status": "complete",
+            "payment_status": "paid",
+            "plan_upgraded": True,
+            "new_plan": transaction.get("plan_id", "").split("_")[0]
+        }
+    
+    try:
+        # Initialize Stripe checkout
+        host_url = str(http_request.base_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        # Get checkout status from Stripe
+        checkout_status = await stripe_checkout.get_checkout_status(session_id)
+        
+        # Update transaction record
+        update_data = {
+            "status": checkout_status.status,
+            "payment_status": checkout_status.payment_status,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.payment_transactions.update_one(
+            {"session_id": session_id},
+            {"$set": update_data}
+        )
+        
+        # If payment successful, upgrade the organization's plan
+        plan_upgraded = False
+        new_plan = None
+        
+        if checkout_status.payment_status == "paid":
+            plan_id = transaction.get("plan_id", "")
+            plan_name = plan_id.split("_")[0] if "_" in plan_id else plan_id
+            billing_period = plan_id.split("_")[1] if "_" in plan_id else "monthly"
+            
+            # Update organization plan
+            await db.organizations.update_one(
+                {"id": transaction["org_id"]},
+                {
+                    "$set": {
+                        "plan": plan_name,
+                        "billing_period": billing_period,
+                        "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+                        "subscription_active": True
+                    }
+                }
+            )
+            
+            plan_upgraded = True
+            new_plan = plan_name
+            
+            # Create audit log
+            await db.audit_logs.insert_one({
+                "id": str(uuid.uuid4()),
+                "org_id": transaction["org_id"],
+                "user_id": user["id"],
+                "user_name": user["name"],
+                "action": "plan_upgraded",
+                "entity_type": "subscription",
+                "entity_id": session_id,
+                "details": f"Upgraded to {plan_name} ({billing_period})",
+                "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            
+            logger.info(f"Organization {transaction['org_id']} upgraded to {plan_name}")
+        
+        return {
+            "status": checkout_status.status,
+            "payment_status": checkout_status.payment_status,
+            "amount_total": checkout_status.amount_total,
+            "currency": checkout_status.currency,
+            "plan_upgraded": plan_upgraded,
+            "new_plan": new_plan
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to check checkout status: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to check payment status")
+
+@api_router.post("/webhook/stripe")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events"""
+    try:
+        body = await request.body()
+        signature = request.headers.get("Stripe-Signature", "")
+        
+        host_url = str(request.base_url).rstrip('/')
+        webhook_url = f"{host_url}/api/webhook/stripe"
+        stripe_checkout = StripeCheckout(api_key=STRIPE_API_KEY, webhook_url=webhook_url)
+        
+        webhook_response = await stripe_checkout.handle_webhook(body, signature)
+        
+        if webhook_response:
+            session_id = webhook_response.session_id
+            payment_status = webhook_response.payment_status
+            metadata = webhook_response.metadata
+            
+            # Update transaction
+            await db.payment_transactions.update_one(
+                {"session_id": session_id},
+                {
+                    "$set": {
+                        "payment_status": payment_status,
+                        "webhook_received_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            
+            # If payment successful, upgrade plan
+            if payment_status == "paid" and metadata:
+                org_id = metadata.get("org_id")
+                plan_name = metadata.get("plan_name")
+                billing_period = metadata.get("billing_period")
+                
+                if org_id and plan_name:
+                    await db.organizations.update_one(
+                        {"id": org_id},
+                        {
+                            "$set": {
+                                "plan": plan_name,
+                                "billing_period": billing_period,
+                                "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+                                "subscription_active": True
+                            }
+                        }
+                    )
+                    logger.info(f"Webhook: Organization {org_id} upgraded to {plan_name}")
+        
+        return {"status": "received"}
+        
+    except Exception as e:
+        logger.error(f"Webhook error: {str(e)}")
+        return {"status": "error", "message": str(e)}
+
+@api_router.get("/billing/subscription-status", response_model=SubscriptionStatusResponse)
+async def get_subscription_status(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    """Get current subscription status and usage"""
+    user = await get_current_user(credentials)
+    
+    membership = await db.memberships.find_one(
+        {"user_id": user["id"]},
+        {"_id": 0, "org_id": 1}
+    )
+    
+    if not membership:
+        raise HTTPException(status_code=400, detail="No organization found")
+    
+    org = await db.organizations.find_one(
+        {"id": membership["org_id"]},
+        {"_id": 0, "plan": 1, "billing_period": 1, "plan_updated_at": 1, "subscription_active": 1}
+    )
+    
+    plan = org.get("plan", "free") if org else "free"
+    usage = await get_org_usage(membership["org_id"])
+    
+    # Calculate next billing date (30 days from last update for monthly, 365 for annual)
+    next_billing = None
+    if org and org.get("plan_updated_at") and plan != "free":
+        from datetime import datetime
+        update_date = datetime.fromisoformat(org["plan_updated_at"].replace('Z', '+00:00'))
+        days = 30 if org.get("billing_period") == "monthly" else 365
+        next_billing = (update_date + timedelta(days=days)).isoformat()
+    
+    return SubscriptionStatusResponse(
+        plan=plan,
+        status="active" if org and org.get("subscription_active") else "inactive" if plan != "free" else "free",
+        billing_period=org.get("billing_period") if org else None,
+        next_billing_date=next_billing,
+        usage=usage["usage"],
+        limits=usage["limits"]
+    )
+
+@api_router.get("/billing/plans")
+async def get_available_plans():
+    """Get available subscription plans with pricing"""
+    return {
+        "plans": [
+            {
+                "id": "free",
+                "name": "Free",
+                "description": "For small portfolios",
+                "features": [
+                    "Up to 2 properties",
+                    "Up to 5 units", 
+                    "1 team member",
+                    "Basic document storage"
+                ],
+                "pricing": {"monthly": 0, "annual": 0}
+            },
+            {
+                "id": "standard",
+                "name": "Standard",
+                "description": "For growing property managers",
+                "features": [
+                    "Up to 20 properties",
+                    "Up to 40 units",
+                    "5 team members",
+                    "Full inspection workflows",
+                    "10GB document storage",
+                    "Calendar integrations",
+                    "Email notifications"
+                ],
+                "pricing": {"monthly": 29, "annual": 24},
+                "annual_savings": 60
+            },
+            {
+                "id": "pro",
+                "name": "Pro",
+                "description": "For professional property managers",
+                "features": [
+                    "Unlimited properties",
+                    "Unlimited units",
+                    "Unlimited team members",
+                    "Full inspection workflows",
+                    "100GB document storage",
+                    "24/7 priority support",
+                    "Advanced analytics",
+                    "Full API access",
+                    "Tenant Portal",
+                    "Real-time messaging",
+                    "Maintenance requests"
+                ],
+                "pricing": {"monthly": 99, "annual": 82},
+                "annual_savings": 204,
+                "popular": True
+            }
+        ]
+    }
+
+# ============== EMAIL NOTIFICATION HELPERS ==============
+
+async def send_welcome_email(email: str, name: str):
+    """Send welcome email to new user (if Mailchimp is configured)"""
+    if not mailchimp_transactional_client:
+        logger.info(f"Mailchimp not configured - skipping welcome email to {email}")
+        return False
+    
+    try:
+        message = {
+            "from_email": MAILCHIMP_FROM_EMAIL,
+            "subject": "Welcome to MyPropOps!",
+            "html": f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); padding: 40px 20px; text-align: center;">
+                        <h1 style="color: white; margin: 0;">Welcome to MyPropOps!</h1>
+                    </div>
+                    <div style="padding: 40px 20px;">
+                        <p>Hi {name},</p>
+                        <p>Thank you for signing up for MyPropOps! We're excited to help you manage your properties more efficiently.</p>
+                        <p>Here's what you can do next:</p>
+                        <ul>
+                            <li>Add your first property</li>
+                            <li>Create units and add tenants</li>
+                            <li>Schedule inspections</li>
+                            <li>Upload important documents</li>
+                        </ul>
+                        <p>If you have any questions, don't hesitate to reach out to our support team.</p>
+                        <p>Best regards,<br>The MyPropOps Team</p>
+                    </div>
+                </body>
+            </html>
+            """,
+            "to": [{"email": email, "name": name, "type": "to"}],
+            "tags": ["welcome", "onboarding"]
+        }
+        
+        result = mailchimp_transactional_client.messages.send({"message": message})
+        logger.info(f"Welcome email sent to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send welcome email: {str(e)}")
+        return False
+
+async def send_notification_email(email: str, name: str, subject: str, content: str, email_type: str = "notification"):
+    """Send a notification email (if Mailchimp is configured)"""
+    if not mailchimp_transactional_client:
+        logger.info(f"Mailchimp not configured - skipping notification to {email}")
+        return False
+    
+    try:
+        message = {
+            "from_email": MAILCHIMP_FROM_EMAIL,
+            "subject": subject,
+            "html": f"""
+            <html>
+                <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                    <div style="background: #1f2937; padding: 20px; text-align: center;">
+                        <h2 style="color: white; margin: 0;">MyPropOps</h2>
+                    </div>
+                    <div style="padding: 30px 20px;">
+                        <p>Hi {name},</p>
+                        {content}
+                        <p style="margin-top: 30px;">Best regards,<br>The MyPropOps Team</p>
+                    </div>
+                    <div style="background: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
+                        <p>You're receiving this email because you have an account with MyPropOps.</p>
+                    </div>
+                </body>
+            </html>
+            """,
+            "to": [{"email": email, "name": name, "type": "to"}],
+            "tags": [email_type]
+        }
+        
+        result = mailchimp_transactional_client.messages.send({"message": message})
+        logger.info(f"Notification email sent to {email}")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to send notification email: {str(e)}")
+        return False
+
 # Include the router in the main app
 app.include_router(api_router)
 
