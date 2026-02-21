@@ -1864,6 +1864,8 @@ async def create_or_get_conversation(org_id: str, tenant = Depends(get_current_t
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.tenant_conversations.insert_one(conversation)
+    # Remove MongoDB _id to avoid serialization issues
+    conversation.pop('_id', None)
     return conversation
 
 @api_router.get("/tenant-portal/conversations/{conversation_id}/messages")
