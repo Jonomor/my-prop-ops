@@ -19,24 +19,43 @@ import shutil
 import secrets
 
 ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
+load_dotenv(ROOT_DIR / ".env")
 
 # MongoDB connection
-mongo_url = os.environ['MONGO_URL']
+mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
+db = client[os.environ["DB_NAME"]]
 
 # JWT Configuration
-JWT_SECRET = os.environ.get('JWT_SECRET', 'propops-secret-key-change-in-production')
-JWT_ALGORITHM = 'HS256'
+JWT_SECRET = os.environ.get("JWT_SECRET", "propops-secret-key-change-in-production")
+JWT_ALGORITHM = "HS256"
 JWT_EXPIRATION_HOURS = 24
 
 # File upload directory
-UPLOAD_DIR = ROOT_DIR / 'uploads'
+UPLOAD_DIR = ROOT_DIR / "uploads"
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 # Create the main app
 app = FastAPI(title="PropOps API", version="1.0.0")
+
+
+@app.get("/")
+async def root():
+    return {"ok": True, "service": "propops-api", "docs": "/docs", "api_base": "/api"}
+
+
+@app.get("/health")
+async def health():
+    return {"ok": True}
+
+
+@app.get("/pretty-print")
+async def pretty_print():
+    return {
+        "ok": True,
+        "detail": "Endpoint not implemented. Use /docs to view available routes.",
+    }
+
 
 # Create a router with the /api prefix
 api_router = APIRouter(prefix="/api")
@@ -45,8 +64,12 @@ api_router = APIRouter(prefix="/api")
 security = HTTPBearer()
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 logger = logging.getLogger(__name__)
+
 
 # ============== FEATURE FLAGS ==============
 # All advanced features default to OFF for monetization readiness
