@@ -527,6 +527,16 @@ def create_token(user_id: str, email: str) -> str:
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
+def create_tenant_token(tenant_id: str, email: str) -> str:
+    """Create JWT token for tenant portal users"""
+    payload = {
+        'tenant_portal_id': tenant_id,
+        'email': email,
+        'type': 'tenant',
+        'exp': datetime.now(timezone.utc) + timedelta(hours=JWT_EXPIRATION_HOURS)
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+
 def decode_token(token: str) -> dict:
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
@@ -541,6 +551,16 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     return user
+
+async def get_current_tenant(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get current tenant portal user"""
+    payload = decode_token(credentials.credentials)
+    if payload.get('type') != 'tenant':
+        raise HTTPException(status_code=401, detail="Invalid tenant token")
+    tenant = await db.tenant_portal_users.find_one({"id": payload['tenant_portal_id']}, {"_id": 0})
+    if not tenant:
+        raise HTTPException(status_code=401, detail="Tenant not found")
+    return tenant
 
 async def get_user_membership(user_id: str, org_id: str):
     membership = await db.memberships.find_one({"user_id": user_id, "org_id": org_id}, {"_id": 0})
