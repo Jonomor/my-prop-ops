@@ -172,7 +172,7 @@ const faqs = [
   }
 ];
 
-const INFOGRAPHIC_URL = "https://static.prod-images.emergentagent.com/jobs/ff35c095-fb57-42ce-8736-9575eebfd0f0/images/5ca2ef321c3dcea8216d1adf042c7bddee42a822013fb9c6c1a207d96df22cd9.png";
+const INFOGRAPHIC_URL = "https://static.prod-images.emergentagent.com/jobs/ff35c095-fb57-42ce-8736-9575eebfd0f0/images/8d3cdb0f84cc5c5fc4bb51faed874a21a964e83906fc272099fbb18c77725831.png";
 
 const Landing = () => {
   const [openFaq, setOpenFaq] = React.useState(null);
