@@ -3533,6 +3533,7 @@ async def create_embedded_checkout_session(
 @api_router.get("/billing/session-status/{session_id}")
 async def get_session_status(
     session_id: str,
+    background_tasks: BackgroundTasks,
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Get the status of an embedded checkout session"""
@@ -3606,6 +3607,15 @@ async def get_session_status(
             })
             
             logger.info(f"Organization {transaction['org_id']} upgraded to {plan_name}")
+            
+            # Send subscription upgrade email
+            background_tasks.add_task(
+                send_subscription_upgraded_email,
+                user["email"],
+                user["name"],
+                plan_name,
+                billing_period
+            )
         
         return {
             "status": session.status,
