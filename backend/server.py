@@ -3472,10 +3472,18 @@ async def create_embedded_checkout_session(
         # Configure Stripe with API key
         stripe.api_key = STRIPE_API_KEY
         
-        # Create embedded checkout session
+        # Get user email for customer_email
+        user_email = user.get("email", "")
+        
+        # Determine recurring interval based on billing period
+        interval = "year" if plan_details["period"] == "annual" else "month"
+        
+        # Create embedded checkout session with subscription mode
         session = stripe.checkout.Session.create(
             ui_mode="embedded",
-            mode="payment",
+            mode="subscription",
+            customer_email=user_email,
+            billing_address_collection="required",
             return_url=f"{request.return_url}?session_id={{CHECKOUT_SESSION_ID}}",
             line_items=[
                 {
@@ -3483,20 +3491,35 @@ async def create_embedded_checkout_session(
                         "currency": "usd",
                         "product_data": {
                             "name": f"MyPropOps {plan_details['plan'].title()} Plan",
-                            "description": f"{plan_details['period'].title()} subscription"
+                            "description": f"Property management software - {plan_details['period'].title()} billing"
                         },
                         "unit_amount": int(plan_details["amount"] * 100),  # Convert to cents
+                        "recurring": {
+                            "interval": interval,
+                            "interval_count": 1
+                        }
                     },
                     "quantity": 1
                 }
             ],
+            subscription_data={
+                "metadata": {
+                    "org_id": membership["org_id"],
+                    "user_id": user["id"],
+                    "plan_id": request.plan_id,
+                    "plan_name": plan_details["plan"],
+                    "billing_period": plan_details["period"]
+                }
+            },
             metadata={
                 "org_id": membership["org_id"],
                 "user_id": user["id"],
                 "plan_id": request.plan_id,
                 "plan_name": plan_details["plan"],
                 "billing_period": plan_details["period"]
-            }
+            },
+            automatic_tax={"enabled": False},
+            customer_creation="always"
         )
         
         # Store payment transaction record
