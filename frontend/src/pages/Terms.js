@@ -269,7 +269,7 @@ const Terms = () => {
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold font-heading mb-4">13. Changes to Terms</h2>
+              <h2 className="text-2xl font-semibold font-heading mb-4">14. Changes to Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
                 We reserve the right to modify these Terms at any time. We will provide notice of material changes by posting the updated Terms and updating the "Last updated" date. Your continued use of the Service after changes constitutes acceptance of the new Terms.
               </p>
