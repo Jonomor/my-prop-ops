@@ -165,7 +165,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-semibold font-heading mb-4">7. Your Content</h2>
               
-              <h3 className="text-xl font-semibold mt-6 mb-3">6.1 Ownership</h3>
+              <h3 className="text-xl font-semibold mt-6 mb-3">7.1 Ownership</h3>
               <p className="text-muted-foreground leading-relaxed">
                 You retain ownership of all content you upload, submit, or create through the Service ("Your Content"). We do not claim ownership of Your Content.
               </p>
