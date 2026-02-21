@@ -1009,6 +1009,17 @@ async def create_property(org_id: str, data: PropertyCreate, user = Depends(get_
     membership = await get_user_membership(user['id'], org_id)
     require_role(membership, [UserRole.ADMIN, UserRole.MANAGER])
     
+    # Check property limit
+    can_create, error_msg = await check_property_limit(org_id)
+    if not can_create:
+        raise HTTPException(status_code=402, detail=error_msg)
+    
+    # Check unit limit if auto-creating units
+    if data.total_units and data.total_units > 0:
+        can_create_units, unit_error = await check_unit_limit(org_id, data.total_units)
+        if not can_create_units:
+            raise HTTPException(status_code=402, detail=unit_error)
+    
     prop_id = str(uuid.uuid4())
     prop = {
         "id": prop_id,
