@@ -29,7 +29,9 @@ import {
   Thermometer,
   Bug,
   Home,
-  TreePine
+  TreePine,
+  HardHat,
+  Image
 } from 'lucide-react';
 
 const categoryIcons = {
