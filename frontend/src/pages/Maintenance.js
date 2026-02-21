@@ -71,7 +71,7 @@ const statusColors = {
 };
 
 const Maintenance = () => {
-  const { api } = useAuth();
+  const { api, currentOrg } = useAuth();
   const [requests, setRequests] = useState([]);
   const [stats, setStats] = useState(null);
   const [properties, setProperties] = useState([]);
@@ -101,17 +101,22 @@ const Maintenance = () => {
   });
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    if (currentOrg) {
+      fetchData();
+    }
+  }, [currentOrg]);
 
   const fetchData = async () => {
+    if (!currentOrg) return;
+    
     try {
+      const orgId = currentOrg.org_id;
       const [requestsRes, statsRes, propertiesRes, tenantsRes, membersRes] = await Promise.all([
         api.get('/maintenance-requests'),
         api.get('/maintenance-requests/stats/summary'),
-        api.get('/properties'),
-        api.get('/tenants'),
-        api.get('/organization/members').catch(() => ({ data: [] }))
+        api.get(`/organizations/${orgId}/properties`),
+        api.get(`/organizations/${orgId}/tenants`),
+        api.get(`/organizations/${orgId}/members`).catch(() => ({ data: [] }))
       ]);
       
       setRequests(requestsRes.data);
