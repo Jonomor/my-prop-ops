@@ -24,6 +24,30 @@ Build a full-stack SaaS web application for property and housing operations mana
 
 ### February 2026 - Current Session
 
+#### Contractor Portal (NEW)
+- Contractor registration with specialties selection
+- Contractor login with separate authentication
+- Contractor dashboard showing jobs, stats
+- Job status updates from contractor side
+- Backend endpoints: `/api/contractor/register`, `/api/contractor/login`, `/api/contractor/jobs`
+
+#### Tenant Portal Photo Uploads (NEW)  
+- Endpoint: `/api/portal/maintenance-requests/with-photos`
+- Supports up to 5 photos per maintenance request
+- Photos stored in uploads directory
+
+#### Contractor Assignment System (NEW)
+- Connect contractors to organizations
+- Assign contractors to maintenance requests
+- Endpoint: `/api/maintenance-requests/{id}/assign-contractor`
+- Email notifications to contractors on assignment
+
+#### Updated Pricing Structure
+- Free: $0 (2 properties, 5 units)
+- Standard: $49/mo or $39/mo annual (20 properties)
+- Pro: $149/mo or $119/mo annual (Unlimited + Contractor Portal)
+- Enterprise: $299/mo or $239/mo annual (White-label, SLA)
+
 #### Stripe Embedded Checkout (COMPLETE)
 - Embedded checkout modal using Stripe's `initEmbeddedCheckout`
 - Backend endpoint: `/api/billing/create-embedded-checkout` returns client_secret
