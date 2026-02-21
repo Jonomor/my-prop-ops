@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Background Check Authorization Form</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        h1 { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        .section { margin: 20px 0; }
+        .field { margin: 15px 0; }
+        .field label { display: block; font-weight: bold; margin-bottom: 5px; }
+        .field .line { border-bottom: 1px solid #333; min-height: 25px; margin-top: 5px; }
+        .signature-section { margin-top: 40px; display: flex; justify-content: space-between; }
+        .signature-box { width: 45%; }
+        .signature-line { border-bottom: 1px solid #333; height: 40px; margin-bottom: 5px; }
+        .checkbox { margin: 10px 0; }
+        .checkbox input { margin-right: 10px; }
+        .notice { background: #f5f5f5; padding: 15px; border-left: 4px solid #333; margin: 20px 0; font-size: 0.9em; }
+        @media print { body { margin: 20px; } }
+    </style>
+</head>
+<body>
+    <h1>AUTHORIZATION FOR BACKGROUND CHECK</h1>
+    
+    <div class="notice">
+        <strong>Purpose:</strong> This form authorizes the property manager/landlord to conduct a background check as part of your housing application. This is a standard requirement for most housing programs including Section 8, HUD, and LIHTC.
+    </div>
+
+    <div class="section">
+        <h3>Applicant Information</h3>
+        <div class="field">
+            <label>Full Legal Name:</label>
+            <div class="line"></div>
+        </div>
+        <div class="field">
+            <label>Date of Birth:</label>
+            <div class="line"></div>
+        </div>
+        <div class="field">
+            <label>Social Security Number:</label>
+            <div class="line"></div>
+        </div>
+        <div class="field">
+            <label>Current Address:</label>
+            <div class="line"></div>
+        </div>
+        <div class="field">
+            <label>Previous Addresses (Last 7 Years):</label>
+            <div class="line"></div>
+            <div class="line"></div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h3>Authorization</h3>
+        <p>I hereby authorize the property management company and/or landlord to obtain a consumer report and/or investigative consumer report on me. This report may include:</p>
+        <div class="checkbox">
+            <input type="checkbox"> Criminal history records
+        </div>
+        <div class="checkbox">
+            <input type="checkbox"> Sex offender registry check
+        </div>
+        <div class="checkbox">
+            <input type="checkbox"> Eviction history
+        </div>
+        <div class="checkbox">
+            <input type="checkbox"> Previous rental history verification
+        </div>
+        <div class="checkbox">
+            <input type="checkbox"> Employment verification
+        </div>
+        
+        <p style="margin-top: 20px;">I understand that:</p>
+        <ul>
+            <li>This authorization is valid for the duration of my tenancy application</li>
+            <li>I have the right to request disclosure of the nature and scope of any investigation</li>
+            <li>I may request a copy of any report obtained</li>
+            <li>If any adverse action is taken based on the report, I will be notified</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Certification</h3>
+        <p>I certify that the information provided above is true and accurate to the best of my knowledge. I understand that any false statements may result in denial of my application.</p>
+    </div>
+
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <label>Applicant Signature</label>
+        </div>
+        <div class="signature-box">
+            <div class="signature-line"></div>
+            <label>Date</label>
+        </div>
+    </div>
+
+    <div style="margin-top: 40px; font-size: 0.8em; color: #666; text-align: center;">
+        <p>This form complies with the Fair Credit Reporting Act (FCRA)</p>
+        <p>Please sign, date, and upload this completed form to your tenant portal</p>
+    </div>
+</body>
+</html>
