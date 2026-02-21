@@ -2713,6 +2713,7 @@ async def send_landlord_message(org_id: str, conversation_id: str, data: Message
 @api_router.post("/maintenance-requests", response_model=MaintenanceRequestResponse)
 async def create_maintenance_request(
     data: MaintenanceRequestCreate,
+    background_tasks: BackgroundTasks,
     credentials: HTTPAuthorizationCredentials = Depends(security)
 ):
     """Create a new maintenance request"""
@@ -2734,6 +2735,7 @@ async def create_maintenance_request(
     # Get unit and tenant info if provided
     unit_number = None
     tenant_name = None
+    tenant_email = None
     
     if data.unit_id:
         unit = await db.units.find_one({"id": data.unit_id, "org_id": org_id}, {"_id": 0, "unit_number": 1})
@@ -2741,9 +2743,10 @@ async def create_maintenance_request(
             unit_number = unit.get("unit_number")
     
     if data.tenant_id:
-        tenant = await db.tenants.find_one({"id": data.tenant_id, "org_id": org_id}, {"_id": 0, "name": 1})
+        tenant = await db.tenants.find_one({"id": data.tenant_id, "org_id": org_id}, {"_id": 0, "name": 1, "email": 1})
         if tenant:
             tenant_name = tenant.get("name")
+            tenant_email = tenant.get("email")
     
     request_doc = {
         "id": str(uuid.uuid4()),
@@ -2784,6 +2787,43 @@ async def create_maintenance_request(
         "is_read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     })
+    
+    # Send email notifications in background
+    # Notify org admins
+    admin_memberships = await db.memberships.find(
+        {"org_id": org_id, "role": "admin"},
+        {"_id": 0, "user_id": 1}
+    ).to_list(10)
+    
+    for admin_membership in admin_memberships:
+        admin_user = await db.users.find_one(
+            {"id": admin_membership["user_id"]},
+            {"_id": 0, "email": 1, "name": 1}
+        )
+        if admin_user:
+            background_tasks.add_task(
+                send_maintenance_request_email,
+                admin_user["email"],
+                admin_user["name"],
+                data.title,
+                data.description,
+                property_doc.get("name"),
+                data.priority.value,
+                False
+            )
+    
+    # Notify tenant if one is associated
+    if tenant_email and tenant_name:
+        background_tasks.add_task(
+            send_maintenance_request_email,
+            tenant_email,
+            tenant_name,
+            data.title,
+            data.description,
+            property_doc.get("name"),
+            data.priority.value,
+            True
+        )
     
     return MaintenanceRequestResponse(**request_doc)
 
