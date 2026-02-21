@@ -188,6 +188,7 @@ const Landing = () => {
               <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
               <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Reviews</a>
               <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
+              <Link to="/tenant-portal/login" className="text-emerald-600 hover:text-emerald-700 transition-colors font-medium">For Tenants</Link>
             </div>
             <div className="flex items-center gap-4">
               <Link to="/login">
