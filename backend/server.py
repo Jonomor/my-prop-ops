@@ -144,6 +144,32 @@ async def check_unit_limit(org_id: str, additional_units: int = 1):
         return False, f"Unit limit reached ({max_units}). Upgrade your plan to add more units."
     return True, None
 
+async def get_org_usage(org_id: str):
+    """Get current usage stats for an organization"""
+    property_count = await db.properties.count_documents({"org_id": org_id})
+    unit_count = await db.units.count_documents({"org_id": org_id})
+    team_count = await db.memberships.count_documents({"org_id": org_id})
+    
+    limits = await get_org_plan_limits(org_id)
+    org = await db.organizations.find_one({"id": org_id}, {"_id": 0, "plan": 1})
+    plan = org.get("plan", "free") if org else "free"
+    
+    return {
+        "plan": plan,
+        "usage": {
+            "properties": property_count,
+            "units": unit_count,
+            "team_members": team_count
+        },
+        "limits": {
+            "max_properties": limits["max_properties"],
+            "max_units": limits["max_units"],
+            "max_team_members": limits["max_team_members"],
+            "tenant_portal": limits["tenant_portal"],
+            "api_access": limits["api_access"]
+        }
+    }
+
 # ============== ENUMS ==============
 class UserRole(str, Enum):
     ADMIN = "admin"
