@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { TenantAuthProvider, useTenantAuth } from './contexts/TenantAuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Toaster } from './components/ui/sonner';
 
@@ -26,6 +27,11 @@ import MemberDirectory from './pages/MemberDirectory';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 import Security from './pages/Security';
+
+// Tenant Portal Pages
+import TenantLogin from './pages/TenantLogin';
+import TenantRegister from './pages/TenantRegister';
+import TenantPortal from './pages/TenantPortal';
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
