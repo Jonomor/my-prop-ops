@@ -1,44 +1,31 @@
 # MyPropOps - Product Requirements Document
 
-## Latest Update: February 22, 2026 (Session 3)
+## Latest Update: February 22, 2026 (Session 4)
 
 ### Completed This Session:
 
-#### Rent Collector Video REMOVED
-- ✅ Removed "Rent Collector" video from Landing page features section
-- ✅ Removed "Custom branding" from Pro tier pricing (user doesn't want white-label)
-- **Reason:** User doesn't want to handle tenant payments - only collects subscription revenue
+#### About Page (NEW)
+- ✅ Professional "About Us" page at `/about`
+- ✅ Company story, values, and milestones
+- ✅ Call-to-action for sign-ups
 
-#### Contractor-Manager Messaging (NEW FEATURE)
-- ✅ Backend API endpoints:
-  - `GET /api/maintenance-requests/{id}/messages` - Manager gets messages
-  - `POST /api/maintenance-requests/{id}/messages` - Manager sends message
-  - `GET /api/contractor/jobs/{id}/messages` - Contractor gets messages
-  - `POST /api/contractor/jobs/{id}/messages` - Contractor sends message
-- ✅ Frontend UI:
-  - "Message Contractor" button in maintenance request edit dialog
-  - Full chat UI with message history, input field, send button
-  - Contractor Dashboard has "Message Manager" button on each job
-- ✅ Notifications created for both parties on new messages
+#### Automated Blog System (NEW)
+- ✅ Blog listing page at `/blog` with category filtering
+- ✅ Individual blog post pages at `/blog/{slug}`
+- ✅ AI-powered blog generation using GPT-4o
+- ✅ Backend endpoints: `/api/blog/posts`, `/api/blog/posts/{slug}`, `/api/blog/generate`
+- ✅ Scheduling script: `/app/backend/generate_blog.py`
+- ✅ Schedule: Monday, Thursday, Sunday
+- ✅ Initial 3 posts generated and published
 
-#### Mobile App Optimization (COMPLETE)
-- ✅ **PWA Setup:**
-  - Enhanced manifest.json with shortcuts (Dashboard, Maintenance)
-  - Service worker (sw.js) for offline support
-  - Offline page (offline.html) for no-connection state
-- ✅ **Mobile Bottom Navigation:**
-  - Sticky bottom nav on screens < 1024px
-  - Quick access to: Home, Properties, Maintenance, Tenants, More
-  - "More" opens full sidebar menu
-- ✅ **CSS Improvements:**
-  - 44px minimum touch targets on mobile
-  - Smooth scrolling on touch devices
-  - Safe area padding for notched devices
-  - Reduced motion for battery optimization
+#### Footer Updates
+- ✅ Removed "Careers" link (user request)
+- ✅ Added proper links to About and Blog pages
+- ✅ Updated contact email to support@mypropops.com
 
 ---
 
-### Previously Completed (Sessions 1-2):
+### Previously Completed (Sessions 1-3):
 
 #### Pricing Restructure (COMPLETE)
 - ✅ Removed Enterprise tier - now 3 tiers: Free, Standard ($39/mo), Pro ($119/mo)
