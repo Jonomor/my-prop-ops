@@ -145,13 +145,8 @@ const Billing = () => {
   };
 
   const canUpgrade = (planId) => {
-    const hierarchy = { free: 0, standard: 1, pro: 2, enterprise: 3 };
+    const hierarchy = { free: 0, standard: 1, pro: 2 };
     return hierarchy[planId] > hierarchy[subscription?.plan || 'free'];
-  };
-
-  const canDowngrade = (planId) => {
-    const hierarchy = { free: 0, standard: 1, pro: 2, enterprise: 3 };
-    return hierarchy[planId] < hierarchy[subscription?.plan || 'free'];
   };
 
   if (loading || checkingPayment) {
@@ -293,7 +288,7 @@ const Billing = () => {
         </div>
 
         {/* Pricing Plans */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {plans.map((plan) => (
             <Card 
               key={plan.id}
@@ -313,7 +308,6 @@ const Billing = () => {
               
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  {plan.id === 'enterprise' && <Building className="w-5 h-5 text-purple-500" />}
                   {plan.id === 'pro' && <Crown className="w-5 h-5 text-yellow-500" />}
                   {plan.id === 'standard' && <Zap className="w-5 h-5 text-blue-500" />}
                   {plan.name}
