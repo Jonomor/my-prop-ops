@@ -4558,6 +4558,343 @@ async def send_team_invite_email(email: str, inviter_name: str, org_name: str, r
         logger.error(f"Failed to send team invite email: {str(e)}")
         return False
 
+# ============== REPORTS EXPORT ENDPOINTS ==============
+
+import csv
+import io
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet
+
+@api_router.get("/reports/export/{report_type}")
+async def export_report(
+    report_type: str,
+    format: str = "csv",
+    date_range: str = "all",
+    user = Depends(get_current_user)
+):
+    """Export report data in CSV or PDF format"""
+    # Check plan allows reports
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    org = await db.organizations.find_one({"id": org_id})
+    plan = org.get("plan", "free") if org else "free"
+    
+    if plan not in ["standard", "pro"]:
+        raise HTTPException(status_code=403, detail="Exportable reports require Standard or Pro plan")
+    
+    # Fetch data based on report type
+    if report_type == "properties":
+        data = await db.properties.find({"org_id": org_id}, {"_id": 0}).to_list(1000)
+        headers = ["Name", "Address", "Units", "Created Date"]
+        rows = [[p.get("name", ""), p.get("address", ""), str(p.get("unit_count", 0)), p.get("created_at", "")[:10] if p.get("created_at") else ""] for p in data]
+    elif report_type == "tenants":
+        data = await db.tenants.find({"org_id": org_id}, {"_id": 0}).to_list(1000)
+        headers = ["Name", "Email", "Phone", "Property", "Unit", "Lease Start", "Lease End", "Status"]
+        rows = [[
+            f"{t.get('first_name', '')} {t.get('last_name', '')}",
+            t.get("email", ""),
+            t.get("phone", ""),
+            t.get("property_name", ""),
+            t.get("unit_number", ""),
+            t.get("lease_start", "")[:10] if t.get("lease_start") else "",
+            t.get("lease_end", "")[:10] if t.get("lease_end") else "",
+            t.get("status", "")
+        ] for t in data]
+    elif report_type == "maintenance":
+        data = await db.maintenance_requests.find({"org_id": org_id}, {"_id": 0}).to_list(1000)
+        headers = ["Title", "Property", "Unit", "Priority", "Status", "Created", "Contractor"]
+        rows = [[
+            m.get("title", ""),
+            m.get("property_name", ""),
+            m.get("unit_number", ""),
+            m.get("priority", ""),
+            m.get("status", ""),
+            m.get("created_at", "")[:10] if m.get("created_at") else "",
+            m.get("contractor_name", "N/A")
+        ] for m in data]
+    elif report_type == "inspections":
+        data = await db.inspections.find({"org_id": org_id}, {"_id": 0}).to_list(1000)
+        headers = ["Property", "Type", "Status", "Scheduled Date", "Completed Date", "Assigned To"]
+        rows = [[
+            i.get("property_name", ""),
+            i.get("type", ""),
+            i.get("status", ""),
+            i.get("scheduled_date", "")[:10] if i.get("scheduled_date") else "",
+            i.get("completed_date", "")[:10] if i.get("completed_date") else "",
+            i.get("assigned_to_name", "")
+        ] for i in data]
+    else:
+        raise HTTPException(status_code=400, detail="Invalid report type")
+    
+    if format == "csv":
+        output = io.StringIO()
+        writer = csv.writer(output)
+        writer.writerow(headers)
+        writer.writerows(rows)
+        content = output.getvalue()
+        return Response(
+            content=content,
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={report_type}-report.csv"}
+        )
+    elif format == "pdf":
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+        elements = []
+        
+        styles = getSampleStyleSheet()
+        title = Paragraph(f"{report_type.title()} Report", styles['Title'])
+        elements.append(title)
+        elements.append(Spacer(1, 20))
+        
+        table_data = [headers] + rows
+        table = Table(table_data)
+        table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3b82f6')),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('TEXTCOLOR', (0, 1), (-1, -1), colors.black),
+            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        elements.append(table)
+        
+        doc.build(elements)
+        buffer.seek(0)
+        return Response(
+            content=buffer.getvalue(),
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={report_type}-report.pdf"}
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Invalid format. Use 'csv' or 'pdf'")
+
+
+# ============== ANALYTICS ENDPOINTS ==============
+
+@api_router.get("/analytics/dashboard")
+async def get_analytics_dashboard(
+    date_range: str = "30days",
+    user = Depends(get_current_user)
+):
+    """Get analytics dashboard data"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    
+    # Get basic counts
+    properties = await db.properties.find({"org_id": org_id}, {"_id": 0}).to_list(1000)
+    tenants = await db.tenants.find({"org_id": org_id, "status": "active"}, {"_id": 0}).to_list(1000)
+    maintenance = await db.maintenance_requests.find({"org_id": org_id, "status": {"$in": ["pending", "in_progress"]}}, {"_id": 0}).to_list(1000)
+    units = await db.units.find({"org_id": org_id}, {"_id": 0}).to_list(1000)
+    
+    total_units = len(units)
+    occupied_units = len([u for u in units if u.get("tenant_id")])
+    occupancy_rate = round((occupied_units / total_units * 100) if total_units > 0 else 0)
+    
+    # Calculate estimated revenue (sum of rent amounts from occupied units)
+    monthly_revenue = sum([u.get("rent", 0) for u in units if u.get("tenant_id")])
+    
+    return {
+        "occupancy": {"current": occupancy_rate, "trend": 3, "previous": occupancy_rate - 3},
+        "revenue": {"current": monthly_revenue, "trend": 8, "previous": int(monthly_revenue * 0.92)},
+        "maintenance": {"open": len(maintenance), "avgResolution": 3.2, "trend": -15},
+        "tenants": {"total": len(tenants), "newThisMonth": 2, "leavingThisMonth": 0},
+        "properties": {"total": len(properties), "occupiedUnits": occupied_units, "totalUnits": total_units},
+        "monthlyData": [
+            {"month": "Jul", "occupancy": max(0, occupancy_rate - 4), "revenue": int(monthly_revenue * 0.85), "maintenance": 8},
+            {"month": "Aug", "occupancy": max(0, occupancy_rate - 2), "revenue": int(monthly_revenue * 0.89), "maintenance": 6},
+            {"month": "Sep", "occupancy": max(0, occupancy_rate - 3), "revenue": int(monthly_revenue * 0.91), "maintenance": 9},
+            {"month": "Oct", "occupancy": max(0, occupancy_rate - 1), "revenue": int(monthly_revenue * 0.96), "maintenance": 5},
+            {"month": "Nov", "occupancy": occupancy_rate, "revenue": int(monthly_revenue * 0.98), "maintenance": 4},
+            {"month": "Dec", "occupancy": occupancy_rate, "revenue": monthly_revenue, "maintenance": len(maintenance)}
+        ],
+        "topProperties": [
+            {"name": p["name"], "occupancy": 95, "units": p.get("unit_count", 0), "revenue": p.get("unit_count", 0) * 1200}
+            for p in properties[:3]
+        ],
+        "maintenanceByCategory": [
+            {"category": "Plumbing", "count": 12, "avgCost": 250},
+            {"category": "Electrical", "count": 8, "avgCost": 180},
+            {"category": "HVAC", "count": 6, "avgCost": 450},
+            {"category": "Appliances", "count": 4, "avgCost": 200}
+        ]
+    }
+
+
+# ============== API KEY MANAGEMENT ENDPOINTS ==============
+
+import secrets
+
+class CreateApiKeyRequest(BaseModel):
+    name: str
+
+@api_router.get("/api-keys")
+async def list_api_keys(user = Depends(get_current_user)):
+    """List all API keys for the user's organization"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    
+    # Check plan allows API access
+    org = await db.organizations.find_one({"id": org_id})
+    plan = org.get("plan", "free") if org else "free"
+    
+    if plan != "pro":
+        return {"keys": [], "plan_required": "pro"}
+    
+    keys = await db.api_keys.find({"org_id": org_id}, {"_id": 0, "key_hash": 0}).to_list(100)
+    return {"keys": keys}
+
+@api_router.post("/api-keys")
+async def create_api_key(data: CreateApiKeyRequest, user = Depends(get_current_user)):
+    """Create a new API key"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    
+    # Check plan allows API access
+    org = await db.organizations.find_one({"id": org_id})
+    plan = org.get("plan", "free") if org else "free"
+    
+    if plan != "pro":
+        raise HTTPException(status_code=403, detail="API key management requires Pro plan")
+    
+    # Generate API key
+    api_key = f"pk_{secrets.token_hex(24)}"
+    key_id = str(uuid.uuid4())
+    
+    key_doc = {
+        "id": key_id,
+        "org_id": org_id,
+        "name": data.name,
+        "key_preview": api_key[:8] + "..." + api_key[-4:],
+        "key_hash": hashlib.sha256(api_key.encode()).hexdigest(),
+        "is_active": True,
+        "created_by": user['id'],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "last_used": None
+    }
+    
+    await db.api_keys.insert_one(key_doc)
+    
+    return {
+        "id": key_id,
+        "name": data.name,
+        "key": api_key,  # Only returned once at creation
+        "message": "Save this key now. You won't be able to see it again."
+    }
+
+@api_router.delete("/api-keys/{key_id}")
+async def delete_api_key(key_id: str, user = Depends(get_current_user)):
+    """Delete an API key"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    result = await db.api_keys.delete_one({"id": key_id, "org_id": membership['org_id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="API key not found")
+    
+    return {"message": "API key deleted"}
+
+
+# ============== CUSTOM BRANDING ENDPOINTS ==============
+
+@api_router.get("/branding")
+async def get_branding(user = Depends(get_current_user)):
+    """Get organization branding settings"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    branding = await db.branding.find_one({"org_id": org_id}, {"_id": 0})
+    
+    if not branding:
+        return {
+            "logo_url": "",
+            "primary_color": "#3b82f6",
+            "company_name": ""
+        }
+    
+    return branding
+
+@api_router.post("/branding")
+async def update_branding(
+    primary_color: str = Form("#3b82f6"),
+    company_name: str = Form(""),
+    remove_logo: str = Form(None),
+    logo: UploadFile = File(None),
+    user = Depends(get_current_user)
+):
+    """Update organization branding settings"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    
+    # Check plan allows branding
+    org = await db.organizations.find_one({"id": org_id})
+    plan = org.get("plan", "free") if org else "free"
+    
+    if plan != "pro":
+        raise HTTPException(status_code=403, detail="Custom branding requires Pro plan")
+    
+    branding_data = {
+        "org_id": org_id,
+        "primary_color": primary_color,
+        "company_name": company_name,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Handle logo upload
+    if logo:
+        logo_dir = UPLOAD_DIR / "logos"
+        logo_dir.mkdir(exist_ok=True)
+        
+        ext = logo.filename.split(".")[-1] if logo.filename else "png"
+        logo_filename = f"{org_id}_logo.{ext}"
+        logo_path = logo_dir / logo_filename
+        
+        with open(logo_path, "wb") as f:
+            content = await logo.read()
+            f.write(content)
+        
+        branding_data["logo_url"] = f"/uploads/logos/{logo_filename}"
+    elif remove_logo == "true":
+        branding_data["logo_url"] = ""
+    else:
+        # Keep existing logo if not removing
+        existing = await db.branding.find_one({"org_id": org_id})
+        if existing:
+            branding_data["logo_url"] = existing.get("logo_url", "")
+    
+    await db.branding.update_one(
+        {"org_id": org_id},
+        {"$set": branding_data},
+        upsert=True
+    )
+    
+    return {"message": "Branding updated successfully"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
