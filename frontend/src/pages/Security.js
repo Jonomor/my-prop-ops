@@ -150,29 +150,29 @@ const Security = () => {
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-medium">Regular Security Audits</p>
-                      <p className="text-sm text-muted-foreground">Annual third-party penetration testing and vulnerability assessments</p>
+                      <p className="font-medium">Secure Development</p>
+                      <p className="text-sm text-muted-foreground">OWASP-aligned secure coding practices and code review processes</p>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-medium">Employee Training</p>
-                      <p className="text-sm text-muted-foreground">All team members complete security awareness training annually</p>
+                      <p className="font-medium">Access Logging</p>
+                      <p className="text-sm text-muted-foreground">All user actions are logged for accountability and security review</p>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-medium">Incident Response</p>
-                      <p className="text-sm text-muted-foreground">24/7 security monitoring with documented incident response procedures</p>
+                      <p className="text-sm text-muted-foreground">Documented procedures for security incident handling and notification</p>
                     </div>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="font-medium">Secure Development</p>
-                      <p className="text-sm text-muted-foreground">OWASP-aligned secure coding practices and code review processes</p>
+                      <p className="font-medium">Data Processing Agreement</p>
+                      <p className="text-sm text-muted-foreground">DPA available for enterprise customers upon request</p>
                     </div>
                   </li>
                 </ul>
