@@ -171,3 +171,80 @@ code {
 .btn-active {
     @apply active:scale-[0.98];
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    /* Larger touch targets on mobile */
+    button, 
+    [role="button"],
+    a,
+    input,
+    select,
+    textarea {
+        min-height: 44px; /* iOS recommended touch target */
+    }
+    
+    /* Better text sizing for mobile */
+    html {
+        font-size: 16px; /* Prevents zoom on input focus */
+    }
+    
+    /* Smoother scrolling on touch devices */
+    .overflow-auto,
+    .overflow-y-auto,
+    .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* Hide scrollbars on mobile but keep functionality */
+    ::-webkit-scrollbar {
+        width: 4px;
+        height: 4px;
+    }
+    
+    /* Reduce motion for battery/performance on mobile */
+    @media (prefers-reduced-motion: reduce) {
+        * {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}
+
+/* Pull to refresh indicator (for future use) */
+.pull-indicator {
+    @apply fixed top-0 left-0 right-0 h-1 bg-primary transform -translate-y-full transition-transform;
+}
+
+.pull-indicator.active {
+    @apply translate-y-0;
+}
+
+/* Safe area padding for notched devices */
+@supports (padding: env(safe-area-inset-bottom)) {
+    .safe-bottom {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .safe-top {
+        padding-top: env(safe-area-inset-top);
+    }
+}
+
+/* Tap highlight removal for cleaner touch experience */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch action optimization */
+.touch-pan-x {
+    touch-action: pan-x;
+}
+
+.touch-pan-y {
+    touch-action: pan-y;
+}
+
+.touch-none {
+    touch-action: none;
+}
