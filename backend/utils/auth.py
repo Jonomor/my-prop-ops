@@ -49,11 +49,12 @@ def create_contractor_token(contractor_id: str, email: str) -> str:
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     try:
         payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        user_id = payload.get("sub")
+        # Support both 'sub' (standard) and 'user_id' (legacy) claims for compatibility
+        user_id = payload.get("sub") or payload.get("user_id")
         if user_id is None:
             raise HTTPException(status_code=401, detail="Invalid token")
         
-        user = await db.users.find_one({"id": user_id})
+        user = await db.users.find_one({"id": user_id}, {"_id": 0})
         if user is None:
             raise HTTPException(status_code=401, detail="User not found")
         
