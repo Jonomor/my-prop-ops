@@ -490,31 +490,7 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* Video 2: Rent Collector */}
-            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-              <video 
-                className="w-full aspect-video object-cover"
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-              >
-                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/4xbxgb29_prop4.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
-                    <DollarSign className="w-3 h-3" />
-                  </div>
-                  <span className="text-xs font-medium text-green-300">Automated Payments</span>
-                </div>
-                <h3 className="text-lg font-bold">Rent Collector</h3>
-                <p className="text-xs text-white/80">Stop chasing checks. Start collecting sleep.</p>
-              </div>
-            </div>
-
-            {/* Video 3: Compliance Shield */}
+            {/* Video 2: Compliance Shield */}
             <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
               <video 
                 className="w-full aspect-video object-cover"
@@ -538,7 +514,7 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* Video 4: Maintenance Magic */}
+            {/* Video 3: Maintenance Magic */}
             <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
               <video 
                 className="w-full aspect-video object-cover"
