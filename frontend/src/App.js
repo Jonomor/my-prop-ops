@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TenantAuthProvider, useTenantAuth } from './contexts/TenantAuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Toaster } from './components/ui/sonner';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import { initializeNativeApp, isNative } from './utils/native';
 
 // Pages
 import Landing from './pages/Landing';
