@@ -1,32 +1,44 @@
 # MyPropOps - Product Requirements Document
 
-## Latest Update: February 22, 2026 (Session 2)
+## Latest Update: February 22, 2026 (Session 3)
 
 ### Completed This Session:
 
-#### Pricing Feature Alignment (COMPLETE)
-- ✅ Added "AI-Powered Insights Dashboard" to Pro tier on Landing page and Billing API
-- ✅ Added "Rent payment tracking" to Standard tier on Landing page and Billing API
-- ✅ All pricing features now match between Landing page, Billing page, and Backend API
+#### Rent Collector Video REMOVED
+- ✅ Removed "Rent Collector" video from Landing page features section
+- ✅ Removed "Custom branding" from Pro tier pricing (user doesn't want white-label)
+- **Reason:** User doesn't want to handle tenant payments - only collects subscription revenue
 
-#### Online Rent Collection REMOVED
-- ❌ **Removed "Pay Now" button** from Tenant Portal - Online rent collection requires Stripe Connect for proper payment routing to landlords
-- ✅ **Kept "Rent Payments" tab** - Tenants can view payment history and upcoming dues
-- ✅ **Added "Contact your property manager for payment options" message**
-- **Reason:** Without Stripe Connect, payments would go to the platform instead of landlords. This is a Phase 2 feature.
+#### Contractor-Manager Messaging (NEW FEATURE)
+- ✅ Backend API endpoints:
+  - `GET /api/maintenance-requests/{id}/messages` - Manager gets messages
+  - `POST /api/maintenance-requests/{id}/messages` - Manager sends message
+  - `GET /api/contractor/jobs/{id}/messages` - Contractor gets messages
+  - `POST /api/contractor/jobs/{id}/messages` - Contractor sends message
+- ✅ Frontend UI:
+  - "Message Contractor" button in maintenance request edit dialog
+  - Full chat UI with message history, input field, send button
+  - Contractor Dashboard has "Message Manager" button on each job
+- ✅ Notifications created for both parties on new messages
 
-#### Contractor Assignment Verified (WORKING)
-- ✅ Backend endpoint `/api/maintenance-requests/{id}/assign-contractor` working
-- ✅ Frontend contractor dropdown in Maintenance page working
-- ✅ Test contractor "John Plumber" connected to test organization
-- ✅ Email notifications sent to contractors on assignment
-
-#### Bug Fix (Testing Agent)
-- ✅ Fixed SelectItem empty value bug in Maintenance.js causing runtime errors
+#### Mobile App Optimization (COMPLETE)
+- ✅ **PWA Setup:**
+  - Enhanced manifest.json with shortcuts (Dashboard, Maintenance)
+  - Service worker (sw.js) for offline support
+  - Offline page (offline.html) for no-connection state
+- ✅ **Mobile Bottom Navigation:**
+  - Sticky bottom nav on screens < 1024px
+  - Quick access to: Home, Properties, Maintenance, Tenants, More
+  - "More" opens full sidebar menu
+- ✅ **CSS Improvements:**
+  - 44px minimum touch targets on mobile
+  - Smooth scrolling on touch devices
+  - Safe area padding for notched devices
+  - Reduced motion for battery optimization
 
 ---
 
-### Previously Completed:
+### Previously Completed (Sessions 1-2):
 
 #### Pricing Restructure (COMPLETE)
 - ✅ Removed Enterprise tier - now 3 tiers: Free, Standard ($39/mo), Pro ($119/mo)
