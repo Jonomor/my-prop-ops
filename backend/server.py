@@ -5819,7 +5819,6 @@ async def get_blog_post(slug: str):
 @api_router.post("/blog/generate")
 async def generate_blog_post(topic: str = None):
     """Generate a new blog post using AI (admin only, called by scheduler)"""
-    from emergentintegrations.llm.chat import chat, LLMMessage, LLMConfig
     
     # Default topics for property management blog
     topics = [
@@ -5849,10 +5848,9 @@ async def generate_blog_post(topic: str = None):
     
     try:
         # Generate blog content using AI
-        config = LLMConfig(
-            model_name="gpt-4o",
-            max_output_tokens=2000,
-            temperature=0.7
+        llm = LlmChat(
+            api_key=os.environ.get("EMERGENT_LLM_KEY"),
+            model="gpt-4o"
         )
         
         prompt = f"""Write a professional blog post for property managers and landlords about: "{selected_topic}"
@@ -5872,10 +5870,7 @@ Also provide:
 2. A 2-3 sentence excerpt/summary
 3. Estimated read time in minutes"""
 
-        response = await chat(
-            config=config,
-            messages=[LLMMessage(role="user", content=prompt)]
-        )
+        response = await llm.send_message_async(UserMessage(content=prompt))
         
         # Parse AI response
         content_text = response.content
