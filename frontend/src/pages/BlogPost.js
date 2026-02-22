@@ -9,11 +9,115 @@ import {
   Calendar,
   Clock,
   ArrowLeft,
-  Share2
+  Share2,
+  Tag
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
+
+// Helper to update document head for SEO
+const updateMetaTags = (post) => {
+  if (!post) return;
+  
+  // Update title
+  document.title = `${post.title} | MyPropOps Blog`;
+  
+  // Update or create meta description
+  let metaDescription = document.querySelector('meta[name="description"]');
+  if (!metaDescription) {
+    metaDescription = document.createElement('meta');
+    metaDescription.name = 'description';
+    document.head.appendChild(metaDescription);
+  }
+  metaDescription.content = post.meta_description || post.excerpt || '';
+  
+  // Update or create meta keywords
+  if (post.keywords && post.keywords.length > 0) {
+    let metaKeywords = document.querySelector('meta[name="keywords"]');
+    if (!metaKeywords) {
+      metaKeywords = document.createElement('meta');
+      metaKeywords.name = 'keywords';
+      document.head.appendChild(metaKeywords);
+    }
+    metaKeywords.content = post.keywords.join(', ');
+  }
+  
+  // Update Open Graph tags
+  const ogTags = {
+    'og:title': post.title,
+    'og:description': post.meta_description || post.excerpt || '',
+    'og:type': 'article',
+    'og:url': window.location.href,
+    'article:published_time': post.published_at,
+    'article:section': post.category
+  };
+  
+  Object.entries(ogTags).forEach(([property, content]) => {
+    let tag = document.querySelector(`meta[property="${property}"]`);
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.setAttribute('property', property);
+      document.head.appendChild(tag);
+    }
+    tag.content = content;
+  });
+  
+  // Update Twitter tags
+  const twitterTags = {
+    'twitter:title': post.title,
+    'twitter:description': post.meta_description || post.excerpt || ''
+  };
+  
+  Object.entries(twitterTags).forEach(([name, content]) => {
+    let tag = document.querySelector(`meta[name="${name}"]`);
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.name = name;
+      document.head.appendChild(tag);
+    }
+    tag.content = content;
+  });
+  
+  // Add JSON-LD structured data for article
+  let structuredData = document.querySelector('script[type="application/ld+json"][data-blog="true"]');
+  if (!structuredData) {
+    structuredData = document.createElement('script');
+    structuredData.type = 'application/ld+json';
+    structuredData.setAttribute('data-blog', 'true');
+    document.head.appendChild(structuredData);
+  }
+  
+  const articleSchema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": post.title,
+    "description": post.meta_description || post.excerpt,
+    "datePublished": post.published_at,
+    "dateModified": post.updated_at || post.published_at,
+    "author": {
+      "@type": "Organization",
+      "name": "MyPropOps"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "MyPropOps",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://mypropops.com/logo512.png"
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": window.location.href
+    },
+    "articleSection": post.category,
+    "wordCount": post.word_count || 1000,
+    "keywords": post.keywords?.join(', ') || post.category
+  };
+  
+  structuredData.textContent = JSON.stringify(articleSchema);
+};
 
 const BlogPost = () => {
   const { slug } = useParams();
@@ -23,12 +127,18 @@ const BlogPost = () => {
 
   useEffect(() => {
     fetchPost();
+    
+    // Cleanup function to restore default meta tags
+    return () => {
+      document.title = 'MyPropOps | Property Management Software';
+    };
   }, [slug]);
 
   const fetchPost = async () => {
     try {
       const res = await axios.get(`${API_URL}/api/blog/posts/${slug}`);
       setPost(res.data);
+      updateMetaTags(res.data);
     } catch (error) {
       console.error('Failed to fetch blog post:', error);
       navigate('/blog');
@@ -121,7 +231,7 @@ const BlogPost = () => {
       {/* Article */}
       <article className="max-w-3xl mx-auto px-4 py-8">
         {/* Meta */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 flex-wrap">
           <Badge variant="secondary">{post.category}</Badge>
           <span className="text-sm text-muted-foreground flex items-center gap-1">
             <Calendar className="w-4 h-4" />
@@ -131,13 +241,30 @@ const BlogPost = () => {
             <Clock className="w-4 h-4" />
             {post.read_time} min read
           </span>
+          {post.word_count && (
+            <span className="text-sm text-muted-foreground">
+              {post.word_count.toLocaleString()} words
+            </span>
+          )}
         </div>
 
-        {/* Title */}
+        {/* Title - H1 for SEO */}
         <h1 className="text-3xl sm:text-4xl font-bold mb-4">{post.title}</h1>
         
         {/* Excerpt */}
-        <p className="text-xl text-muted-foreground mb-8">{post.excerpt}</p>
+        <p className="text-xl text-muted-foreground mb-6">{post.excerpt}</p>
+        
+        {/* Keywords Tags */}
+        {post.keywords && post.keywords.length > 0 && (
+          <div className="flex items-center gap-2 mb-8 flex-wrap">
+            <Tag className="w-4 h-4 text-muted-foreground" />
+            {post.keywords.slice(0, 5).map((keyword, index) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {keyword}
+              </Badge>
+            ))}
+          </div>
+        )}
 
         {/* Featured Image */}
         {post.image_url && (
@@ -150,12 +277,12 @@ const BlogPost = () => {
 
         {/* Content */}
         <div 
-          className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-primary"
+          className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-primary prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-p:mb-4 prose-ul:my-4 prose-ol:my-4 prose-li:my-1"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
 
         {/* Share */}
-        <div className="mt-12 pt-8 border-t border-border flex items-center justify-between">
+        <div className="mt-12 pt-8 border-t border-border flex items-center justify-between flex-wrap gap-4">
           <p className="text-muted-foreground">Found this helpful? Share it!</p>
           <Button variant="outline" onClick={handleShare}>
             <Share2 className="w-4 h-4 mr-2" />
