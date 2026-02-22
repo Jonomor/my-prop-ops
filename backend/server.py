@@ -5295,7 +5295,7 @@ async def setup_2fa(data: Enable2FARequest, user = Depends(get_current_user)):
     user_doc = await db.users.find_one({"id": user['id']})
     
     # Verify password
-    if not verify_password(data.password, user_doc['password_hash']):
+    if not verify_password(data.password, user_doc['password']):
         raise HTTPException(status_code=401, detail="Invalid password")
     
     # Check if user's org has Pro plan
@@ -5385,7 +5385,7 @@ async def disable_2fa(data: Disable2FARequest, user = Depends(get_current_user))
     user_doc = await db.users.find_one({"id": user['id']})
     
     # Verify password
-    if not verify_password(data.password, user_doc['password_hash']):
+    if not verify_password(data.password, user_doc['password']):
         raise HTTPException(status_code=401, detail="Invalid password")
     
     # Verify 2FA code
