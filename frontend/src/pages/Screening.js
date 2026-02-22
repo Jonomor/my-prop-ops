@@ -42,7 +42,7 @@ const Screening = () => {
 
   const fetchScreenings = async () => {
     try {
-      const res = await axios.get(`${API}/api/screening/requests?org_id=${currentOrg.id}`, {
+      const res = await axios.get(`${API}/api/screening/requests?org_id=${currentOrg.org_id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setScreenings(res.data);
@@ -55,7 +55,7 @@ const Screening = () => {
 
   const fetchTenants = async () => {
     try {
-      const res = await axios.get(`${API}/api/organizations/${currentOrg.id}/tenants`, {
+      const res = await axios.get(`${API}/api/organizations/${currentOrg.org_id}/tenants`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setTenants(res.data);
@@ -72,7 +72,7 @@ const Screening = () => {
 
     setSubmitting(true);
     try {
-      await axios.post(`${API}/api/screening/requests?org_id=${currentOrg.id}`, {
+      await axios.post(`${API}/api/screening/requests?org_id=${currentOrg.org_id}`, {
         tenant_id: selectedTenant,
         screening_type: screeningType,
         include_credit: includeCredit,
