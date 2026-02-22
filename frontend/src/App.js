@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TenantAuthProvider, useTenantAuth } from './contexts/TenantAuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { Toaster } from './components/ui/sonner';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Pages
 import Landing from './pages/Landing';
