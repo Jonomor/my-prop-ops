@@ -5781,6 +5781,193 @@ async def validate_2fa_code(data: Verify2FARequest, user = Depends(get_current_u
     raise HTTPException(status_code=401, detail="Invalid 2FA code")
 
 
+# ============== BLOG SYSTEM ==============
+
+class BlogPostCreate(BaseModel):
+    title: str
+    excerpt: str
+    content: str
+    category: str = "Property Management"
+    image_url: Optional[str] = None
+    read_time: int = 5
+
+@api_router.get("/blog/posts")
+async def get_blog_posts(limit: int = 20, category: str = None):
+    """Get all published blog posts"""
+    query = {"status": "published"}
+    if category and category != "all":
+        query["category"] = category
+    
+    posts = await db.blog_posts.find(
+        query,
+        {"_id": 0}
+    ).sort("published_at", -1).limit(limit).to_list(limit)
+    
+    return posts
+
+@api_router.get("/blog/posts/{slug}")
+async def get_blog_post(slug: str):
+    """Get a single blog post by slug"""
+    post = await db.blog_posts.find_one(
+        {"slug": slug, "status": "published"},
+        {"_id": 0}
+    )
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
+
+@api_router.post("/blog/generate")
+async def generate_blog_post(topic: str = None):
+    """Generate a new blog post using AI (admin only, called by scheduler)"""
+    from emergentintegrations.llm.chat import chat, LLMMessage, LLMConfig
+    
+    # Default topics for property management blog
+    topics = [
+        "5 Tips for Screening Tenants Like a Pro",
+        "How to Handle Late Rent Payments Without Losing Tenants",
+        "The Complete Guide to Property Inspections",
+        "Maximizing Rental Income: Strategies That Actually Work",
+        "Dealing with Difficult Tenants: A Landlord's Guide",
+        "Understanding Fair Housing Laws: What Every Landlord Must Know",
+        "Maintenance Requests: How to Prioritize and Save Money",
+        "Building a Strong Landlord-Tenant Relationship",
+        "The Future of Property Management: AI and Automation",
+        "Section 8 Housing: Pros, Cons, and Best Practices",
+        "How to Set the Right Rent Price for Your Property",
+        "Eviction Process: A Step-by-Step Legal Guide",
+        "Property Management Software: What to Look For",
+        "Tax Deductions Every Landlord Should Know",
+        "Emergency Repairs: When to Act and When to Wait"
+    ]
+    
+    # Pick random topic if not provided
+    import random
+    selected_topic = topic or random.choice(topics)
+    
+    categories = ["Property Management", "Landlord Tips", "Industry News", "Product Updates"]
+    selected_category = random.choice(categories[:3])  # Exclude Product Updates for auto-gen
+    
+    try:
+        # Generate blog content using AI
+        config = LLMConfig(
+            model_name="gpt-4o",
+            max_output_tokens=2000,
+            temperature=0.7
+        )
+        
+        prompt = f"""Write a professional blog post for property managers and landlords about: "{selected_topic}"
+
+The blog should be:
+- Informative and actionable
+- 800-1200 words
+- Written in a friendly, professional tone
+- Include practical tips and examples
+- Use subheadings (format as <h2> tags)
+- End with a call-to-action mentioning MyPropOps
+
+Format the content as HTML with proper paragraphs (<p>), headings (<h2>), and lists (<ul><li>) where appropriate.
+
+Also provide:
+1. A compelling title (different from the topic if you can improve it)
+2. A 2-3 sentence excerpt/summary
+3. Estimated read time in minutes"""
+
+        response = await chat(
+            config=config,
+            messages=[LLMMessage(role="user", content=prompt)]
+        )
+        
+        # Parse AI response
+        content_text = response.content
+        
+        # Extract title (usually the first line or before first paragraph)
+        lines = content_text.split('\n')
+        title = selected_topic  # default
+        excerpt = ""
+        content = content_text
+        read_time = 5
+        
+        # Try to parse structured response
+        for i, line in enumerate(lines):
+            if line.lower().startswith('title:'):
+                title = line.replace('Title:', '').replace('title:', '').strip()
+            elif line.lower().startswith('excerpt:'):
+                excerpt = line.replace('Excerpt:', '').replace('excerpt:', '').strip()
+            elif line.lower().startswith('read time:'):
+                try:
+                    read_time = int(''.join(filter(str.isdigit, line)))
+                except:
+                    read_time = 5
+        
+        # If no excerpt found, create one from content
+        if not excerpt:
+            # Find first paragraph
+            import re
+            p_match = re.search(r'<p>(.*?)</p>', content, re.DOTALL)
+            if p_match:
+                excerpt = re.sub(r'<[^>]+>', '', p_match.group(1))[:200] + "..."
+            else:
+                excerpt = content[:200].replace('<', '').replace('>', '') + "..."
+        
+        # Create slug from title
+        slug = title.lower()
+        slug = ''.join(c if c.isalnum() or c == ' ' else '' for c in slug)
+        slug = slug.replace(' ', '-')[:50]
+        slug = f"{slug}-{str(uuid.uuid4())[:8]}"
+        
+        # Save to database
+        post = {
+            "id": str(uuid.uuid4()),
+            "slug": slug,
+            "title": title,
+            "excerpt": excerpt,
+            "content": content,
+            "category": selected_category,
+            "read_time": read_time,
+            "image_url": None,
+            "status": "published",
+            "published_at": datetime.now(timezone.utc).isoformat(),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "auto_generated": True
+        }
+        
+        await db.blog_posts.insert_one(post)
+        
+        return {"success": True, "post_id": post["id"], "title": title, "slug": slug}
+        
+    except Exception as e:
+        logger.error(f"Failed to generate blog post: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate blog post: {str(e)}")
+
+@api_router.post("/blog/schedule-generation")
+async def schedule_blog_generation():
+    """Check if blog post should be generated today (Monday, Thursday, Sunday)"""
+    from datetime import datetime
+    
+    today = datetime.now(timezone.utc)
+    day_of_week = today.weekday()  # 0=Monday, 1=Tuesday, ..., 6=Sunday
+    
+    # Generate on Monday (0), Thursday (3), Sunday (6)
+    publish_days = [0, 3, 6]
+    
+    if day_of_week not in publish_days:
+        return {"message": f"Not a publish day. Current day: {today.strftime('%A')}", "should_publish": False}
+    
+    # Check if already published today
+    today_start = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    existing = await db.blog_posts.find_one({
+        "published_at": {"$gte": today_start.isoformat()},
+        "auto_generated": True
+    })
+    
+    if existing:
+        return {"message": "Already published today", "should_publish": False, "existing_post": existing.get("title")}
+    
+    # Generate new post
+    result = await generate_blog_post()
+    return {"message": "Blog post generated", "should_publish": True, "result": result}
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
