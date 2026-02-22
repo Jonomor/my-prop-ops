@@ -93,6 +93,14 @@ const Maintenance = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [assigningContractor, setAssigningContractor] = useState(false);
+  
+  // Messaging states
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const messagesEndRef = useRef(null);
 
   // New request form state
   const [form, setForm] = useState({
