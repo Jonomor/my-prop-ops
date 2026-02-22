@@ -241,7 +241,7 @@ const Landing = () => {
                 #1 Property Management Software
               </div>
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold font-heading leading-tight">
-                Stop drowning in spreadsheets.{' '}
+                Stop drowning in spreadsheets.<br />
                 <span className="text-primary">Start managing.</span>
               </h1>
               <p className="mt-6 text-xl text-muted-foreground max-w-xl">
