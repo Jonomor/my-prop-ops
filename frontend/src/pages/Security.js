@@ -189,31 +189,17 @@ const Security = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <Globe className="w-12 h-12 text-primary mx-auto mb-4" />
-            <h2 className="text-3xl font-bold font-heading mb-4">Data Residency</h2>
+            <h2 className="text-3xl font-bold font-heading mb-4">Data Storage</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Your data is stored in secure AWS data centers. Enterprise customers can choose their preferred data region.
+              Your data is stored securely in the United States with encrypted backups.
             </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <div className="max-w-md mx-auto">
             <Card className="glass text-center">
               <CardContent className="p-6">
-                <p className="text-2xl font-bold font-heading mb-1">US East</p>
-                <p className="text-muted-foreground">Virginia, USA</p>
-                <p className="text-sm text-primary mt-2">Default Region</p>
-              </CardContent>
-            </Card>
-            <Card className="glass text-center">
-              <CardContent className="p-6">
-                <p className="text-2xl font-bold font-heading mb-1">EU West</p>
-                <p className="text-muted-foreground">Ireland</p>
-                <p className="text-sm text-muted-foreground mt-2">Enterprise Only</p>
-              </CardContent>
-            </Card>
-            <Card className="glass text-center">
-              <CardContent className="p-6">
-                <p className="text-2xl font-bold font-heading mb-1">Asia Pacific</p>
-                <p className="text-muted-foreground">Sydney, Australia</p>
-                <p className="text-sm text-muted-foreground mt-2">Enterprise Only</p>
+                <p className="text-2xl font-bold font-heading mb-1">United States</p>
+                <p className="text-muted-foreground">Secure cloud infrastructure</p>
+                <p className="text-sm text-primary mt-2">All data encrypted at rest</p>
               </CardContent>
             </Card>
           </div>
