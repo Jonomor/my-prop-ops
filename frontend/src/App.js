@@ -36,6 +36,7 @@ import Analytics from './pages/Analytics';
 import ApiKeys from './pages/ApiKeys';
 import Branding from './pages/Branding';
 import TwoFactorAuth from './pages/TwoFactorAuth';
+import AIInsights from './pages/AIInsights';
 
 // Tenant Portal Pages
 import TenantLogin from './pages/TenantLogin';
@@ -165,6 +166,7 @@ function AppRoutes() {
       <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
       <Route path="/branding" element={<ProtectedRoute><Branding /></ProtectedRoute>} />
       <Route path="/2fa-settings" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
+      <Route path="/ai-insights" element={<ProtectedRoute><AIInsights /></ProtectedRoute>} />
       <Route path="/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
       
       {/* Default redirect */}

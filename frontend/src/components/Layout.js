@@ -41,11 +41,13 @@ import {
   FileSpreadsheet,
   Key,
   Palette,
-  Shield
+  Shield,
+  Sparkles
 } from 'lucide-react';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: Home },
+  { path: '/ai-insights', label: 'AI Insights', icon: Sparkles },
   { path: '/properties', label: 'Properties', icon: Building2 },
   { path: '/tenants', label: 'Tenants', icon: Users },
   { path: '/screening', label: 'Screening', icon: Search },
