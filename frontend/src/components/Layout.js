@@ -40,7 +40,6 @@ import {
   BarChart3,
   FileSpreadsheet,
   Key,
-  Palette,
   Shield,
   Sparkles
 } from 'lucide-react';
