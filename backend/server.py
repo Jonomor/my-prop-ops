@@ -1081,10 +1081,29 @@ async def register(data: UserCreate, background_tasks: BackgroundTasks):
     )
 
 @api_router.post("/auth/login", response_model=TokenResponse)
-async def login(data: UserLogin):
+async def login(data: UserLogin, request: Request):
+    client_ip = get_client_ip(request)
+    rate_key = f"{client_ip}:{data.email}"
+    
+    # Check rate limit
+    if login_rate_limiter.is_rate_limited(rate_key):
+        remaining = login_rate_limiter.get_remaining_time(rate_key)
+        raise HTTPException(
+            status_code=429, 
+            detail=f"Too many login attempts. Please try again in {remaining} seconds."
+        )
+    
     user = await db.users.find_one({"email": data.email}, {"_id": 0})
     if not user or not verify_password(data.password, user['password']):
+        login_rate_limiter.record_attempt(rate_key)
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Check if user is disabled
+    if user.get("disabled"):
+        raise HTTPException(status_code=403, detail="Account is disabled. Please contact support.")
+    
+    # Clear rate limit on successful login
+    login_rate_limiter.clear(rate_key)
     
     token = create_token(user['id'], data.email)
     return TokenResponse(
