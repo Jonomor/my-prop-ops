@@ -51,10 +51,10 @@ const securityFeatures = [
 ];
 
 const certifications = [
-  { name: 'SOC 2 Type II', status: 'Compliant' },
-  { name: 'GDPR', status: 'Compliant' },
-  { name: 'CCPA', status: 'Compliant' },
-  { name: 'HIPAA', status: 'Available on Enterprise' }
+  { name: 'GDPR', status: 'Privacy policy compliant, formal audit pending' },
+  { name: 'CCPA', status: 'Privacy policy compliant, formal audit pending' },
+  { name: 'Data Encryption', status: 'AES-256 at rest, TLS 1.3 in transit' },
+  { name: 'Secure Authentication', status: '2FA available, bcrypt hashing' }
 ];
 
 const Security = () => {
