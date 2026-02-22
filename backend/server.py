@@ -5364,6 +5364,152 @@ import qrcode
 import io
 import base64
 
+# ============== AI-POWERED INSIGHTS ENDPOINTS ==============
+
+from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+
+class AIInsightsRequest(BaseModel):
+    question: Optional[str] = None
+    insight_type: str = "general"  # general, occupancy, maintenance, revenue, forecast
+
+@api_router.post("/ai/insights")
+async def get_ai_insights(data: AIInsightsRequest, user = Depends(get_current_user)):
+    """Generate AI-powered insights from property data"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    
+    # Check plan allows AI features (Pro only)
+    org = await db.organizations.find_one({"id": org_id})
+    plan = org.get("plan", "free") if org else "free"
+    
+    if plan != "pro":
+        raise HTTPException(status_code=403, detail="AI insights require Pro plan")
+    
+    # Gather data for analysis
+    properties = await db.properties.find({"org_id": org_id}, {"_id": 0}).to_list(100)
+    tenants = await db.tenants.find({"org_id": org_id, "status": "active"}, {"_id": 0}).to_list(500)
+    units = await db.units.find({"org_id": org_id}, {"_id": 0}).to_list(500)
+    maintenance = await db.maintenance_requests.find({"org_id": org_id}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    rent_payments = await db.rent_payments.find({"org_id": org_id}, {"_id": 0}).sort("due_date", -1).to_list(100)
+    
+    # Calculate key metrics
+    total_units = len(units)
+    occupied_units = len([u for u in units if u.get("tenant_id")])
+    occupancy_rate = round((occupied_units / total_units * 100) if total_units > 0 else 0)
+    
+    total_rent_expected = sum([u.get("rent", 0) for u in units if u.get("tenant_id")])
+    total_collected = sum([p.get("paid_amount", 0) for p in rent_payments if p.get("status") == "paid"])
+    
+    open_maintenance = len([m for m in maintenance if m.get("status") in ["pending", "in_progress"]])
+    emergency_maintenance = len([m for m in maintenance if m.get("priority") == "emergency"])
+    
+    # Build context for AI
+    context = f"""
+Property Portfolio Summary:
+- Total Properties: {len(properties)}
+- Total Units: {total_units}
+- Occupied Units: {occupied_units}
+- Occupancy Rate: {occupancy_rate}%
+- Active Tenants: {len(tenants)}
+- Monthly Expected Revenue: ${total_rent_expected:,.2f}
+- Open Maintenance Requests: {open_maintenance}
+- Emergency Maintenance: {emergency_maintenance}
+
+Recent Maintenance Issues:
+{chr(10).join([f"- {m.get('title', 'Unknown')}: {m.get('status', 'Unknown')} ({m.get('priority', 'normal')})" for m in maintenance[:10]])}
+
+Recent Rent Collection:
+- Total payments this period: {len(rent_payments)}
+- Paid: {len([p for p in rent_payments if p.get('status') == 'paid'])}
+- Pending: {len([p for p in rent_payments if p.get('status') == 'pending'])}
+- Overdue: {len([p for p in rent_payments if p.get('status') == 'overdue'])}
+"""
+    
+    # Generate AI insight
+    system_message = """You are an AI assistant for property managers. Analyze the provided data and give actionable insights.
+Be concise, specific, and focus on:
+1. Key observations from the data
+2. Potential issues or risks
+3. Opportunities for improvement
+4. Specific action items
+
+Keep responses under 300 words. Use bullet points for clarity."""
+    
+    if data.insight_type == "occupancy":
+        user_prompt = f"Analyze occupancy trends and suggest ways to improve vacancy rates:\n\n{context}"
+    elif data.insight_type == "maintenance":
+        user_prompt = f"Analyze maintenance patterns and suggest proactive measures:\n\n{context}"
+    elif data.insight_type == "revenue":
+        user_prompt = f"Analyze revenue and rent collection, suggest optimization strategies:\n\n{context}"
+    elif data.insight_type == "forecast":
+        user_prompt = f"Based on current data, provide a 3-month forecast and recommendations:\n\n{context}"
+    elif data.question:
+        user_prompt = f"Answer this question about the property portfolio: {data.question}\n\nData:\n{context}"
+    else:
+        user_prompt = f"Provide a brief executive summary of this property portfolio with key insights and recommendations:\n\n{context}"
+    
+    try:
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"insights-{org_id}-{datetime.now().timestamp()}",
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+        
+        user_message = UserMessage(text=user_prompt)
+        response = await chat.send_message(user_message)
+        
+        return {
+            "insight": response,
+            "insight_type": data.insight_type,
+            "metrics": {
+                "occupancy_rate": occupancy_rate,
+                "total_properties": len(properties),
+                "total_units": total_units,
+                "active_tenants": len(tenants),
+                "open_maintenance": open_maintenance,
+                "monthly_revenue": total_rent_expected
+            }
+        }
+    except Exception as e:
+        logger.error(f"AI insights error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate AI insights")
+
+
+@api_router.get("/ai/quick-stats")
+async def get_ai_quick_stats(user = Depends(get_current_user)):
+    """Get quick AI-generated stats for dashboard"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    
+    # Calculate stats
+    properties = await db.properties.count_documents({"org_id": org_id})
+    units = await db.units.find({"org_id": org_id}, {"_id": 0, "tenant_id": 1, "rent": 1}).to_list(1000)
+    tenants = await db.tenants.count_documents({"org_id": org_id, "status": "active"})
+    open_maintenance = await db.maintenance_requests.count_documents({"org_id": org_id, "status": {"$in": ["pending", "in_progress"]}})
+    
+    total_units = len(units)
+    occupied = len([u for u in units if u.get("tenant_id")])
+    monthly_revenue = sum([u.get("rent", 0) for u in units if u.get("tenant_id")])
+    
+    return {
+        "properties": properties,
+        "units": total_units,
+        "occupied_units": occupied,
+        "occupancy_rate": round((occupied / total_units * 100) if total_units > 0 else 0),
+        "active_tenants": tenants,
+        "monthly_revenue": monthly_revenue,
+        "open_maintenance": open_maintenance
+    }
+
+
 class Enable2FARequest(BaseModel):
     password: str
 
