@@ -141,9 +141,10 @@ class TestBackendAPIs:
         assert "total_expected" in data, "Response should contain 'total_expected' field"
         assert "total_collected" in data, "Response should contain 'total_collected' field"
         assert "outstanding" in data, "Response should contain 'outstanding' field"
-        assert "payment_count" in data, "Response should contain 'payment_count' field"
+        assert "total_payments" in data, "Response should contain 'total_payments' field"
+        assert "collection_rate" in data, "Response should contain 'collection_rate' field"
         
-        print(f"Rent Summary: Expected=${data['total_expected']}, Collected=${data['total_collected']}, Outstanding=${data['outstanding']}")
+        print(f"Rent Summary: Expected=${data['total_expected']}, Collected=${data['total_collected']}, Outstanding=${data['outstanding']}, TotalPayments={data['total_payments']}")
     
     # ==================== Billing/Subscription Status Tests ====================
     
