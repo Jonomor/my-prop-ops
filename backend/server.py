@@ -3488,11 +3488,26 @@ async def contractor_register(data: ContractorRegister):
     }
 
 @api_router.post("/contractor/login")
-async def contractor_login(data: ContractorLogin):
+async def contractor_login(data: ContractorLogin, request: Request):
     """Contractor login"""
+    client_ip = get_client_ip(request)
+    rate_key = f"contractor:{client_ip}:{data.email}"
+    
+    # Check rate limit
+    if login_rate_limiter.is_rate_limited(rate_key):
+        remaining = login_rate_limiter.get_remaining_time(rate_key)
+        raise HTTPException(
+            status_code=429, 
+            detail=f"Too many login attempts. Please try again in {remaining} seconds."
+        )
+    
     contractor = await db.contractors.find_one({"email": data.email})
     if not contractor or not verify_password(data.password, contractor["hashed_password"]):
+        login_rate_limiter.record_attempt(rate_key)
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Clear rate limit on successful login
+    login_rate_limiter.clear(rate_key)
     
     token = create_contractor_token(contractor["id"], data.email)
     
