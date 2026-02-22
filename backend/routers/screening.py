@@ -51,9 +51,30 @@ async def create_screening_request(
 ):
     await verify_org_membership(current_user["id"], org_id)
     
+    # Check plan allows screening
+    org = await db.organizations.find_one({"id": org_id})
+    plan = org.get("plan", "free") if org else "free"
+    if plan not in ["standard", "pro"]:
+        raise HTTPException(status_code=403, detail="Tenant screening requires Standard or Pro plan")
+    
+    # Check and deduct credit
+    credit_result = await db.screening_credits.find_one_and_update(
+        {"org_id": org_id, "balance": {"$gt": 0}},
+        {"$inc": {"balance": -1, "used": 1}},
+        return_document=True
+    )
+    
+    if not credit_result:
+        raise HTTPException(status_code=402, detail="No screening credits available. Please purchase credits.")
+    
     # Verify tenant exists
     tenant = await db.tenants.find_one({"id": request.tenant_id, "org_id": org_id})
     if not tenant:
+        # Refund the credit if tenant not found
+        await db.screening_credits.update_one(
+            {"org_id": org_id},
+            {"$inc": {"balance": 1, "used": -1}}
+        )
         raise HTTPException(status_code=404, detail="Tenant not found")
     
     # Check for existing pending request
