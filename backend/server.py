@@ -5848,15 +5848,12 @@ async def generate_blog_post(topic: str = None):
     
     try:
         # Generate blog content using AI
-        llm = LlmChat(
-            api_key=os.environ.get("EMERGENT_LLM_KEY"),
-            model="gpt-4o"
-        )
+        system_message = """You are a professional blog writer for MyPropOps, a property management software company. 
+        Write engaging, actionable content for landlords and property managers."""
         
-        prompt = f"""Write a professional blog post for property managers and landlords about: "{selected_topic}"
+        prompt = f"""Write a professional blog post about: "{selected_topic}"
 
 The blog should be:
-- Informative and actionable
 - 800-1200 words
 - Written in a friendly, professional tone
 - Include practical tips and examples
@@ -5865,24 +5862,32 @@ The blog should be:
 
 Format the content as HTML with proper paragraphs (<p>), headings (<h2>), and lists (<ul><li>) where appropriate.
 
-Also provide:
-1. A compelling title (different from the topic if you can improve it)
-2. A 2-3 sentence excerpt/summary
-3. Estimated read time in minutes"""
+Start with:
+Title: [Your improved title]
+Excerpt: [2-3 sentence summary]
+Read time: [estimated minutes]
 
-        response = await llm.send_message_async(UserMessage(content=prompt))
+Then the HTML content."""
+
+        chat = LlmChat(
+            api_key=EMERGENT_LLM_KEY,
+            session_id=f"blog-{datetime.now().timestamp()}",
+            system_message=system_message
+        ).with_model("openai", "gpt-4o")
+        
+        user_message = UserMessage(text=prompt)
+        response_text = await chat.send_message(user_message)
         
         # Parse AI response
-        content_text = response.content
+        content_text = response_text
         
-        # Extract title (usually the first line or before first paragraph)
+        # Extract title, excerpt, read_time
         lines = content_text.split('\n')
         title = selected_topic  # default
         excerpt = ""
-        content = content_text
         read_time = 5
+        content_start = 0
         
-        # Try to parse structured response
         for i, line in enumerate(lines):
             if line.lower().startswith('title:'):
                 title = line.replace('Title:', '').replace('title:', '').strip()
@@ -5893,16 +5898,20 @@ Also provide:
                     read_time = int(''.join(filter(str.isdigit, line)))
                 except:
                     read_time = 5
+            elif '<' in line:  # Start of HTML content
+                content_start = i
+                break
+        
+        content = '\n'.join(lines[content_start:])
         
         # If no excerpt found, create one from content
         if not excerpt:
-            # Find first paragraph
             import re
             p_match = re.search(r'<p>(.*?)</p>', content, re.DOTALL)
             if p_match:
                 excerpt = re.sub(r'<[^>]+>', '', p_match.group(1))[:200] + "..."
             else:
-                excerpt = content[:200].replace('<', '').replace('>', '') + "..."
+                excerpt = selected_topic
         
         # Create slug from title
         slug = title.lower()
