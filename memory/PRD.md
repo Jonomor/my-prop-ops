@@ -21,6 +21,16 @@
 - ✅ **Admin SEO fields** - Keywords input field added to blog editor
 - ✅ **Open Graph & Twitter cards** - Dynamic social sharing metadata
 
+#### Launch Readiness Fixes (COMPLETE)
+- ✅ **Rate Limiting** - Added to all login endpoints (Manager, Tenant, Contractor, Admin)
+  - 5 attempts per 5 minutes for regular logins
+  - Displays remaining cooldown time to users
+- ✅ **Email Configuration** - Updated Mandrill API key in backend/.env
+  - Mailchimp Marketing and Transactional clients now initialize correctly
+- ✅ **Tenant Screening Demo Mode Banner** - Added clear disclaimer on Screening.js
+  - Amber warning banner explains results are simulated
+  - Mentions real integration coming with TransUnion, RentPrep, etc.
+
 #### Super Admin Dashboard (COMPLETE)
 - ✅ **Admin Login** at `/admin/login` with secure authentication
 - ✅ **Overview Tab** - Total Users, Organizations, MRR, Properties, Subscription Breakdown, Recent Activity
