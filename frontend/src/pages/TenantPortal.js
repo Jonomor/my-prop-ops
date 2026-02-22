@@ -1180,9 +1180,242 @@ const TenantPortal = () => {
                 </Card>
               </div>
             )}
+
+            {/* Maintenance Tab */}
+            {activeTab === 'maintenance' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold">Maintenance Requests</h1>
+                    <p className="text-muted-foreground">Report issues and track repair status.</p>
+                  </div>
+                  <Button 
+                    className="bg-emerald-600 hover:bg-emerald-700" 
+                    onClick={() => setMaintenanceDialogOpen(true)}
+                    data-testid="new-maintenance-btn"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    New Request
+                  </Button>
+                </div>
+
+                {/* Request List */}
+                {maintenanceRequests.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <Wrench className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <h3 className="font-semibold mb-2">No maintenance requests</h3>
+                      <p className="text-muted-foreground mb-4">Submit a request when something needs repair.</p>
+                      <Button onClick={() => setMaintenanceDialogOpen(true)}>
+                        <Plus className="w-4 h-4 mr-2" />
+                        Submit a Request
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {maintenanceRequests.map((request) => (
+                      <Card key={request.id} className="hover:shadow-md transition-shadow">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-start gap-4">
+                              <div className={`p-2 rounded-lg ${
+                                request.category === 'plumbing' ? 'bg-blue-100 text-blue-700' :
+                                request.category === 'electrical' ? 'bg-yellow-100 text-yellow-700' :
+                                request.category === 'hvac' ? 'bg-orange-100 text-orange-700' :
+                                'bg-gray-100 text-gray-700'
+                              }`}>
+                                <Wrench className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h3 className="font-semibold">{request.title}</h3>
+                                  <Badge className={
+                                    request.status === 'open' ? 'bg-yellow-100 text-yellow-700' :
+                                    request.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                    request.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                    'bg-gray-100 text-gray-700'
+                                  }>
+                                    {request.status?.replace('_', ' ')}
+                                  </Badge>
+                                  <Badge className={
+                                    request.priority === 'emergency' ? 'bg-red-100 text-red-700' :
+                                    request.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                                    request.priority === 'medium' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-slate-100 text-slate-700'
+                                  }>
+                                    {request.priority}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                                  {request.description}
+                                </p>
+                                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    {new Date(request.created_at).toLocaleDateString()}
+                                  </span>
+                                  <span className="capitalize">{request.category?.replace('_', ' ')}</span>
+                                </div>
+                                {request.photos && request.photos.length > 0 && (
+                                  <div className="flex gap-2 mt-2">
+                                    {request.photos.map((photo, idx) => (
+                                      <img 
+                                        key={idx}
+                                        src={`${process.env.REACT_APP_BACKEND_URL}${photo}`}
+                                        alt={`Issue ${idx + 1}`}
+                                        className="w-12 h-12 object-cover rounded border"
+                                      />
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </main>
         </div>
       </div>
+
+      {/* Maintenance Request Dialog */}
+      <Dialog open={maintenanceDialogOpen} onOpenChange={setMaintenanceDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Submit Maintenance Request</DialogTitle>
+            <DialogDescription>Describe the issue and we'll get it fixed.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Category *</Label>
+                <Select 
+                  value={maintenanceForm.category} 
+                  onValueChange={(val) => setMaintenanceForm({ ...maintenanceForm, category: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="plumbing">Plumbing</SelectItem>
+                    <SelectItem value="electrical">Electrical</SelectItem>
+                    <SelectItem value="hvac">HVAC</SelectItem>
+                    <SelectItem value="appliances">Appliances</SelectItem>
+                    <SelectItem value="structural">Structural</SelectItem>
+                    <SelectItem value="pest_control">Pest Control</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Priority *</Label>
+                <Select 
+                  value={maintenanceForm.priority} 
+                  onValueChange={(val) => setMaintenanceForm({ ...maintenanceForm, priority: val })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Medium</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="emergency">Emergency</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Title *</Label>
+              <Input
+                placeholder="Brief description of the issue"
+                value={maintenanceForm.title}
+                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, title: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Description *</Label>
+              <Textarea
+                placeholder="Describe the issue in detail..."
+                rows={4}
+                value={maintenanceForm.description}
+                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, description: e.target.value })}
+              />
+            </div>
+
+            {/* Photo Upload */}
+            <div className="space-y-2">
+              <Label className="flex items-center gap-2">
+                <Camera className="w-4 h-4" />
+                Photos (optional, max 5)
+              </Label>
+              <div className="flex flex-wrap gap-2">
+                {maintenancePhotos.map((photo, idx) => (
+                  <div key={idx} className="relative w-20 h-20">
+                    <img 
+                      src={photo.preview} 
+                      alt={`Upload ${idx + 1}`}
+                      className="w-full h-full object-cover rounded-lg border"
+                    />
+                    <button
+                      onClick={() => handlePhotoRemove(idx)}
+                      className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                {maintenancePhotos.length < 5 && (
+                  <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 transition-colors">
+                    <Image className="w-6 h-6 text-gray-400" />
+                    <span className="text-xs text-gray-400 mt-1">Add</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handlePhotoAdd}
+                    />
+                  </label>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">Add photos to help us understand the issue better</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="permission_to_enter"
+                checked={maintenanceForm.permission_to_enter}
+                onChange={(e) => setMaintenanceForm({ ...maintenanceForm, permission_to_enter: e.target.checked })}
+                className="rounded"
+              />
+              <Label htmlFor="permission_to_enter" className="text-sm cursor-pointer">
+                Permission to enter if no one is home
+              </Label>
+            </div>
+
+            <Button 
+              className="w-full bg-emerald-600 hover:bg-emerald-700" 
+              onClick={handleMaintenanceSubmit}
+              disabled={submittingMaintenance}
+            >
+              {submittingMaintenance ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Submitting...</>
+              ) : (
+                'Submit Request'
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Profile Edit Dialog */}
       <Dialog open={profileDialogOpen} onOpenChange={setProfileDialogOpen}>
