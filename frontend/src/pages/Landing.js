@@ -1035,10 +1035,9 @@ const Landing = () => {
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">About</a></li>
-                <li><a href="#" className="hover:text-foreground">Blog</a></li>
-                <li><a href="#" className="hover:text-foreground">Careers</a></li>
-                <li><a href="mailto:support@propops.com" className="hover:text-foreground">Contact</a></li>
+                <li><Link to="/about" className="hover:text-foreground">About</Link></li>
+                <li><Link to="/blog" className="hover:text-foreground">Blog</Link></li>
+                <li><a href="mailto:support@mypropops.com" className="hover:text-foreground">Contact</a></li>
               </ul>
             </div>
             <div>
