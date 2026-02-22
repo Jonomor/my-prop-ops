@@ -1,24 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
+import { Layout } from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
+import { Progress } from '../components/ui/progress';
 import { 
   DollarSign, Calendar, CheckCircle, Clock, AlertTriangle,
   Plus, Loader2, TrendingUp, Users, Home, CreditCard,
-  ChevronRight, Download, RefreshCw
+  ChevronRight, Download, RefreshCw, Building2, User,
+  CircleDollarSign, Receipt, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL;
-
 const RentPayments = () => {
-  const { token, currentOrg } = useAuth();
+  const { api, currentOrg } = useAuth();
   const [payments, setPayments] = useState([]);
   const [summary, setSummary] = useState(null);
   const [tenants, setTenants] = useState([]);
@@ -42,6 +42,22 @@ const RentPayments = () => {
   const [recordAmount, setRecordAmount] = useState('');
   const [recordMethod, setRecordMethod] = useState('check');
   const [submitting, setSubmitting] = useState(false);
+  const [generating, setGenerating] = useState(false);
+
+  const months = [
+    { value: 1, label: 'January' },
+    { value: 2, label: 'February' },
+    { value: 3, label: 'March' },
+    { value: 4, label: 'April' },
+    { value: 5, label: 'May' },
+    { value: 6, label: 'June' },
+    { value: 7, label: 'July' },
+    { value: 8, label: 'August' },
+    { value: 9, label: 'September' },
+    { value: 10, label: 'October' },
+    { value: 11, label: 'November' },
+    { value: 12, label: 'December' }
+  ];
 
   useEffect(() => {
     if (currentOrg) {
@@ -50,17 +66,18 @@ const RentPayments = () => {
   }, [currentOrg, selectedMonth, selectedYear, filter]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      let url = `${API}/api/rent-payments?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`;
+      let url = `/rent-payments?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`;
       if (filter !== 'all') {
         url += `&status=${filter}`;
       }
       
       const [paymentsRes, summaryRes, tenantsRes, unitsRes] = await Promise.all([
-        axios.get(url, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/api/rent-payments/summary?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/api/organizations/${currentOrg.org_id}/tenants`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/api/organizations/${currentOrg.org_id}/units`, { headers: { Authorization: `Bearer ${token}` } })
+        api.get(url),
+        api.get(`/rent-payments/summary?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`),
+        api.get(`/organizations/${currentOrg.org_id}/tenants`),
+        api.get(`/organizations/${currentOrg.org_id}/units`)
       ]);
       
       setPayments(paymentsRes.data);
@@ -74,21 +91,26 @@ const RentPayments = () => {
     }
   };
 
+  const resetForm = () => {
+    setFormTenant('');
+    setFormUnit('');
+    setFormAmount('');
+    setFormDueDate('');
+  };
+
   const handleCreatePayment = async () => {
-    if (!formTenant || !formUnit || !formAmount || !formDueDate) {
+    if (!formTenant || !formAmount || !formDueDate) {
       toast.error('Please fill all required fields');
       return;
     }
 
     setSubmitting(true);
     try {
-      await axios.post(`${API}/api/rent-payments?org_id=${currentOrg.org_id}`, {
+      await api.post(`/rent-payments?org_id=${currentOrg.org_id}`, {
         tenant_id: formTenant,
-        unit_id: formUnit,
+        unit_id: formUnit || '',
         amount: parseFloat(formAmount),
         due_date: new Date(formDueDate).toISOString()
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
       
       toast.success('Rent payment created');
@@ -110,16 +132,15 @@ const RentPayments = () => {
 
     setSubmitting(true);
     try {
-      await axios.post(
-        `${API}/api/rent-payments/${selectedPayment.id}/record-payment?amount=${recordAmount}&payment_method=${recordMethod}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post(`/rent-payments/${selectedPayment.id}/record`, {
+        amount: parseFloat(recordAmount),
+        payment_method: recordMethod
+      });
       
-      toast.success('Payment recorded');
+      toast.success('Payment recorded successfully!');
       setRecordDialogOpen(false);
-      setRecordAmount('');
       setSelectedPayment(null);
+      setRecordAmount('');
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to record payment');
@@ -129,423 +150,439 @@ const RentPayments = () => {
   };
 
   const handleGenerateMonthly = async () => {
-    setSubmitting(true);
+    setGenerating(true);
     try {
-      const res = await axios.post(
-        `${API}/api/rent-payments/generate-monthly?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      
+      const res = await api.post(`/rent-payments/generate-monthly?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`);
       toast.success(res.data.message);
       setGenerateDialogOpen(false);
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to generate payments');
     } finally {
-      setSubmitting(false);
+      setGenerating(false);
     }
-  };
-
-  const resetForm = () => {
-    setFormTenant('');
-    setFormUnit('');
-    setFormAmount('');
-    setFormDueDate('');
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case 'paid':
-        return <Badge className="bg-green-100 text-green-700">Paid</Badge>;
-      case 'partial':
-        return <Badge className="bg-blue-100 text-blue-700">Partial</Badge>;
+        return <Badge className="bg-green-100 text-green-700"><CheckCircle className="w-3 h-3 mr-1" />Paid</Badge>;
       case 'pending':
-        return <Badge className="bg-yellow-100 text-yellow-700">Pending</Badge>;
+        return <Badge className="bg-yellow-100 text-yellow-700"><Clock className="w-3 h-3 mr-1" />Pending</Badge>;
       case 'overdue':
-        return <Badge className="bg-red-100 text-red-700">Overdue</Badge>;
+        return <Badge className="bg-red-100 text-red-700"><AlertTriangle className="w-3 h-3 mr-1" />Overdue</Badge>;
+      case 'partial':
+        return <Badge className="bg-blue-100 text-blue-700"><CircleDollarSign className="w-3 h-3 mr-1" />Partial</Badge>;
       default:
-        return <Badge className="bg-gray-100 text-gray-700">{status}</Badge>;
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount || 0);
   };
-
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-      </div>
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="space-y-6" data-testid="rent-payments-page">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Rent Payments</h1>
-          <p className="text-muted-foreground">Track and manage rent collection</p>
+    <Layout>
+      <div className="max-w-7xl mx-auto space-y-6" data-testid="rent-payments-page">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold font-heading">Rent Payments</h1>
+            <p className="text-muted-foreground mt-1">
+              Track and manage tenant rent payments
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={() => setGenerateDialogOpen(true)}>
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Generate Monthly
+            </Button>
+            <Button onClick={() => setCreateDialogOpen(true)} data-testid="add-payment-btn">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Payment
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setGenerateDialogOpen(true)}>
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Generate Monthly
-          </Button>
-          <Button 
-            className="bg-emerald-600 hover:bg-emerald-700"
-            onClick={() => setCreateDialogOpen(true)}
-            data-testid="new-payment-btn"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Payment
-          </Button>
+
+        {/* Filters */}
+        <div className="flex items-center gap-4 flex-wrap">
+          <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v))}>
+            <SelectTrigger className="w-[140px]">
+              <Calendar className="w-4 h-4 mr-2" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {months.map((m) => (
+                <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
+            <SelectTrigger className="w-[100px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {[2024, 2025, 2026].map((y) => (
+                <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={filter} onValueChange={setFilter}>
+            <SelectTrigger className="w-[130px]">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="overdue">Overdue</SelectItem>
+              <SelectItem value="partial">Partial</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="flex gap-4 items-center">
-        <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v))}>
-          <SelectTrigger className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {months.map((month, idx) => (
-              <SelectItem key={idx} value={(idx + 1).toString()}>{month}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-          <SelectTrigger className="w-28">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {[2024, 2025, 2026].map((year) => (
-              <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={filter} onValueChange={setFilter}>
-          <SelectTrigger className="w-32">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Status</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="paid">Paid</SelectItem>
-            <SelectItem value="partial">Partial</SelectItem>
-            <SelectItem value="overdue">Overdue</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Summary Cards */}
-      {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <DollarSign className="w-5 h-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{formatCurrency(summary.total_expected)}</p>
-                  <p className="text-sm text-muted-foreground">Expected</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{formatCurrency(summary.total_collected)}</p>
-                  <p className="text-sm text-muted-foreground">Collected</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Clock className="w-5 h-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{formatCurrency(summary.total_outstanding)}</p>
-                  <p className="text-sm text-muted-foreground">Outstanding</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-100 rounded-lg">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{summary.collection_rate}%</p>
-                  <p className="text-sm text-muted-foreground">Collection Rate</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Overdue Alert */}
-      {summary && summary.overdue_count > 0 && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="w-6 h-6 text-red-600" />
-              <div>
-                <p className="font-semibold text-red-800">
-                  {summary.overdue_count} overdue payment{summary.overdue_count > 1 ? 's' : ''} totaling {formatCurrency(summary.overdue_amount)}
-                </p>
-                <p className="text-sm text-red-600">Action required - follow up with tenants</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Payments List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Records</CardTitle>
-          <CardDescription>{months[selectedMonth - 1]} {selectedYear}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {payments.length === 0 ? (
-            <div className="text-center py-12">
-              <DollarSign className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-semibold mb-2">No payments found</h3>
-              <p className="text-muted-foreground mb-4">Generate monthly payments or add them manually</p>
-              <div className="flex gap-2 justify-center">
-                <Button variant="outline" onClick={() => setGenerateDialogOpen(true)}>
-                  Generate Monthly
-                </Button>
-                <Button onClick={() => setCreateDialogOpen(true)}>
-                  Add Payment
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {payments.map((payment) => (
-                <div 
-                  key={payment.id} 
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                  data-testid={`payment-${payment.id}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`p-2 rounded-full ${
-                      payment.status === 'paid' ? 'bg-green-100' :
-                      payment.status === 'overdue' ? 'bg-red-100' :
-                      payment.status === 'partial' ? 'bg-blue-100' :
-                      'bg-yellow-100'
-                    }`}>
-                      {payment.status === 'paid' ? <CheckCircle className="w-5 h-5 text-green-600" /> :
-                       payment.status === 'overdue' ? <AlertTriangle className="w-5 h-5 text-red-600" /> :
-                       <Clock className="w-5 h-5 text-yellow-600" />}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{payment.tenant_name}</h3>
-                        {getStatusBadge(payment.status)}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span className="flex items-center gap-1">
-                          <Home className="w-3 h-3" />
-                          {payment.property_name} - Unit {payment.unit_number}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          Due: {new Date(payment.due_date).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
+        {/* Summary Cards */}
+        {summary && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="border-primary/50 bg-primary/5">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Expected</p>
+                    <p className="text-2xl font-bold text-primary">{formatCurrency(summary.total_expected)}</p>
                   </div>
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <p className="text-lg font-bold">{formatCurrency(payment.amount)}</p>
-                      {payment.paid_amount > 0 && payment.paid_amount < payment.amount && (
-                        <p className="text-sm text-green-600">Paid: {formatCurrency(payment.paid_amount)}</p>
+                  <div className="p-3 bg-primary/20 rounded-xl">
+                    <DollarSign className="w-6 h-6 text-primary" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-green-500/50 bg-green-50 dark:bg-green-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Collected</p>
+                    <p className="text-2xl font-bold text-green-600">{formatCurrency(summary.total_collected)}</p>
+                  </div>
+                  <div className="p-3 bg-green-200 dark:bg-green-900/50 rounded-xl">
+                    <CheckCircle className="w-6 h-6 text-green-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Outstanding</p>
+                    <p className="text-2xl font-bold text-amber-600">{formatCurrency(summary.outstanding)}</p>
+                  </div>
+                  <div className="p-3 bg-amber-200 dark:bg-amber-900/50 rounded-xl">
+                    <Clock className="w-6 h-6 text-amber-600" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Collection Rate</p>
+                    <p className="text-2xl font-bold">{summary.collection_rate}%</p>
+                  </div>
+                  <div className="w-16">
+                    <Progress value={summary.collection_rate} className="h-2" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Payments List */}
+        <Card className="glass">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Receipt className="w-5 h-5 text-primary" />
+              Payment Records
+            </CardTitle>
+            <CardDescription>
+              {months.find(m => m.value === selectedMonth)?.label} {selectedYear} · {payments.length} records
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {payments.length === 0 ? (
+              <div className="text-center py-12">
+                <DollarSign className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">No payments for this period</h3>
+                <p className="text-muted-foreground mb-4">
+                  Generate monthly payments or add individual payment records
+                </p>
+                <div className="flex justify-center gap-3">
+                  <Button variant="outline" onClick={() => setGenerateDialogOpen(true)}>
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Generate Monthly
+                  </Button>
+                  <Button onClick={() => setCreateDialogOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Payment
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {payments.map((payment) => (
+                  <div 
+                    key={payment.id}
+                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                    data-testid={`payment-${payment.id}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{payment.tenant_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {payment.property_name && `${payment.property_name} · `}
+                          {payment.unit_number && `Unit ${payment.unit_number} · `}
+                          Due: {new Date(payment.due_date).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-right">
+                        <p className="font-bold text-lg">{formatCurrency(payment.amount)}</p>
+                        {payment.paid_amount > 0 && payment.paid_amount < payment.amount && (
+                          <p className="text-sm text-green-600">
+                            Paid: {formatCurrency(payment.paid_amount)}
+                          </p>
+                        )}
+                      </div>
+                      {getStatusBadge(payment.status)}
+                      {payment.status !== 'paid' && (
+                        <Button 
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPayment(payment);
+                            setRecordAmount((payment.amount - (payment.paid_amount || 0)).toString());
+                            setRecordDialogOpen(true);
+                          }}
+                        >
+                          Record Payment
+                        </Button>
                       )}
                     </div>
-                    {payment.status !== 'paid' && (
-                      <Button 
-                        size="sm" 
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                        onClick={() => {
-                          setSelectedPayment(payment);
-                          setRecordAmount((payment.amount - payment.paid_amount).toString());
-                          setRecordDialogOpen(true);
-                        }}
-                      >
-                        Record Payment
-                      </Button>
-                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Create Payment Dialog */}
+        <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Rent Payment</DialogTitle>
+              <DialogDescription>
+                Create a new rent payment record for a tenant.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Tenant *</Label>
+                <Select value={formTenant} onValueChange={setFormTenant}>
+                  <SelectTrigger data-testid="payment-tenant-select">
+                    <SelectValue placeholder="Select tenant..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((tenant) => (
+                      <SelectItem key={tenant.id} value={tenant.id}>
+                        {tenant.first_name} {tenant.last_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Unit (Optional)</Label>
+                <Select value={formUnit} onValueChange={setFormUnit}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select unit..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {units.map((unit) => (
+                      <SelectItem key={unit.id} value={unit.id}>
+                        {unit.property_name} - Unit {unit.unit_number}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Amount *</Label>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    className="pl-9"
+                    value={formAmount}
+                    onChange={(e) => setFormAmount(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Due Date *</Label>
+                <Input
+                  type="date"
+                  value={formDueDate}
+                  onChange={(e) => setFormDueDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleCreatePayment} disabled={submitting}>
+                {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Create Payment
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Record Payment Dialog */}
+        <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Record Payment</DialogTitle>
+              <DialogDescription>
+                Record a payment received from {selectedPayment?.tenant_name}
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedPayment && (
+              <div className="space-y-4 py-4">
+                <div className="p-4 bg-muted rounded-lg">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-muted-foreground">Total Due:</span>
+                    <span className="font-bold">{formatCurrency(selectedPayment.amount)}</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span className="text-muted-foreground">Already Paid:</span>
+                    <span className="text-green-600">{formatCurrency(selectedPayment.paid_amount || 0)}</span>
+                  </div>
+                  <div className="flex justify-between border-t pt-2">
+                    <span className="text-muted-foreground">Remaining:</span>
+                    <span className="font-bold text-amber-600">
+                      {formatCurrency(selectedPayment.amount - (selectedPayment.paid_amount || 0))}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Create Payment Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Add Rent Payment</DialogTitle>
-            <DialogDescription>Create a new rent payment record</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Tenant *</Label>
-              <Select value={formTenant} onValueChange={setFormTenant}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select tenant" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tenants.map((tenant) => (
-                    <SelectItem key={tenant.id} value={tenant.id}>
-                      {tenant.name || `${tenant.first_name} ${tenant.last_name}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Unit *</Label>
-              <Select value={formUnit} onValueChange={setFormUnit}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select unit" />
-                </SelectTrigger>
-                <SelectContent>
-                  {units.map((unit) => (
-                    <SelectItem key={unit.id} value={unit.id}>
-                      Unit {unit.unit_number} - {formatCurrency(unit.rent_amount || 0)}/mo
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Amount *</Label>
-              <Input 
-                type="number" 
-                placeholder="0.00" 
-                value={formAmount}
-                onChange={(e) => setFormAmount(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Due Date *</Label>
-              <Input 
-                type="date" 
-                value={formDueDate}
-                onChange={(e) => setFormDueDate(e.target.value)}
-              />
-            </div>
-            <Button 
-              className="w-full bg-emerald-600 hover:bg-emerald-700" 
-              onClick={handleCreatePayment}
-              disabled={submitting}
-            >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Payment'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+                <div className="space-y-2">
+                  <Label>Amount Received</Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      type="number"
+                      className="pl-9"
+                      value={recordAmount}
+                      onChange={(e) => setRecordAmount(e.target.value)}
+                    />
+                  </div>
+                </div>
 
-      {/* Record Payment Dialog */}
-      <Dialog open={recordDialogOpen} onOpenChange={setRecordDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Record Payment</DialogTitle>
-            <DialogDescription>
-              {selectedPayment && `${selectedPayment.tenant_name} - ${formatCurrency(selectedPayment.amount - selectedPayment.paid_amount)} remaining`}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Amount Received *</Label>
-              <Input 
-                type="number" 
-                placeholder="0.00" 
-                value={recordAmount}
-                onChange={(e) => setRecordAmount(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Payment Method</Label>
-              <Select value={recordMethod} onValueChange={setRecordMethod}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="check">Check</SelectItem>
-                  <SelectItem value="cash">Cash</SelectItem>
-                  <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                  <SelectItem value="credit_card">Credit Card</SelectItem>
-                  <SelectItem value="money_order">Money Order</SelectItem>
-                  <SelectItem value="online">Online Payment</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button 
-              className="w-full bg-emerald-600 hover:bg-emerald-700" 
-              onClick={handleRecordPayment}
-              disabled={submitting}
-            >
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Record Payment'}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+                <div className="space-y-2">
+                  <Label>Payment Method</Label>
+                  <Select value={recordMethod} onValueChange={setRecordMethod}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="check">Check</SelectItem>
+                      <SelectItem value="cash">Cash</SelectItem>
+                      <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                      <SelectItem value="credit_card">Credit Card</SelectItem>
+                      <SelectItem value="zelle">Zelle</SelectItem>
+                      <SelectItem value="venmo">Venmo</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
 
-      {/* Generate Monthly Dialog */}
-      <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Generate Monthly Rent</DialogTitle>
-            <DialogDescription>
-              Create rent payment records for all active tenants
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">
-              This will create rent payment records for all active tenants with assigned units for {months[selectedMonth - 1]} {selectedYear}.
-            </p>
-            <div className="flex gap-2 justify-end">
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setRecordDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleRecordPayment} disabled={submitting}>
+                {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Record Payment
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Generate Monthly Dialog */}
+        <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Generate Monthly Payments</DialogTitle>
+              <DialogDescription>
+                Automatically create rent payment records for all active tenants for {months.find(m => m.value === selectedMonth)?.label} {selectedYear}.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-4">
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
+                  This will create payment records for all active tenants who have a unit with rent amount set. Existing records will not be duplicated.
+                </p>
+              </div>
+            </div>
+
+            <DialogFooter>
               <Button variant="outline" onClick={() => setGenerateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                className="bg-emerald-600 hover:bg-emerald-700" 
-                onClick={handleGenerateMonthly}
-                disabled={submitting}
-              >
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate'}
+              <Button onClick={handleGenerateMonthly} disabled={generating}>
+                {generating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Generate Payments
               </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </Layout>
   );
 };
 
