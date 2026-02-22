@@ -156,7 +156,7 @@ PLAN_LIMITS = {
         "max_units": 40,
         "max_team_members": 5,
         "document_storage_mb": 10240,  # 10GB
-        "tenant_portal": False,
+        "tenant_portal": True,
         "api_access": False,
     },
     "pro": {
@@ -166,6 +166,18 @@ PLAN_LIMITS = {
         "document_storage_mb": 102400,  # 100GB
         "tenant_portal": True,
         "api_access": True,
+    },
+    "enterprise": {
+        "max_properties": None,  # Unlimited
+        "max_units": None,       # Unlimited
+        "max_team_members": None,  # Unlimited
+        "max_contractors": None,  # Unlimited
+        "document_storage_mb": None,  # Unlimited
+        "tenant_portal": True,
+        "api_access": True,
+        "white_label": True,
+        "dedicated_support": True,
+        "custom_integrations": True,
     }
 }
 
