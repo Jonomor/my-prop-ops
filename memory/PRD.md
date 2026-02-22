@@ -22,22 +22,39 @@ Build a full-stack SaaS web application for property and housing operations mana
 
 ## What's Been Implemented
 
-### February 22, 2026 - UI Fixes & Maintenance Feature
+### February 22, 2026 - Major Feature Release
 
 #### UI Bug Fixes (COMPLETE)
-- Fixed Stripe "S" missing in trust badges - replaced broken SVG with proper Stripe logo
-- Fixed Monthly/Annual toggle text overlap - improved spacing and added badge styling for "Save 17%"
+- Fixed Stripe "S" missing in trust badges
+- Fixed Monthly/Annual toggle text overlap
+- Fixed video aspect ratio from 9:16 to 16:9 (landscape)
+- Fixed CTA card "Start Free" button visibility
 
 #### Tenant Portal Maintenance Tab (COMPLETE)
-- Added "Maintenance" tab to tenant portal navigation
-- Maintenance request submission form with:
-  - Category selection (Plumbing, Electrical, HVAC, etc.)
-  - Priority selection (Low, Medium, High, Emergency)
-  - Title and description fields
-  - Photo upload section (max 5 photos)
-  - "Permission to enter" checkbox
-- Maintenance request list view showing submitted requests
-- Form validation for required fields
+- Maintenance request submission with photo upload
+- Category/priority selection
+- Request list view with status tracking
+
+#### Backend Modular Architecture (COMPLETE)
+- Created `/backend/models/` - enums.py, schemas.py
+- Created `/backend/utils/` - database.py, config.py, auth.py, email.py
+- Created `/backend/routers/` - auth.py, billing.py, contractors.py, organizations.py, properties.py, tenants.py, maintenance.py, inspections.py, screening.py, payments.py
+
+#### Tenant Screening Feature (COMPLETE - MOCKED)
+- New Screening page with stats dashboard
+- Screening request dialog with tenant selection
+- Screening types: Basic ($15), Comprehensive ($35), Premium ($55)
+- Check options: Credit, Criminal, Eviction, Income
+- Results display with risk score and recommendation
+- **NOTE:** Uses SIMULATED results - credit scores and checks are randomly generated
+
+#### Rent Payment Tracking (COMPLETE)
+- Rent Payments page with month/year filtering
+- Summary cards: Expected, Collected, Outstanding, Collection Rate
+- Generate Monthly feature to auto-create rent records
+- Manual payment creation
+- Record Payment functionality with payment method tracking
+- Overdue alerts
 
 ### February 2026 - Previous Session
 
