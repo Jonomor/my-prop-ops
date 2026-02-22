@@ -67,8 +67,11 @@ const TenantPortal = () => {
   const [applicationStatus, setApplicationStatus] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [conversations, setConversations] = useState([]);
-  const [resources, setResources] = useState([]);
+  const [resources, setResources] = useState(null);
   const [maintenanceRequests, setMaintenanceRequests] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [selectedConversation, setSelectedConversation] = useState(null);
+  const [newMessage, setNewMessage] = useState('');
   
   // Maintenance request form
   const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false);
@@ -81,14 +84,6 @@ const TenantPortal = () => {
   });
   const [maintenancePhotos, setMaintenancePhotos] = useState([]);
   const [submittingMaintenance, setSubmittingMaintenance] = useState(false);
-  const [checklist, setChecklist] = useState([]);
-  const [applicationStatus, setApplicationStatus] = useState(null);
-  const [appointments, setAppointments] = useState([]);
-  const [conversations, setConversations] = useState([]);
-  const [messages, setMessages] = useState([]);
-  const [resources, setResources] = useState(null);
-  const [selectedConversation, setSelectedConversation] = useState(null);
-  const [newMessage, setNewMessage] = useState('');
   
   // Dialog states
   const [profileDialogOpen, setProfileDialogOpen] = useState(false);
