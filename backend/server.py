@@ -3752,6 +3752,163 @@ async def mark_contractor_notification_read(
     )
     return {"message": "Notification marked as read"}
 
+
+# ============== CONTRACTOR-MANAGER MESSAGING ==============
+
+class ContractorMessageCreate(BaseModel):
+    content: str = Field(..., min_length=1, max_length=2000)
+    job_id: str = Field(..., description="The maintenance request ID this message is about")
+
+@api_router.get("/contractor/jobs/{job_id}/messages")
+async def get_contractor_job_messages(job_id: str, contractor = Depends(get_current_contractor)):
+    """Get messages for a specific job (contractor view)"""
+    # Verify contractor has access to this job
+    job = await db.maintenance_requests.find_one({
+        "id": job_id, 
+        "contractor_id": contractor["id"]
+    })
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found or access denied")
+    
+    messages = await db.contractor_messages.find(
+        {"job_id": job_id},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(100)
+    
+    # Mark manager messages as read for contractor
+    await db.contractor_messages.update_many(
+        {"job_id": job_id, "sender_type": "manager", "read_by_contractor": False},
+        {"$set": {"read_by_contractor": True}}
+    )
+    
+    return messages
+
+@api_router.post("/contractor/jobs/{job_id}/messages")
+async def contractor_send_message(
+    job_id: str, 
+    data: ContractorMessageCreate,
+    contractor = Depends(get_current_contractor)
+):
+    """Contractor sends a message to manager about a job"""
+    # Verify contractor has access to this job
+    job = await db.maintenance_requests.find_one({
+        "id": job_id, 
+        "contractor_id": contractor["id"]
+    })
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found or access denied")
+    
+    message = {
+        "id": str(uuid.uuid4()),
+        "job_id": job_id,
+        "org_id": job["org_id"],
+        "sender_type": "contractor",
+        "sender_id": contractor["id"],
+        "sender_name": contractor["name"],
+        "content": data.content,
+        "read_by_manager": False,
+        "read_by_contractor": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.contractor_messages.insert_one(message)
+    
+    # Create notification for org managers
+    await db.notifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "org_id": job["org_id"],
+        "type": "contractor_message",
+        "title": f"New message from {contractor['name']}",
+        "message": f"Regarding: {job['title']}",
+        "reference_id": job_id,
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"id": message["id"], "message": "Message sent"}
+
+@api_router.get("/maintenance-requests/{job_id}/messages")
+async def get_job_messages_manager(job_id: str, user = Depends(get_current_user)):
+    """Get messages for a specific job (manager view)"""
+    # Verify user has access to this job's org
+    job = await db.maintenance_requests.find_one({"id": job_id})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    await get_user_membership(user['id'], job["org_id"])
+    
+    messages = await db.contractor_messages.find(
+        {"job_id": job_id},
+        {"_id": 0}
+    ).sort("created_at", 1).to_list(100)
+    
+    # Mark contractor messages as read for manager
+    await db.contractor_messages.update_many(
+        {"job_id": job_id, "sender_type": "contractor", "read_by_manager": False},
+        {"$set": {"read_by_manager": True}}
+    )
+    
+    return messages
+
+@api_router.post("/maintenance-requests/{job_id}/messages")
+async def manager_send_message_to_contractor(
+    job_id: str,
+    data: ContractorMessageCreate,
+    user = Depends(get_current_user)
+):
+    """Manager sends a message to contractor about a job"""
+    job = await db.maintenance_requests.find_one({"id": job_id})
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    membership = await get_user_membership(user['id'], job["org_id"])
+    
+    if not job.get("contractor_id"):
+        raise HTTPException(status_code=400, detail="No contractor assigned to this job")
+    
+    message = {
+        "id": str(uuid.uuid4()),
+        "job_id": job_id,
+        "org_id": job["org_id"],
+        "sender_type": "manager",
+        "sender_id": user["id"],
+        "sender_name": user["name"],
+        "content": data.content,
+        "read_by_manager": True,
+        "read_by_contractor": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.contractor_messages.insert_one(message)
+    
+    # Create notification for contractor
+    await db.contractor_notifications.insert_one({
+        "id": str(uuid.uuid4()),
+        "contractor_id": job["contractor_id"],
+        "title": f"New message from {user['name']}",
+        "message": f"Regarding: {job['title']}",
+        "request_id": job_id,
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"id": message["id"], "message": "Message sent"}
+
+@api_router.get("/contractor/unread-messages-count")
+async def get_contractor_unread_count(contractor = Depends(get_current_contractor)):
+    """Get count of unread messages for contractor"""
+    count = await db.contractor_messages.count_documents({
+        "sender_type": "manager",
+        "read_by_contractor": False,
+        "job_id": {"$in": [
+            job["id"] async for job in db.maintenance_requests.find(
+                {"contractor_id": contractor["id"]}, {"id": 1}
+            )
+        ]}
+    })
+    return {"unread_count": count}
+
+
 class CreateCheckoutRequest(BaseModel):
     plan_id: str = Field(..., description="Plan ID: standard_monthly, standard_annual, pro_monthly, pro_annual")
     origin_url: str = Field(..., description="Frontend origin URL for redirect")
