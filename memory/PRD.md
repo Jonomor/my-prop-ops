@@ -350,6 +350,9 @@ Build a full-stack SaaS web application for property and housing operations mana
 - [x] ~~Backend refactoring - Modular routers~~ (DONE)
 - [x] ~~Tenant Screening Feature~~ (DONE - MOCKED)
 - [x] ~~Rent Payment Tracking~~ (DONE)
+- [x] ~~AI-Powered Insights Dashboard~~ (DONE)
+- [x] ~~Contractor Assignment~~ (DONE)
+- [x] ~~Feature alignment in pricing~~ (DONE)
 
 ### P1 - High Priority
 - [x] ~~Mailchimp email notifications~~ (DONE - needs keys)
@@ -357,34 +360,59 @@ Build a full-stack SaaS web application for property and housing operations mana
 - [x] ~~Tenant Screening feature~~ (DONE - mocked)
 - [x] ~~Rent Payment Tracking~~ (DONE)
 - [ ] Real tenant screening API integration (replace mocked data)
+- [ ] Stripe Connect for online rent collection (enables tenant payments to landlords)
 
 ### P2 - Medium Priority
-- [ ] Advanced analytics dashboard
-- [ ] AI-powered dashboard insights
+- [x] ~~Advanced analytics dashboard~~ (DONE)
+- [x] ~~AI-powered dashboard insights~~ (DONE)
+- [ ] Backend refactoring - Extract routes from server.py to routers/
+- [ ] Real-time notifications via WebSocket
 
 ### P3 - Future
 - [ ] Mobile app optimization
 - [ ] AI-powered document processing
 - [ ] Integration with accounting software
+- [ ] White-label/Custom branding (functional implementation)
 
 ## Known Technical Debt
-1. **CRITICAL:** `server.py` is monolithic (~3800+ lines) and needs to be split into APIRouter modules
-2. Mailchimp keys not configured (emails gracefully skip when unconfigured)
+
+### CRITICAL
+1. **Monolithic server.py (~5700+ lines)** - All business logic in one file
+   - Router structure exists at `/backend/routers/` but largely unused
+   - Only `screening` and `payments` routers are included
+   - Refactoring guide created at `/backend/REFACTORING_GUIDE.md`
+
+### HIGH
+2. **Tenant Screening uses MOCKED API** - Returns simulated credit scores and background checks
+   - Ready for integration with real provider (TransUnion, RentPrep)
+   
+3. **Online Rent Collection removed** - Requires Stripe Connect implementation
+   - Current workaround: Landlords collect payments externally, mark as paid manually
+
+### MEDIUM
+4. Mailchimp keys not configured (emails gracefully skip when unconfigured)
 
 ## Files of Reference
 - `/app/backend/server.py` - Main backend (needs refactoring)
+- `/app/backend/REFACTORING_GUIDE.md` - Step-by-step refactoring plan
 - `/app/backend/.env` - Contains Stripe keys and Mailchimp placeholders
 - `/app/frontend/src/pages/Billing.js` - Billing page with embedded checkout
-- `/app/frontend/src/components/EmbeddedCheckout.js` - Stripe checkout component
-- `/app/frontend/src/pages/Maintenance.js` - Maintenance request page
-- `/app/frontend/src/pages/TenantPortal.js` - Tenant portal UI
-- `/app/test_reports/iteration_6.json` - Latest test results
+- `/app/frontend/src/pages/Landing.js` - Pricing tiers (lines 134-167)
+- `/app/frontend/src/pages/Maintenance.js` - Maintenance with contractor assignment
+- `/app/frontend/src/pages/TenantPortal.js` - Tenant portal (payments tab updated)
+- `/app/frontend/src/pages/AIInsights.js` - AI dashboard
+- `/app/test_reports/iteration_14.json` - Latest test results
 
 ## Project Health
-- **Working:** All core features, authentication, tenant portal, billing, maintenance
+- **Working:** All core features, authentication, tenant portal, billing, maintenance, AI insights
 - **Configured:** Stripe embedded checkout (TEST MODE with real keys)
 - **Configured:** Mailchimp Marketing & Mandrill Transactional emails
-- **Needs Work:** Backend architecture (modularization)
+- **Needs Work:** Backend architecture (modularization), real screening API, Stripe Connect
+
+## Test Credentials
+- **Manager:** test@test.com / test123
+- **Contractor:** testcontractor@test.com / test123
+- **Tenant:** testpayments3@test.com / Test123!
 
 ## Legal & IP Protection
 - **Terms of Service:** Updated with Software License Grant, IP protection, and trademark notices
