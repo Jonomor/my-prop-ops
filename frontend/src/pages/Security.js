@@ -263,7 +263,7 @@ const Security = () => {
             Our security team is happy to answer your questions and provide additional documentation for enterprise evaluations.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="mailto:security@propops.com">
+            <a href="mailto:security@mypropops.com">
               <Button size="lg" variant="outline">
                 Contact Security Team
               </Button>
