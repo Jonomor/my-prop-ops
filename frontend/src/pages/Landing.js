@@ -465,32 +465,31 @@ const Landing = () => {
             {/* Video 1: Spreadsheet Killer */}
             <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
               <video 
-                className="w-full aspect-[9/16] object-cover"
+                className="w-full aspect-video object-cover"
                 autoPlay 
                 loop 
                 muted 
                 playsInline
-                poster="/api/placeholder/400/700"
               >
                 <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/j0e4chjv_prop5.mp4" type="video/mp4" />
               </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center">
-                    <X className="w-4 h-4" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+                    <X className="w-3 h-3" />
                   </div>
-                  <span className="text-sm font-medium text-red-300">No More Spreadsheets</span>
+                  <span className="text-xs font-medium text-red-300">No More Spreadsheets</span>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Spreadsheet Killer</h3>
-                <p className="text-sm text-white/80">Ditch the spreadsheets. Get the dashboard.</p>
+                <h3 className="text-lg font-bold">Spreadsheet Killer</h3>
+                <p className="text-xs text-white/80">Ditch the spreadsheets. Get the dashboard.</p>
               </div>
             </div>
 
             {/* Video 2: Rent Collector */}
             <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
               <video 
-                className="w-full aspect-[9/16] object-cover"
+                className="w-full aspect-video object-cover"
                 autoPlay 
                 loop 
                 muted 
@@ -499,22 +498,22 @@ const Landing = () => {
                 <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/4xbxgb29_prop4.mp4" type="video/mp4" />
               </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
-                    <DollarSign className="w-4 h-4" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                    <DollarSign className="w-3 h-3" />
                   </div>
-                  <span className="text-sm font-medium text-green-300">Automated Payments</span>
+                  <span className="text-xs font-medium text-green-300">Automated Payments</span>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Rent Collector</h3>
-                <p className="text-sm text-white/80">Stop chasing checks. Start collecting sleep.</p>
+                <h3 className="text-lg font-bold">Rent Collector</h3>
+                <p className="text-xs text-white/80">Stop chasing checks. Start collecting sleep.</p>
               </div>
             </div>
 
             {/* Video 3: Compliance Shield */}
             <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
               <video 
-                className="w-full aspect-[9/16] object-cover"
+                className="w-full aspect-video object-cover"
                 autoPlay 
                 loop 
                 muted 
@@ -523,22 +522,22 @@ const Landing = () => {
                 <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fzrlnm2b_prop3.mp4" type="video/mp4" />
               </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center">
-                    <Shield className="w-4 h-4" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                    <Shield className="w-3 h-3" />
                   </div>
-                  <span className="text-sm font-medium text-blue-300">100% Compliant</span>
+                  <span className="text-xs font-medium text-blue-300">100% Compliant</span>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Compliance Shield</h3>
-                <p className="text-sm text-white/80">Compliance deadlines? Already handled.</p>
+                <h3 className="text-lg font-bold">Compliance Shield</h3>
+                <p className="text-xs text-white/80">Compliance deadlines? Already handled.</p>
               </div>
             </div>
 
             {/* Video 4: Maintenance Magic */}
             <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
               <video 
-                className="w-full aspect-[9/16] object-cover"
+                className="w-full aspect-video object-cover"
                 autoPlay 
                 loop 
                 muted 
@@ -547,22 +546,22 @@ const Landing = () => {
                 <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/lf1xwx6w_prop2.mp4" type="video/mp4" />
               </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center">
-                    <Wrench className="w-4 h-4" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
+                    <Wrench className="w-3 h-3" />
                   </div>
-                  <span className="text-sm font-medium text-orange-300">One-Tap Fixes</span>
+                  <span className="text-xs font-medium text-orange-300">One-Tap Fixes</span>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Maintenance Magic</h3>
-                <p className="text-sm text-white/80">Click. Assigned. Done.</p>
+                <h3 className="text-lg font-bold">Maintenance Magic</h3>
+                <p className="text-xs text-white/80">Click. Assigned. Done.</p>
               </div>
             </div>
 
             {/* Video 5: Whole Team */}
             <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
               <video 
-                className="w-full aspect-[9/16] object-cover"
+                className="w-full aspect-video object-cover"
                 autoPlay 
                 loop 
                 muted 
@@ -571,20 +570,20 @@ const Landing = () => {
                 <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fyzgszf2_prop1.mp4" type="video/mp4" />
               </video>
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
-                    <Users className="w-4 h-4" />
+              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                    <Users className="w-3 h-3" />
                   </div>
-                  <span className="text-sm font-medium text-purple-300">Team Sync</span>
+                  <span className="text-xs font-medium text-purple-300">Team Sync</span>
                 </div>
-                <h3 className="text-xl font-bold mb-1">Whole Team</h3>
-                <p className="text-sm text-white/80">Get your whole team on the same page.</p>
+                <h3 className="text-lg font-bold">Whole Team</h3>
+                <p className="text-xs text-white/80">Get your whole team on the same page.</p>
               </div>
             </div>
 
             {/* CTA Card */}
-            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-primary/80 shadow-lg flex flex-col items-center justify-center p-8 text-white aspect-[9/16]">
+            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-primary/80 shadow-lg flex flex-col items-center justify-center p-6 text-white aspect-video">
               <div className="text-center">
                 <Play className="w-16 h-16 mx-auto mb-6 opacity-80" />
                 <h3 className="text-2xl font-bold mb-2">Ready to Transform Your Workflow?</h3>
