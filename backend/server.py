@@ -2049,11 +2049,26 @@ async def tenant_portal_register(data: TenantPortalRegister):
     }
 
 @api_router.post("/tenant-portal/login")
-async def tenant_portal_login(data: TenantPortalLogin):
+async def tenant_portal_login(data: TenantPortalLogin, request: Request):
     """Login to tenant portal"""
+    client_ip = get_client_ip(request)
+    rate_key = f"tenant:{client_ip}:{data.email}"
+    
+    # Check rate limit
+    if login_rate_limiter.is_rate_limited(rate_key):
+        remaining = login_rate_limiter.get_remaining_time(rate_key)
+        raise HTTPException(
+            status_code=429, 
+            detail=f"Too many login attempts. Please try again in {remaining} seconds."
+        )
+    
     tenant = await db.tenant_portal_users.find_one({"email": data.email}, {"_id": 0})
     if not tenant or not verify_password(data.password, tenant['hashed_password']):
+        login_rate_limiter.record_attempt(rate_key)
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Clear rate limit on successful login
+    login_rate_limiter.clear(rate_key)
     
     token = create_tenant_token(tenant['id'], tenant['email'])
     
