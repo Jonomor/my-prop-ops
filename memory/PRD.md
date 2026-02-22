@@ -192,17 +192,20 @@ Build a full-stack SaaS web application for property and housing operations mana
 ## Test Credentials
 - **Manager:** test@test.com / test123
 - **Tenant:** testtenant@test.com / test123
+- **Contractor:** testcontractor@test.com / test123
 
 ## Prioritized Backlog
 
 ### P0 - Critical
 - [x] ~~Stripe billing integration for paid tier upgrades~~ (DONE)
+- [x] ~~Tenant Portal maintenance with photo upload~~ (DONE)
 - [ ] Backend refactoring: Break `server.py` into modular routers
 
 ### P1 - High Priority
 - [x] ~~Mailchimp email notifications~~ (DONE - needs keys)
 - [x] ~~Maintenance request workflow~~ (DONE)
 - [ ] Tenant screening feature (models exist, needs API/UI)
+- [ ] Link promotional videos from Google Drive to landing page (user provided URLs)
 
 ### P2 - Medium Priority
 - [ ] Rent payment tracking module
