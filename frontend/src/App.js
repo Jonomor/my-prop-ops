@@ -141,6 +141,9 @@ function AppRoutes() {
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/security" element={<Security />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/blog" element={<Blog />} />
+      <Route path="/blog/:slug" element={<BlogPost />} />
       
       {/* Contractor Portal Routes (separate auth) */}
       <Route path="/contractor/login" element={<ContractorLogin />} />
