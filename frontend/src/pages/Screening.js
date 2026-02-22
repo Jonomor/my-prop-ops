@@ -185,6 +185,18 @@ const Screening = () => {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto space-y-6" data-testid="screening-page">
+        {/* Demo Mode Banner */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3" data-testid="demo-mode-banner">
+          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium text-amber-800">Demo Mode</p>
+            <p className="text-sm text-amber-700">
+              Tenant screening is currently in demo mode. Results shown are simulated for demonstration purposes. 
+              Real background checks will be available once integrated with a verified screening provider (TransUnion, RentPrep, etc.).
+            </p>
+          </div>
+        </div>
+
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
