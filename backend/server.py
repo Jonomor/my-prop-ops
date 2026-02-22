@@ -5254,6 +5254,193 @@ async def use_screening_credit(user = Depends(get_current_user)):
     return {"success": True, "remaining_credits": result["balance"]}
 
 
+# ============== TWO-FACTOR AUTHENTICATION (2FA) ENDPOINTS ==============
+
+import pyotp
+import qrcode
+import io
+import base64
+
+class Enable2FARequest(BaseModel):
+    password: str
+
+class Verify2FARequest(BaseModel):
+    code: str
+
+class Disable2FARequest(BaseModel):
+    password: str
+    code: str
+
+@api_router.get("/auth/2fa/status")
+async def get_2fa_status(user = Depends(get_current_user)):
+    """Get user's 2FA status"""
+    user_doc = await db.users.find_one({"id": user['id']})
+    
+    # Check if user's org has Pro plan
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    has_pro = False
+    if membership:
+        org = await db.organizations.find_one({"id": membership['org_id']})
+        has_pro = org.get("plan") == "pro" if org else False
+    
+    return {
+        "enabled": user_doc.get("two_factor_enabled", False),
+        "plan_allows_2fa": has_pro,
+        "setup_complete": user_doc.get("two_factor_verified", False)
+    }
+
+@api_router.post("/auth/2fa/setup")
+async def setup_2fa(data: Enable2FARequest, user = Depends(get_current_user)):
+    """Initialize 2FA setup - generates secret and QR code"""
+    user_doc = await db.users.find_one({"id": user['id']})
+    
+    # Verify password
+    if not verify_password(data.password, user_doc['password_hash']):
+        raise HTTPException(status_code=401, detail="Invalid password")
+    
+    # Check if user's org has Pro plan
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if membership:
+        org = await db.organizations.find_one({"id": membership['org_id']})
+        if not org or org.get("plan") != "pro":
+            raise HTTPException(status_code=403, detail="Two-factor authentication requires Pro plan")
+    
+    # Generate secret
+    secret = pyotp.random_base32()
+    
+    # Create TOTP object
+    totp = pyotp.TOTP(secret)
+    
+    # Generate provisioning URI for authenticator apps
+    provisioning_uri = totp.provisioning_uri(
+        name=user_doc['email'],
+        issuer_name="MyPropOps"
+    )
+    
+    # Generate QR code
+    qr = qrcode.QRCode(version=1, box_size=10, border=5)
+    qr.add_data(provisioning_uri)
+    qr.make(fit=True)
+    
+    img = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    qr_base64 = base64.b64encode(buffer.getvalue()).decode()
+    
+    # Store secret temporarily (not verified yet)
+    await db.users.update_one(
+        {"id": user['id']},
+        {"$set": {
+            "two_factor_secret": secret,
+            "two_factor_enabled": False,
+            "two_factor_verified": False
+        }}
+    )
+    
+    return {
+        "secret": secret,
+        "qr_code": f"data:image/png;base64,{qr_base64}",
+        "message": "Scan the QR code with your authenticator app, then verify with a code"
+    }
+
+@api_router.post("/auth/2fa/verify")
+async def verify_2fa_setup(data: Verify2FARequest, user = Depends(get_current_user)):
+    """Verify 2FA setup with a code from authenticator app"""
+    user_doc = await db.users.find_one({"id": user['id']})
+    
+    secret = user_doc.get("two_factor_secret")
+    if not secret:
+        raise HTTPException(status_code=400, detail="2FA setup not initiated")
+    
+    # Verify the code
+    totp = pyotp.TOTP(secret)
+    if not totp.verify(data.code, valid_window=1):
+        raise HTTPException(status_code=401, detail="Invalid verification code")
+    
+    # Generate backup codes
+    backup_codes = [pyotp.random_base32()[:8] for _ in range(10)]
+    hashed_backup_codes = [hashlib.sha256(code.encode()).hexdigest() for code in backup_codes]
+    
+    # Enable 2FA
+    await db.users.update_one(
+        {"id": user['id']},
+        {"$set": {
+            "two_factor_enabled": True,
+            "two_factor_verified": True,
+            "two_factor_backup_codes": hashed_backup_codes,
+            "two_factor_enabled_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {
+        "success": True,
+        "message": "Two-factor authentication enabled successfully",
+        "backup_codes": backup_codes,
+        "warning": "Save these backup codes securely. They can only be shown once."
+    }
+
+@api_router.post("/auth/2fa/disable")
+async def disable_2fa(data: Disable2FARequest, user = Depends(get_current_user)):
+    """Disable 2FA"""
+    user_doc = await db.users.find_one({"id": user['id']})
+    
+    # Verify password
+    if not verify_password(data.password, user_doc['password_hash']):
+        raise HTTPException(status_code=401, detail="Invalid password")
+    
+    # Verify 2FA code
+    secret = user_doc.get("two_factor_secret")
+    if secret:
+        totp = pyotp.TOTP(secret)
+        if not totp.verify(data.code, valid_window=1):
+            raise HTTPException(status_code=401, detail="Invalid 2FA code")
+    
+    # Disable 2FA
+    await db.users.update_one(
+        {"id": user['id']},
+        {"$set": {
+            "two_factor_enabled": False,
+            "two_factor_verified": False,
+            "two_factor_secret": None,
+            "two_factor_backup_codes": None
+        }}
+    )
+    
+    return {"success": True, "message": "Two-factor authentication disabled"}
+
+@api_router.post("/auth/2fa/validate")
+async def validate_2fa_code(data: Verify2FARequest, user = Depends(get_current_user)):
+    """Validate a 2FA code (used during login)"""
+    user_doc = await db.users.find_one({"id": user['id']})
+    
+    if not user_doc.get("two_factor_enabled"):
+        raise HTTPException(status_code=400, detail="2FA not enabled for this user")
+    
+    secret = user_doc.get("two_factor_secret")
+    if not secret:
+        raise HTTPException(status_code=400, detail="2FA not configured")
+    
+    # Try TOTP code first
+    totp = pyotp.TOTP(secret)
+    if totp.verify(data.code, valid_window=1):
+        return {"success": True, "method": "totp"}
+    
+    # Try backup codes
+    backup_codes = user_doc.get("two_factor_backup_codes", [])
+    code_hash = hashlib.sha256(data.code.encode()).hexdigest()
+    
+    if code_hash in backup_codes:
+        # Remove used backup code
+        backup_codes.remove(code_hash)
+        await db.users.update_one(
+            {"id": user['id']},
+            {"$set": {"two_factor_backup_codes": backup_codes}}
+        )
+        return {"success": True, "method": "backup_code", "remaining_backup_codes": len(backup_codes)}
+    
+    raise HTTPException(status_code=401, detail="Invalid 2FA code")
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
