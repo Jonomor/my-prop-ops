@@ -199,7 +199,12 @@ Build a full-stack SaaS web application for property and housing operations mana
 ### P0 - Critical
 - [x] ~~Stripe billing integration for paid tier upgrades~~ (DONE)
 - [x] ~~Tenant Portal maintenance with photo upload~~ (DONE)
-- [ ] Backend refactoring: Break `server.py` into modular routers
+- [x] ~~Video aspect ratio fix (16:9)~~ (DONE)
+- [~] Backend refactoring - Modular structure created (IN PROGRESS)
+  - Created: `/backend/models/` (enums.py, schemas.py)
+  - Created: `/backend/utils/` (database.py, config.py, auth.py, email.py)
+  - Created: `/backend/routers/` (auth.py, billing.py, contractors.py)
+  - Next: Migrate remaining routes to use new modular structure
 
 ### P1 - High Priority
 - [x] ~~Mailchimp email notifications~~ (DONE - needs keys)
