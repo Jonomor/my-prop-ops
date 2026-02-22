@@ -134,7 +134,6 @@
 - 100GB document storage
 - **AI-Powered Insights Dashboard**
 - **Advanced analytics dashboard**
-- **Custom branding (logo & colors)**
 - **API access with key management**
 - **Two-factor authentication (2FA)**
 - **Full audit logs**
