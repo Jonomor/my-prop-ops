@@ -1,6 +1,7 @@
 {
   "short_name": "MyPropOps",
   "name": "MyPropOps - Property Management",
+  "description": "#1 Property Management Software for Landlords & Property Managers",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,38 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "theme_color": "#2563eb",
-  "background_color": "#ffffff"
+  "background_color": "#ffffff",
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false,
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "View property dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Maintenance",
+      "short_name": "Maintenance",
+      "description": "View maintenance requests",
+      "url": "/maintenance",
+      "icons": [{ "src": "logo192.png", "sizes": "192x192" }]
+    }
+  ]
 }
