@@ -25,11 +25,27 @@
 - ✅ **Rate Limiting** - Added to all login endpoints (Manager, Tenant, Contractor, Admin)
   - 5 attempts per 5 minutes for regular logins
   - Displays remaining cooldown time to users
-- ✅ **Email Configuration** - Updated Mandrill API key in backend/.env
+- ✅ **Email Configuration** - Updated Mandrill API key and added Mailchimp OAuth credentials
   - Mailchimp Marketing and Transactional clients now initialize correctly
 - ✅ **Tenant Screening Demo Mode Banner** - Added clear disclaimer on Screening.js
   - Amber warning banner explains results are simulated
   - Mentions real integration coming with TransUnion, RentPrep, etc.
+
+#### Native App (Capacitor) Setup (COMPLETE)
+- ✅ **Capacitor 6 installed** - Core, CLI, Android, iOS packages
+- ✅ **Native plugins configured:**
+  - Camera (photo capture for maintenance requests)
+  - Push Notifications
+  - Haptics (touch feedback)
+  - Share (native sharing)
+  - Splash Screen & Status Bar
+  - Keyboard handling
+  - App lifecycle & deep links
+- ✅ **capacitor.config.ts** - Configured with app settings
+- ✅ **Native integration utilities** - `/src/utils/native.js` created
+- ✅ **TenantPortal updated** - Native camera support for maintenance photos
+- ✅ **Build scripts added** - `yarn cap:sync`, `yarn cap:android`, `yarn cap:ios`
+- ✅ **Build guide created** - `/frontend/NATIVE_APP_BUILD_GUIDE.md`
 
 #### Super Admin Dashboard (COMPLETE)
 - ✅ **Admin Login** at `/admin/login` with secure authentication
