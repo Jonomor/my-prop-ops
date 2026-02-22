@@ -145,6 +145,7 @@ function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/blog" element={<Blog />} />
       <Route path="/blog/:slug" element={<BlogPost />} />
+      <Route path="/dpa" element={<DPA />} />
       
       {/* Contractor Portal Routes (separate auth) */}
       <Route path="/contractor/login" element={<ContractorLogin />} />
