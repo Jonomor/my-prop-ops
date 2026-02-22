@@ -82,7 +82,7 @@ const RentPayments = () => {
 
     setSubmitting(true);
     try {
-      await axios.post(`${API}/api/rent-payments?org_id=${currentOrg.id}`, {
+      await axios.post(`${API}/api/rent-payments?org_id=${currentOrg.org_id}`, {
         tenant_id: formTenant,
         unit_id: formUnit,
         amount: parseFloat(formAmount),
