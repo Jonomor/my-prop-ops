@@ -40,8 +40,8 @@ async def create_checkout(
         stripe_checkout = StripeCheckout(STRIPE_API_KEY)
         
         checkout_request = CheckoutSessionRequest(
-            success_url=f"https://property-ops-dev.preview.emergentagent.com/billing?success=true&session_id={{CHECKOUT_SESSION_ID}}",
-            cancel_url="https://property-ops-dev.preview.emergentagent.com/billing?canceled=true",
+            success_url=f"https://tenant-mgmt-build.preview.emergentagent.com/billing?success=true&session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url="https://tenant-mgmt-build.preview.emergentagent.com/billing?canceled=true",
             line_items=[{
                 "price_data": {
                     "currency": "usd",
@@ -118,7 +118,7 @@ async def create_embedded_checkout(
                 "quantity": 1
             }],
             mode="payment",
-            return_url=f"https://property-ops-dev.preview.emergentagent.com/billing?session_id={{CHECKOUT_SESSION_ID}}",
+            return_url=f"https://tenant-mgmt-build.preview.emergentagent.com/billing?session_id={{CHECKOUT_SESSION_ID}}",
             metadata={
                 "org_id": org_id,
                 "user_id": current_user["id"],
