@@ -56,6 +56,14 @@ const ContractorDashboard = () => {
   const [selectedJob, setSelectedJob] = useState(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [updateForm, setUpdateForm] = useState({ status: '', notes: '' });
+  
+  // Messaging states
+  const [messageDialogOpen, setMessageDialogOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState('');
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const messagesEndRef = useRef(null);
 
   const token = localStorage.getItem('contractor_token');
 
