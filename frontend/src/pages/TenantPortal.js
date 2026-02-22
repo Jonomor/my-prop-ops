@@ -356,6 +356,7 @@ const TenantPortal = () => {
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'payments', label: 'Pay Rent', icon: CreditCard },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'status', label: 'Application Status', icon: CheckCircle },
     { id: 'maintenance', label: 'Maintenance', icon: Wrench },
