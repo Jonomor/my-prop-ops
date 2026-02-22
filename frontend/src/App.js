@@ -164,7 +164,7 @@ function AppRoutes() {
       <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
       <Route path="/branding" element={<ProtectedRoute><Branding /></ProtectedRoute>} />
-      <Route path="/security" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
+      <Route path="/2fa-settings" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
       <Route path="/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
       
       {/* Default redirect */}
