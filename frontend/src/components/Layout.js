@@ -40,7 +40,8 @@ import {
   BarChart3,
   FileSpreadsheet,
   Key,
-  Palette
+  Palette,
+  Shield
 } from 'lucide-react';
 
 const navItems = [
@@ -59,6 +60,7 @@ const navItems = [
   { path: '/members', label: 'Members', icon: Users },
   { path: '/api-keys', label: 'API Keys', icon: Key },
   { path: '/branding', label: 'Branding', icon: Palette },
+  { path: '/security', label: 'Security (2FA)', icon: Shield },
   { path: '/billing', label: 'Billing', icon: CreditCard },
   { path: '/audit-logs', label: 'Audit Logs', icon: History },
 ];
