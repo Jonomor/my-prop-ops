@@ -665,14 +665,14 @@ const Maintenance = () => {
                     <div className="space-y-2">
                       <Label>Assign to Team Member</Label>
                       <Select 
-                        value={selectedRequest.assigned_to || ''} 
-                        onValueChange={v => handleAssign(selectedRequest.id, v)}
+                        value={selectedRequest.assigned_to || 'unassigned'} 
+                        onValueChange={v => handleAssign(selectedRequest.id, v === 'unassigned' ? null : v)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select team member" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Unassigned</SelectItem>
+                          <SelectItem value="unassigned">Unassigned</SelectItem>
                           {teamMembers.map(m => (
                             <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
                           ))}
