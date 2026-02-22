@@ -6,10 +6,11 @@ const config: CapacitorConfig = {
   webDir: 'build',
   bundledWebRuntime: false,
   
-  // Server configuration for live reload during development
+  // Server configuration
   server: {
-    // For production, comment this out - the app will use bundled assets
-    // url: 'https://propops-preview.preview.emergentagent.com',
+    // For production, the app uses bundled assets (comment out url)
+    // For development, you can use live reload:
+    // url: 'https://your-dev-server.com',
     cleartext: true,
     androidScheme: 'https'
   },
@@ -20,14 +21,20 @@ const config: CapacitorConfig = {
     allowsLinkPreview: true,
     scrollEnabled: true,
     limitsNavigationsToAppBoundDomains: false,
-    preferredContentMode: 'mobile'
+    preferredContentMode: 'mobile',
+    // iOS 18+ minimum deployment target
+    minVersion: '18.0'
   },
   
-  // Android specific configuration
+  // Android specific configuration  
   android: {
     allowMixedContent: true,
     captureInput: true,
-    webContentsDebuggingEnabled: false // Set to false for production
+    webContentsDebuggingEnabled: false, // Set to false for production
+    // Target API 35+ for Play Store 2025 requirements
+    minSdkVersion: 26,
+    targetSdkVersion: 35,
+    compileSdkVersion: 35
   },
   
   // Plugins configuration
@@ -52,6 +59,15 @@ const config: CapacitorConfig = {
     },
     PushNotifications: {
       presentationOptions: ['badge', 'sound', 'alert']
+    },
+    // Camera permissions
+    Camera: {
+      // iOS camera usage description
+      cameraUsageDescription: 'MyPropOps needs camera access to take photos of maintenance issues and property conditions.',
+      // iOS photo library usage description  
+      photoLibraryUsageDescription: 'MyPropOps needs photo library access to attach existing photos to maintenance requests.',
+      // iOS photo library add usage description
+      photoLibraryAddUsageDescription: 'MyPropOps needs permission to save photos to your library.'
     }
   }
 };
