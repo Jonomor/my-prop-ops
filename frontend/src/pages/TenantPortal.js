@@ -1295,7 +1295,7 @@ const TenantPortal = () => {
               <div className="space-y-6">
                 <div>
                   <h1 className="text-2xl font-bold">Rent Payments</h1>
-                  <p className="text-muted-foreground">Pay your rent securely online.</p>
+                  <p className="text-muted-foreground">View your payment history and upcoming rent dues.</p>
                 </div>
 
                 {/* Payment Summary */}
@@ -1387,33 +1387,9 @@ const TenantPortal = () => {
                                 </p>
                               )}
                               {payment.status !== 'paid' && (
-                                <Button 
-                                  className="mt-2 bg-emerald-600 hover:bg-emerald-700"
-                                  onClick={async () => {
-                                    setProcessingPayment(true);
-                                    try {
-                                      const res = await api.post(`/api/tenant-portal/pay-rent/${payment.id}`, {
-                                        return_url: window.location.href
-                                      });
-                                      if (res.data.checkout_url) {
-                                        window.location.href = res.data.checkout_url;
-                                      }
-                                    } catch (error) {
-                                      toast.error(error.response?.data?.detail || 'Failed to initiate payment');
-                                    } finally {
-                                      setProcessingPayment(false);
-                                    }
-                                  }}
-                                  disabled={processingPayment}
-                                  data-testid={`pay-rent-${payment.id}`}
-                                >
-                                  {processingPayment ? (
-                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                  ) : (
-                                    <CreditCard className="w-4 h-4 mr-2" />
-                                  )}
-                                  Pay ${(payment.amount - (payment.paid_amount || 0)).toLocaleString()}
-                                </Button>
+                                <p className="text-sm text-muted-foreground mt-2">
+                                  Contact your property manager for payment options.
+                                </p>
                               )}
                             </div>
                           </div>
@@ -1423,15 +1399,15 @@ const TenantPortal = () => {
                   </div>
                 )}
 
-                {/* Payment Methods Info */}
+                {/* Payment Info */}
                 <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200">
                   <CardContent className="p-4">
                     <div className="flex items-start gap-3">
                       <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium text-blue-800 dark:text-blue-200">Secure Payment</p>
+                        <p className="font-medium text-blue-800 dark:text-blue-200">Payment Information</p>
                         <p className="text-sm text-blue-700 dark:text-blue-300">
-                          All payments are processed securely through Stripe. We accept all major credit and debit cards.
+                          Please contact your property manager for payment options including check, bank transfer, or other accepted methods.
                         </p>
                       </div>
                     </div>
