@@ -444,6 +444,88 @@ const ContractorDashboard = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Message Dialog */}
+      <Dialog open={messageDialogOpen} onOpenChange={setMessageDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-orange-600" />
+              Messages
+            </DialogTitle>
+            <DialogDescription>
+              {selectedJob?.title} - Chat with property manager
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col h-[400px]">
+            {/* Messages area */}
+            <ScrollArea className="flex-1 pr-4">
+              {loadingMessages ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="w-6 h-6 animate-spin text-orange-500" />
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+                  <MessageSquare className="w-12 h-12 mb-2 opacity-50" />
+                  <p>No messages yet</p>
+                  <p className="text-sm">Start the conversation with the manager</p>
+                </div>
+              ) : (
+                <div className="space-y-3 py-2">
+                  {messages.map((msg) => (
+                    <div 
+                      key={msg.id}
+                      className={`flex ${msg.sender_type === 'contractor' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div 
+                        className={`max-w-[80%] rounded-lg px-3 py-2 ${
+                          msg.sender_type === 'contractor' 
+                            ? 'bg-orange-500 text-white' 
+                            : 'bg-muted'
+                        }`}
+                      >
+                        <p className="text-xs font-medium mb-1 opacity-70">
+                          {msg.sender_name}
+                        </p>
+                        <p className="text-sm">{msg.content}</p>
+                        <p className="text-xs mt-1 opacity-50">
+                          {new Date(msg.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </ScrollArea>
+            
+            {/* Message input */}
+            <div className="flex gap-2 pt-4 border-t mt-2">
+              <Input
+                placeholder="Type a message..."
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
+                disabled={sendingMessage}
+                data-testid="message-input"
+              />
+              <Button 
+                onClick={sendMessage} 
+                disabled={!newMessage.trim() || sendingMessage}
+                className="bg-gradient-to-r from-orange-500 to-amber-600"
+                data-testid="send-message-btn"
+              >
+                {sendingMessage ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
