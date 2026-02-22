@@ -239,6 +239,54 @@ const Maintenance = () => {
     }
   };
 
+  // Messaging functions
+  const openMessageDialog = async (request) => {
+    if (!request.contractor_id) {
+      toast.error('Assign a contractor first to send messages');
+      return;
+    }
+    setSelectedRequest(request);
+    setMessageDialogOpen(true);
+    setLoadingMessages(true);
+    
+    try {
+      const res = await api.get(`/maintenance-requests/${request.id}/messages`);
+      setMessages(res.data);
+    } catch (error) {
+      toast.error('Failed to load messages');
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedRequest) return;
+    
+    setSendingMessage(true);
+    try {
+      await api.post(`/maintenance-requests/${selectedRequest.id}/messages`, {
+        content: newMessage,
+        job_id: selectedRequest.id
+      });
+      setNewMessage('');
+      // Refresh messages
+      const res = await api.get(`/maintenance-requests/${selectedRequest.id}/messages`);
+      setMessages(res.data);
+      toast.success('Message sent');
+    } catch (error) {
+      toast.error('Failed to send message');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Scroll to bottom of messages
+  useEffect(() => {
+    if (messagesEndRef.current && messageDialogOpen) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, messageDialogOpen]);
+
   const filteredRequests = requests.filter(req => {
     if (filterStatus !== 'all' && req.status !== filterStatus) return false;
     if (filterPriority !== 'all' && req.priority !== filterPriority) return false;
