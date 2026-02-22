@@ -35,6 +35,7 @@ import Reports from './pages/Reports';
 import Analytics from './pages/Analytics';
 import ApiKeys from './pages/ApiKeys';
 import Branding from './pages/Branding';
+import TwoFactorAuth from './pages/TwoFactorAuth';
 
 // Tenant Portal Pages
 import TenantLogin from './pages/TenantLogin';
@@ -163,6 +164,7 @@ function AppRoutes() {
       <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
       <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
       <Route path="/branding" element={<ProtectedRoute><Branding /></ProtectedRoute>} />
+      <Route path="/security" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
       <Route path="/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
       
       {/* Default redirect */}
