@@ -137,13 +137,13 @@ class TestBackendAPIs:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         
         data = response.json()
-        # Verify response structure
+        # Verify response structure (actual field names from API)
         assert "total_expected" in data, "Response should contain 'total_expected' field"
         assert "total_collected" in data, "Response should contain 'total_collected' field"
-        assert "total_outstanding" in data, "Response should contain 'total_outstanding' field"
+        assert "outstanding" in data, "Response should contain 'outstanding' field"
         assert "payment_count" in data, "Response should contain 'payment_count' field"
         
-        print(f"Rent Summary: Expected=${data['total_expected']}, Collected=${data['total_collected']}, Outstanding=${data['total_outstanding']}")
+        print(f"Rent Summary: Expected=${data['total_expected']}, Collected=${data['total_collected']}, Outstanding=${data['outstanding']}")
     
     # ==================== Billing/Subscription Status Tests ====================
     
