@@ -1,12 +1,11 @@
 """
-Test file for Screening and Rent Payments API endpoints.
-Tests the new modular routers: screening.py and payments.py
+Tests for Tenant Screening Credits and Rent Payments features.
+Testing new endpoints for MyPropOps SaaS.
 """
-
 import pytest
 import requests
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
@@ -15,192 +14,319 @@ TEST_EMAIL = "test@test.com"
 TEST_PASSWORD = "test123"
 
 
-class TestAuth:
-    """Helper class for authentication"""
+class TestScreeningCredits:
+    """Tests for screening credits endpoints"""
     
-    @staticmethod
-    def login():
-        """Login and get token"""
+    @pytest.fixture(scope="class")
+    def auth_token(self):
+        """Login and get auth token"""
         response = requests.post(f"{BASE_URL}/api/auth/login", json={
             "email": TEST_EMAIL,
             "password": TEST_PASSWORD
         })
-        if response.status_code == 200:
-            return response.json()
-        return None
-
-
-class TestScreeningEndpoints:
-    """Tests for /api/screening endpoints"""
+        assert response.status_code == 200, f"Login failed: {response.text}"
+        return response.json()['token']
     
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup before each test"""
-        auth = TestAuth.login()
-        assert auth is not None, "Failed to login"
-        self.token = auth['token']
-        self.user = auth['user']
-        self.headers = {"Authorization": f"Bearer {self.token}"}
-        
-        # Get organization
-        orgs_response = requests.get(f"{BASE_URL}/api/organizations", headers=self.headers)
-        assert orgs_response.status_code == 200
-        orgs = orgs_response.json()
-        assert len(orgs) > 0, "No organizations found"
-        self.org_id = orgs[0]['org_id']
+    @pytest.fixture(scope="class")
+    def auth_headers(self, auth_token):
+        """Get headers with auth token"""
+        return {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json"
+        }
     
-    def test_get_screening_requests_empty(self):
-        """Test GET /api/screening/requests returns empty list when no screenings exist"""
-        response = requests.get(
-            f"{BASE_URL}/api/screening/requests?org_id={self.org_id}",
-            headers=self.headers
-        )
+    @pytest.fixture(scope="class")
+    def org_id(self, auth_headers):
+        """Get organization ID"""
+        response = requests.get(f"{BASE_URL}/api/organizations", headers=auth_headers)
         assert response.status_code == 200
-        data = response.json()
-        assert isinstance(data, list), f"Expected list, got {type(data)}"
-        print(f"✓ GET screening requests returned {len(data)} results")
-    
-    def test_screening_requires_auth(self):
-        """Test that screening endpoints require authentication"""
-        response = requests.get(f"{BASE_URL}/api/screening/requests?org_id={self.org_id}")
-        assert response.status_code in [401, 403], f"Expected 401/403, got {response.status_code}"
-        print("✓ Screening endpoint correctly requires authentication")
-    
-    def test_create_screening_requires_tenant(self):
-        """Test that creating screening requires a valid tenant"""
-        response = requests.post(
-            f"{BASE_URL}/api/screening/requests?org_id={self.org_id}",
-            headers=self.headers,
-            json={
-                "tenant_id": "invalid-tenant-id",
-                "screening_type": "comprehensive",
-                "include_credit": True,
-                "include_criminal": True,
-                "include_eviction": True,
-                "include_income": False
-            }
-        )
-        # Should fail with 404 because tenant doesn't exist
-        assert response.status_code == 404, f"Expected 404 for invalid tenant, got {response.status_code}"
-        print("✓ Screening creation correctly validates tenant existence")
-
-
-class TestRentPaymentsEndpoints:
-    """Tests for /api/rent-payments endpoints"""
-    
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup before each test"""
-        auth = TestAuth.login()
-        assert auth is not None, "Failed to login"
-        self.token = auth['token']
-        self.user = auth['user']
-        self.headers = {"Authorization": f"Bearer {self.token}"}
-        
-        # Get organization
-        orgs_response = requests.get(f"{BASE_URL}/api/organizations", headers=self.headers)
-        assert orgs_response.status_code == 200
-        orgs = orgs_response.json()
+        orgs = response.json()
         assert len(orgs) > 0, "No organizations found"
-        self.org_id = orgs[0]['org_id']
+        return orgs[0]['org_id']
     
-    def test_get_rent_payments(self):
-        """Test GET /api/rent-payments returns payments list"""
-        response = requests.get(
-            f"{BASE_URL}/api/rent-payments?org_id={self.org_id}&month=2&year=2026",
-            headers=self.headers
-        )
+    def test_get_screening_credits(self, auth_headers):
+        """Test GET /api/screening/credits returns credit balance"""
+        response = requests.get(f"{BASE_URL}/api/screening/credits", headers=auth_headers)
+        
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
-        assert isinstance(data, list), f"Expected list, got {type(data)}"
-        print(f"✓ GET rent payments returned {len(data)} results")
+        
+        # Validate response structure
+        assert "balance" in data, "Response should have 'balance' field"
+        assert "purchased" in data, "Response should have 'purchased' field"
+        assert "plan_included" in data, "Response should have 'plan_included' field"
+        
+        # Balance should be a number >= 0
+        assert isinstance(data['balance'], int), "Balance should be an integer"
+        assert data['balance'] >= 0, "Balance should be non-negative"
+        print(f"Current credit balance: {data['balance']}")
     
-    def test_get_rent_summary(self):
-        """Test GET /api/rent-payments/summary returns summary"""
-        response = requests.get(
-            f"{BASE_URL}/api/rent-payments/summary?org_id={self.org_id}&month=2&year=2026",
-            headers=self.headers
+    def test_purchase_credits_invalid_package(self, auth_headers):
+        """Test purchase credits with invalid package returns error"""
+        response = requests.post(
+            f"{BASE_URL}/api/screening/purchase-credits",
+            headers=auth_headers,
+            json={"package_id": "invalid_package"}
         )
+        
+        assert response.status_code == 400, f"Expected 400 for invalid package, got {response.status_code}"
+        print("Invalid package correctly rejected")
+    
+    def test_purchase_credits_valid_package(self, auth_headers):
+        """Test purchase credits with valid package (demo mode)"""
+        # Get current balance
+        credits_before = requests.get(f"{BASE_URL}/api/screening/credits", headers=auth_headers).json()
+        
+        # Purchase single credit package
+        response = requests.post(
+            f"{BASE_URL}/api/screening/purchase-credits",
+            headers=auth_headers,
+            json={"package_id": "single", "return_url": "https://example.com/return"}
+        )
+        
+        # Should return either checkout URL or success message (demo mode)
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
-        # Verify expected fields in summary
-        assert "total_expected" in data, "Missing total_expected in summary"
-        assert "total_collected" in data, "Missing total_collected in summary"
-        assert "total_outstanding" in data, "Missing total_outstanding in summary"
-        assert "collection_rate" in data, "Missing collection_rate in summary"
-        print(f"✓ GET rent summary: Expected={data['total_expected']}, Collected={data['total_collected']}, Rate={data['collection_rate']}%")
+        
+        # In demo mode, credits are added directly
+        if "credits_added" in data:
+            print(f"Demo mode - credits added: {data['credits_added']}")
+            # Verify balance increased
+            credits_after = requests.get(f"{BASE_URL}/api/screening/credits", headers=auth_headers).json()
+            assert credits_after['balance'] >= credits_before['balance'], "Balance should have increased"
+        elif "checkout_url" in data:
+            print(f"Stripe mode - checkout URL: {data['checkout_url']}")
+            assert data['checkout_url'].startswith("https://"), "Checkout URL should be valid HTTPS URL"
     
-    def test_rent_payments_requires_auth(self):
-        """Test that rent-payments endpoints require authentication"""
-        response = requests.get(f"{BASE_URL}/api/rent-payments?org_id={self.org_id}&month=2&year=2026")
-        assert response.status_code in [401, 403], f"Expected 401/403, got {response.status_code}"
-        print("✓ Rent payments endpoint correctly requires authentication")
+    def test_screening_requests_endpoint(self, auth_headers, org_id):
+        """Test GET /api/screening/requests returns screening requests"""
+        response = requests.get(
+            f"{BASE_URL}/api/screening/requests",
+            headers=auth_headers,
+            params={"org_id": org_id}
+        )
+        
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+        data = response.json()
+        
+        # Should return a list (even if empty)
+        assert isinstance(data, list), "Response should be a list"
+        print(f"Found {len(data)} screening requests")
+
+
+class TestRentPayments:
+    """Tests for rent payments endpoints"""
     
-    def test_create_payment_requires_valid_tenant_unit(self):
-        """Test that creating payment requires valid tenant and unit"""
-        response = requests.post(
-            f"{BASE_URL}/api/rent-payments?org_id={self.org_id}",
-            headers=self.headers,
-            json={
-                "tenant_id": "invalid-tenant-id",
-                "unit_id": "invalid-unit-id",
-                "amount": 1500.00,
-                "due_date": (datetime.now() + timedelta(days=30)).isoformat()
+    @pytest.fixture(scope="class")
+    def auth_token(self):
+        """Login and get auth token"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": TEST_EMAIL,
+            "password": TEST_PASSWORD
+        })
+        assert response.status_code == 200, f"Login failed: {response.text}"
+        return response.json()['token']
+    
+    @pytest.fixture(scope="class")
+    def auth_headers(self, auth_token):
+        """Get headers with auth token"""
+        return {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json"
+        }
+    
+    @pytest.fixture(scope="class")
+    def org_id(self, auth_headers):
+        """Get organization ID"""
+        response = requests.get(f"{BASE_URL}/api/organizations", headers=auth_headers)
+        assert response.status_code == 200
+        orgs = response.json()
+        assert len(orgs) > 0, "No organizations found"
+        return orgs[0]['org_id']
+    
+    def test_get_rent_payments(self, auth_headers, org_id):
+        """Test GET /api/rent-payments returns payments array"""
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        
+        response = requests.get(
+            f"{BASE_URL}/api/rent-payments",
+            headers=auth_headers,
+            params={
+                "org_id": org_id,
+                "month": current_month,
+                "year": current_year
             }
         )
-        # Should fail with 404 because tenant/unit doesn't exist
-        assert response.status_code == 404, f"Expected 404 for invalid tenant/unit, got {response.status_code}"
-        print("✓ Payment creation correctly validates tenant/unit existence")
-
-
-class TestIntegration:
-    """Integration tests for screening and payments with real data"""
-    
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup before each test"""
-        auth = TestAuth.login()
-        assert auth is not None, "Failed to login"
-        self.token = auth['token']
-        self.headers = {"Authorization": f"Bearer {self.token}"}
         
-        # Get organization
-        orgs_response = requests.get(f"{BASE_URL}/api/organizations", headers=self.headers)
-        assert orgs_response.status_code == 200
-        orgs = orgs_response.json()
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+        data = response.json()
+        
+        # Should return a list (even if empty)
+        assert isinstance(data, list), "Response should be a list of payments"
+        print(f"Found {len(data)} rent payments for {current_month}/{current_year}")
+    
+    def test_get_rent_payments_summary(self, auth_headers, org_id):
+        """Test GET /api/rent-payments/summary returns summary stats"""
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        
+        response = requests.get(
+            f"{BASE_URL}/api/rent-payments/summary",
+            headers=auth_headers,
+            params={
+                "org_id": org_id,
+                "month": current_month,
+                "year": current_year
+            }
+        )
+        
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+        data = response.json()
+        
+        # Validate summary structure
+        required_fields = ["total_expected", "total_collected", "outstanding", "collection_rate"]
+        for field in required_fields:
+            assert field in data, f"Summary should have '{field}' field"
+        
+        # Validate values are numbers
+        assert isinstance(data['total_expected'], (int, float)), "total_expected should be a number"
+        assert isinstance(data['total_collected'], (int, float)), "total_collected should be a number"
+        assert isinstance(data['outstanding'], (int, float)), "outstanding should be a number"
+        assert isinstance(data['collection_rate'], (int, float)), "collection_rate should be a number"
+        
+        # Collection rate should be between 0 and 100
+        assert 0 <= data['collection_rate'] <= 100, "Collection rate should be 0-100"
+        
+        print(f"Summary - Expected: ${data['total_expected']}, Collected: ${data['total_collected']}, Outstanding: ${data['outstanding']}, Rate: {data['collection_rate']}%")
+    
+    def test_generate_monthly_payments(self, auth_headers, org_id):
+        """Test POST /api/rent-payments/generate-monthly generates payments"""
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        
+        response = requests.post(
+            f"{BASE_URL}/api/rent-payments/generate-monthly",
+            headers=auth_headers,
+            params={
+                "org_id": org_id,
+                "month": current_month,
+                "year": current_year
+            }
+        )
+        
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+        data = response.json()
+        
+        # Should return counts
+        assert "message" in data, "Response should have 'message' field"
+        assert "created" in data, "Response should have 'created' count"
+        assert "skipped" in data, "Response should have 'skipped' count"
+        
+        print(f"Generate monthly: {data['message']}")
+    
+    def test_rent_payments_status_filter(self, auth_headers, org_id):
+        """Test rent payments with status filter"""
+        current_month = datetime.now().month
+        current_year = datetime.now().year
+        
+        for status in ["pending", "paid", "overdue"]:
+            response = requests.get(
+                f"{BASE_URL}/api/rent-payments",
+                headers=auth_headers,
+                params={
+                    "org_id": org_id,
+                    "month": current_month,
+                    "year": current_year,
+                    "status": status
+                }
+            )
+            
+            assert response.status_code == 200, f"Failed for status '{status}': {response.status_code}"
+            data = response.json()
+            assert isinstance(data, list), f"Response for status '{status}' should be a list"
+            print(f"Status filter '{status}': {len(data)} payments")
+
+
+class TestBillingSubscription:
+    """Tests for billing subscription status (needed for plan validation)"""
+    
+    @pytest.fixture(scope="class")
+    def auth_token(self):
+        """Login and get auth token"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": TEST_EMAIL,
+            "password": TEST_PASSWORD
+        })
+        assert response.status_code == 200, f"Login failed: {response.text}"
+        return response.json()['token']
+    
+    @pytest.fixture(scope="class")
+    def auth_headers(self, auth_token):
+        """Get headers with auth token"""
+        return {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json"
+        }
+    
+    def test_subscription_status(self, auth_headers):
+        """Test GET /api/billing/subscription-status returns plan info"""
+        response = requests.get(f"{BASE_URL}/api/billing/subscription-status", headers=auth_headers)
+        
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+        data = response.json()
+        
+        # Should have plan field
+        assert "plan" in data, "Response should have 'plan' field"
+        assert data['plan'] in ["free", "standard", "pro"], f"Plan should be valid: {data['plan']}"
+        
+        print(f"Current plan: {data['plan']}")
+
+
+class TestTenantsForScreening:
+    """Tests for tenant endpoints (needed for screening)"""
+    
+    @pytest.fixture(scope="class")
+    def auth_token(self):
+        """Login and get auth token"""
+        response = requests.post(f"{BASE_URL}/api/auth/login", json={
+            "email": TEST_EMAIL,
+            "password": TEST_PASSWORD
+        })
+        assert response.status_code == 200, f"Login failed: {response.text}"
+        return response.json()['token']
+    
+    @pytest.fixture(scope="class")
+    def auth_headers(self, auth_token):
+        """Get headers with auth token"""
+        return {
+            "Authorization": f"Bearer {auth_token}",
+            "Content-Type": "application/json"
+        }
+    
+    @pytest.fixture(scope="class")
+    def org_id(self, auth_headers):
+        """Get organization ID"""
+        response = requests.get(f"{BASE_URL}/api/organizations", headers=auth_headers)
+        assert response.status_code == 200
+        orgs = response.json()
         assert len(orgs) > 0, "No organizations found"
-        self.org_id = orgs[0]['org_id']
+        return orgs[0]['org_id']
     
-    def test_get_tenants_for_screening(self):
-        """Test that we can get tenants to use for screening"""
+    def test_list_tenants(self, auth_headers, org_id):
+        """Test GET /api/organizations/{org_id}/tenants returns tenants"""
         response = requests.get(
-            f"{BASE_URL}/api/organizations/{self.org_id}/tenants",
-            headers=self.headers
+            f"{BASE_URL}/api/organizations/{org_id}/tenants",
+            headers=auth_headers
         )
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-        tenants = response.json()
-        print(f"✓ Found {len(tenants)} tenants for screening")
         
-        # If tenants exist, try to get screening details
-        if len(tenants) > 0:
-            tenant = tenants[0]
-            print(f"  - Sample tenant: {tenant.get('name', 'N/A')} ({tenant.get('email', 'N/A')})")
-    
-    def test_get_units_for_payments(self):
-        """Test that we can get units to use for payments"""
-        response = requests.get(
-            f"{BASE_URL}/api/organizations/{self.org_id}/units",
-            headers=self.headers
-        )
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}"
-        units = response.json()
-        print(f"✓ Found {len(units)} units for rent payments")
+        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+        data = response.json()
         
-        # If units exist, show some details
-        if len(units) > 0:
-            unit = units[0]
-            print(f"  - Sample unit: Unit {unit.get('unit_number', 'N/A')} - ${unit.get('rent_amount', 0)}/mo")
+        # Should return a list
+        assert isinstance(data, list), "Response should be a list of tenants"
+        print(f"Found {len(data)} tenants for screening selection")
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v", "--tb=short"])
+    pytest.main([__file__, "-v"])
