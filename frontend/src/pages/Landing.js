@@ -120,13 +120,13 @@ const stats = [
 const pricingPlans = {
   monthly: {
     free: { price: 0, period: '/month' },
-    standard: { price: 29, period: '/month' },
-    pro: { price: 99, period: '/month' }
+    standard: { price: 49, period: '/month' },
+    pro: { price: 149, period: '/month' }
   },
   annual: {
     free: { price: 0, period: '/month' },
-    standard: { price: 24, period: '/month', savings: 'Save $60/year' },
-    pro: { price: 82, period: '/month', savings: 'Save $204/year' }
+    standard: { price: 39, period: '/month', savings: 'Save $120/year' },
+    pro: { price: 119, period: '/month', savings: 'Save $360/year' }
   }
 };
 
@@ -135,32 +135,33 @@ const planFeatures = {
     { text: 'Up to 2 properties', included: true },
     { text: 'Up to 5 units', included: true },
     { text: '1 team member', included: true },
-    { text: 'Basic maintenance tracking', included: true }
+    { text: 'Basic document storage', included: true },
+    { text: 'Basic maintenance requests', included: true }
   ],
   standard: [
     { text: 'Up to 20 properties', included: true },
     { text: 'Up to 40 units', included: true },
     { text: '5 team members', included: true },
     { text: 'Full inspection workflows', included: true },
-    { text: 'Document storage (10GB)', included: true },
-    { text: 'Calendar integrations', included: true },
-    { text: 'Maintenance requests', included: true },
-    { text: 'Email notifications', included: true }
+    { text: '10GB document storage', included: true },
+    { text: 'Tenant Portal with photo uploads', included: true },
+    { text: 'Email notifications', included: true },
+    { text: 'Maintenance request system', included: true },
+    { text: 'Basic reporting', included: true }
   ],
   pro: [
     { text: 'Unlimited properties', included: true },
     { text: 'Unlimited units', included: true },
     { text: 'Unlimited team members', included: true },
     { text: 'Full inspection workflows', included: true },
-    { text: 'Document storage (100GB)', included: true },
+    { text: '100GB document storage', included: true },
+    { text: 'Tenant Portal with photo uploads', included: true },
+    { text: 'Contractor Portal access', included: true },
+    { text: 'One-tap contractor assignment', included: true },
     { text: '24/7 priority support', included: true },
     { text: 'Advanced analytics', included: true },
-    { text: 'Calendar integrations', included: true },
     { text: 'Full API access', included: true },
-    { text: 'Tenant Portal access', included: true },
-    { text: 'Real-time tenant messaging', included: true },
-    { text: 'Maintenance requests', included: true },
-    { text: 'Priority work orders', included: true }
+    { text: 'Custom branding', included: true }
   ]
 };
 
