@@ -4562,6 +4562,13 @@ async def send_team_invite_email(email: str, inviter_name: str, org_name: str, r
 # Include the router in the main app
 app.include_router(api_router)
 
+# Include new modular routers
+from routers.screening import router as screening_router
+from routers.payments import router as payments_router
+
+app.include_router(screening_router, prefix="/api")
+app.include_router(payments_router, prefix="/api")
+
 # Mount static files for uploads
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 
