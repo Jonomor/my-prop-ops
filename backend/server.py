@@ -3136,81 +3136,14 @@ async def get_tenant_rent_payments(tenant = Depends(get_current_tenant)):
     
     return payments
 
-class TenantPayRentRequest(BaseModel):
-    return_url: str = None
-
-@api_router.post("/tenant-portal/pay-rent/{payment_id}")
-async def tenant_pay_rent_online(
-    payment_id: str,
-    data: TenantPayRentRequest,
-    tenant = Depends(get_current_tenant)
-):
-    """Create Stripe checkout session for tenant to pay rent"""
-    # Get the payment record
-    payment = await db.rent_payments.find_one({"id": payment_id}, {"_id": 0})
-    if not payment:
-        raise HTTPException(status_code=404, detail="Payment not found")
-    
-    # Verify tenant is linked to this payment's organization
-    if tenant.get("org_id") != payment.get("org_id"):
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    # Calculate amount due
-    amount_due = payment["amount"] - payment.get("paid_amount", 0)
-    if amount_due <= 0:
-        raise HTTPException(status_code=400, detail="Payment already completed")
-    
-    # Convert to cents for Stripe
-    amount_cents = int(amount_due * 100)
-    
-    try:
-        stripe.api_key = STRIPE_API_KEY
-        
-        # Get organization for Stripe account (if connected)
-        org = await db.organizations.find_one({"id": payment["org_id"]})
-        
-        # Create Stripe checkout session
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[{
-                "price_data": {
-                    "currency": "usd",
-                    "product_data": {
-                        "name": f"Rent Payment - {payment.get('property_name', 'Property')}",
-                        "description": f"Rent for {payment.get('unit_number', 'Unit')} - Due {payment.get('due_date', '')[:10]}"
-                    },
-                    "unit_amount": amount_cents,
-                },
-                "quantity": 1,
-            }],
-            mode="payment",
-            success_url=data.return_url or f"{os.environ.get('FRONTEND_URL', '')}/tenant-portal?payment=success",
-            cancel_url=data.return_url or f"{os.environ.get('FRONTEND_URL', '')}/tenant-portal?payment=canceled",
-            metadata={
-                "payment_id": payment_id,
-                "org_id": payment["org_id"],
-                "tenant_id": payment["tenant_id"],
-                "type": "rent_payment"
-            }
-        )
-        
-        # Store pending transaction
-        await db.rent_payment_transactions.insert_one({
-            "id": str(uuid.uuid4()),
-            "payment_id": payment_id,
-            "org_id": payment["org_id"],
-            "tenant_portal_id": tenant["id"],
-            "session_id": checkout_session.id,
-            "amount": amount_due,
-            "status": "pending",
-            "created_at": datetime.now(timezone.utc).isoformat()
-        })
-        
-        return {"checkout_url": checkout_session.url}
-        
-    except Exception as e:
-        logger.error(f"Stripe checkout error for rent payment: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+# NOTE: Online rent payment collection removed - requires Stripe Connect for proper implementation
+# The endpoint below is disabled. Landlords collect payments externally and mark as paid manually.
+# class TenantPayRentRequest(BaseModel):
+#     return_url: str = None
+#
+# @api_router.post("/tenant-portal/pay-rent/{payment_id}")
+# async def tenant_pay_rent_online(...):
+#     ... (see git history for implementation if Stripe Connect is added)
 
 
 # Tenant Portal - Submit Maintenance Request
