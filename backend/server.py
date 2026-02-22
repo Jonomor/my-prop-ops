@@ -5905,13 +5905,31 @@ async def get_current_admin(authorization: str = Header(None)):
         raise HTTPException(status_code=401, detail="Invalid admin token")
 
 @api_router.post("/admin/login")
-async def admin_login(data: AdminLoginRequest):
-    """Admin login endpoint"""
+async def admin_login(data: AdminLoginRequest, request: Request):
+    """Admin login endpoint with rate limiting"""
+    client_ip = get_client_ip(request)
+    rate_key = f"admin:{client_ip}"
+    
+    # Strict rate limiting for admin - 3 attempts per 10 minutes
+    admin_limiter = RateLimiter(max_attempts=3, window_seconds=600)
+    
+    if login_rate_limiter.is_rate_limited(rate_key):
+        remaining = login_rate_limiter.get_remaining_time(rate_key)
+        raise HTTPException(
+            status_code=429, 
+            detail=f"Too many login attempts. Please try again in {remaining} seconds."
+        )
+    
     if data.email not in ADMIN_CREDENTIALS:
+        login_rate_limiter.record_attempt(rate_key)
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if data.password != ADMIN_CREDENTIALS[data.email]:
+        login_rate_limiter.record_attempt(rate_key)
         raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Clear rate limit on successful login
+    login_rate_limiter.clear(rate_key)
     
     token = jwt.encode({
         "type": "admin",
