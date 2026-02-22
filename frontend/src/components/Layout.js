@@ -34,14 +34,18 @@ import {
   UserPlus,
   Mail,
   CreditCard,
-  Wrench
+  Wrench,
+  Search,
+  DollarSign
 } from 'lucide-react';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: Home },
   { path: '/properties', label: 'Properties', icon: Building2 },
   { path: '/tenants', label: 'Tenants', icon: Users },
+  { path: '/screening', label: 'Screening', icon: Search },
   { path: '/maintenance', label: 'Maintenance', icon: Wrench },
+  { path: '/rent-payments', label: 'Rent Payments', icon: DollarSign },
   { path: '/inspections', label: 'Inspections', icon: ClipboardCheck },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/documents', label: 'Documents', icon: FileText },
