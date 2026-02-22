@@ -538,7 +538,7 @@ const Landing = () => {
               </div>
             </div>
 
-            {/* Video 5: Whole Team */}
+            {/* Video 4: Whole Team */}
             <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
               <video 
                 className="w-full aspect-video object-cover"
