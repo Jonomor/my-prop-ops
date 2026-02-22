@@ -6060,7 +6060,8 @@ async def create_admin_blog_post(post: AdminBlogPost, admin = Depends(get_curren
     }
     
     await db.blog_posts.insert_one(blog_post)
-    del blog_post["_id"] if "_id" in blog_post else None
+    if "_id" in blog_post:
+        del blog_post["_id"]
     
     return blog_post
 
