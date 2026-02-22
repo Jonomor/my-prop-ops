@@ -5881,8 +5881,23 @@ async def get_admin_organizations(admin = Depends(get_current_admin)):
         org["property_count"] = await db.properties.count_documents({"org_id": org["id"]})
         org["unit_count"] = await db.units.count_documents({"org_id": org["id"]})
         
-        # Get owner email
-        owner = await db.users.find_one({"id": org.get("owner_id")}, {"email": 1})
+        # Get owner email - first try owner_id, then fall back to first admin membership
+        owner = None
+        if org.get("owner_id"):
+            owner = await db.users.find_one({"id": org.get("owner_id")}, {"_id": 0, "email": 1})
+        
+        if not owner:
+            # Fall back to first admin membership
+            admin_membership = await db.memberships.find_one(
+                {"org_id": org["id"], "role": "admin"},
+                {"_id": 0, "user_id": 1}
+            )
+            if admin_membership:
+                owner = await db.users.find_one(
+                    {"id": admin_membership["user_id"]},
+                    {"_id": 0, "email": 1}
+                )
+        
         org["owner_email"] = owner.get("email") if owner else "Unknown"
     
     return organizations
