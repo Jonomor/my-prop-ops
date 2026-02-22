@@ -879,36 +879,32 @@ const Landing = () => {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
             {/* Free Plan */}
             <Card className="glass relative overflow-hidden">
-              <CardContent className="p-8">
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold font-heading">Free</h3>
-                  <p className="text-muted-foreground">Perfect for getting started</p>
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold font-heading">Free</h3>
+                  <p className="text-sm text-muted-foreground">Perfect for getting started</p>
                 </div>
-                <div className="mb-6">
-                  <span className="text-5xl font-bold font-heading">${pricingPlans[billingPeriod].free.price}</span>
-                  <span className="text-muted-foreground">{pricingPlans[billingPeriod].free.period}</span>
+                <div className="mb-4">
+                  <span className="text-4xl font-bold font-heading">${pricingPlans[billingPeriod].free.price}</span>
+                  <span className="text-muted-foreground text-sm">{pricingPlans[billingPeriod].free.period}</span>
                 </div>
-                <p className="text-sm text-green-600 font-medium mb-6 flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
+                <p className="text-xs text-green-600 font-medium mb-4 flex items-center gap-1">
+                  <CheckCircle className="w-3 h-3" />
                   Free forever, not a trial
                 </p>
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2 mb-6">
                   {planFeatures.free.map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      {item.included ? (
-                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      ) : (
-                        <X className="w-5 h-5 text-muted-foreground/50 flex-shrink-0" />
-                      )}
-                      <span className={item.included ? '' : 'text-muted-foreground/50'}>{item.text}</span>
+                    <li key={i} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span>{item.text}</span>
                     </li>
                   ))}
                 </ul>
                 <Link to="/register" className="block">
-                  <Button className="w-full" size="lg" variant="outline" data-testid="pricing-free-btn">
+                  <Button className="w-full" variant="outline" data-testid="pricing-free-btn">
                     Start Free
                   </Button>
                 </Link>
@@ -916,41 +912,34 @@ const Landing = () => {
             </Card>
             
             {/* Standard Plan */}
-            <Card className="glass relative overflow-hidden border-primary border-2 scale-105">
-              <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-center text-sm font-medium py-1.5">
+            <Card className="glass relative overflow-hidden border-primary border-2">
+              <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-center text-xs font-medium py-1">
                 MOST POPULAR
               </div>
-              <CardContent className="p-8 pt-12">
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold font-heading">Standard</h3>
-                  <p className="text-muted-foreground">For growing portfolios</p>
+              <CardContent className="p-6 pt-10">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold font-heading">Standard</h3>
+                  <p className="text-sm text-muted-foreground">For growing portfolios</p>
                 </div>
                 <div className="mb-2">
-                  <span className="text-5xl font-bold font-heading">${pricingPlans[billingPeriod].standard.price}</span>
-                  <span className="text-muted-foreground">{pricingPlans[billingPeriod].standard.period}</span>
+                  <span className="text-4xl font-bold font-heading">${pricingPlans[billingPeriod].standard.price}</span>
+                  <span className="text-muted-foreground text-sm">{pricingPlans[billingPeriod].standard.period}</span>
                 </div>
                 {pricingPlans[billingPeriod].standard.savings && (
-                  <p className="text-sm text-green-600 font-medium mb-4">
+                  <p className="text-xs text-green-600 font-medium mb-4">
                     {pricingPlans[billingPeriod].standard.savings}
                   </p>
                 )}
-                <p className="text-sm text-muted-foreground mb-6">
-                  {billingPeriod === 'annual' ? 'Billed annually' : 'Billed monthly'}. Cancel anytime.
-                </p>
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2 mb-6">
                   {planFeatures.standard.map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      {item.included ? (
-                        <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-                      ) : (
-                        <X className="w-5 h-5 text-muted-foreground/50 flex-shrink-0" />
-                      )}
-                      <span className={item.included ? '' : 'text-muted-foreground/50'}>{item.text}</span>
+                    <li key={i} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span>{item.text}</span>
                     </li>
                   ))}
                 </ul>
                 <Link to="/register" className="block">
-                  <Button className="w-full btn-active" size="lg" data-testid="pricing-standard-btn">
+                  <Button className="w-full btn-active" data-testid="pricing-standard-btn">
                     Start Free, Upgrade Later
                   </Button>
                 </Link>
@@ -959,34 +948,66 @@ const Landing = () => {
 
             {/* Pro Plan */}
             <Card className="glass relative overflow-hidden">
-              <CardContent className="p-8">
-                <div className="mb-6">
-                  <h3 className="text-2xl font-bold font-heading">Pro</h3>
-                  <p className="text-muted-foreground">For large portfolios</p>
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold font-heading">Pro</h3>
+                  <p className="text-sm text-muted-foreground">For large portfolios</p>
                 </div>
                 <div className="mb-2">
-                  <span className="text-5xl font-bold font-heading">${pricingPlans[billingPeriod].pro.price}</span>
-                  <span className="text-muted-foreground">{pricingPlans[billingPeriod].pro.period}</span>
+                  <span className="text-4xl font-bold font-heading">${pricingPlans[billingPeriod].pro.price}</span>
+                  <span className="text-muted-foreground text-sm">{pricingPlans[billingPeriod].pro.period}</span>
                 </div>
                 {pricingPlans[billingPeriod].pro.savings && (
-                  <p className="text-sm text-green-600 font-medium mb-4">
+                  <p className="text-xs text-green-600 font-medium mb-4">
                     {pricingPlans[billingPeriod].pro.savings}
                   </p>
                 )}
-                <p className="text-sm text-muted-foreground mb-6">
-                  {billingPeriod === 'annual' ? 'Billed annually' : 'Billed monthly'}. Cancel anytime.
-                </p>
-                <ul className="space-y-3 mb-8">
+                <ul className="space-y-2 mb-6">
                   {planFeatures.pro.map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+                    <li key={i} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                       <span>{item.text}</span>
                     </li>
                   ))}
                 </ul>
                 <Link to="/register" className="block">
-                  <Button className="w-full" size="lg" variant="outline" data-testid="pricing-pro-btn">
+                  <Button className="w-full" variant="outline" data-testid="pricing-pro-btn">
                     Start Free, Upgrade Later
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Enterprise Plan */}
+            <Card className="glass relative overflow-hidden border-purple-500/50">
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold font-heading flex items-center gap-2">
+                    Enterprise
+                    <span className="text-xs bg-purple-100 dark:bg-purple-950/50 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">Premium</span>
+                  </h3>
+                  <p className="text-sm text-muted-foreground">For large property management companies</p>
+                </div>
+                <div className="mb-2">
+                  <span className="text-4xl font-bold font-heading">${pricingPlans[billingPeriod].enterprise.price}</span>
+                  <span className="text-muted-foreground text-sm">{pricingPlans[billingPeriod].enterprise.period}</span>
+                </div>
+                {pricingPlans[billingPeriod].enterprise.savings && (
+                  <p className="text-xs text-green-600 font-medium mb-4">
+                    {pricingPlans[billingPeriod].enterprise.savings}
+                  </p>
+                )}
+                <ul className="space-y-2 mb-6">
+                  {planFeatures.enterprise.map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm">
+                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span>{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/register" className="block">
+                  <Button className="w-full" variant="outline" data-testid="pricing-enterprise-btn">
+                    Contact Sales
                   </Button>
                 </Link>
               </CardContent>
