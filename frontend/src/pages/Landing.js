@@ -220,7 +220,7 @@ const Landing = () => {
               <Link to="/tenant-portal/login" className="text-emerald-600 hover:text-emerald-700 transition-colors font-medium">For Tenants</Link>
               <Link to="/contractor/login" className="text-orange-600 hover:text-orange-700 transition-colors font-medium">For Contractors</Link>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-4">
               <Link to="/login">
                 <Button variant="ghost" data-testid="nav-login">Sign In</Button>
               </Link>
@@ -228,9 +228,36 @@ const Landing = () => {
                 <Button data-testid="nav-get-started">Start Free</Button>
               </Link>
             </div>
+            {/* Mobile: Just show Sign In and Start Free */}
+            <div className="flex sm:hidden items-center gap-2">
+              <Link to="/login">
+                <Button variant="ghost" size="sm">Sign In</Button>
+              </Link>
+              <Link to="/register">
+                <Button size="sm">Start Free</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </nav>
+
+      {/* Mobile Navigation Bar - Fixed at bottom on mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t border-border safe-bottom">
+        <div className="flex items-center justify-around h-14">
+          <a href="#features" className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground hover:text-foreground">
+            <span className="text-xs">Features</span>
+          </a>
+          <a href="#pricing" className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground hover:text-foreground">
+            <span className="text-xs">Pricing</span>
+          </a>
+          <Link to="/blog" className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground hover:text-foreground">
+            <span className="text-xs">Blog</span>
+          </Link>
+          <Link to="/about" className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground hover:text-foreground">
+            <span className="text-xs">About</span>
+          </Link>
+        </div>
+      </div>
 
       {/* Hero Section */}
       <section className="pt-28 pb-16 px-4 sm:px-6 lg:px-8" data-testid="hero-section">
