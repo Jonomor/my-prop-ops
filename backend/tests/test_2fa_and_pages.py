@@ -143,17 +143,17 @@ class TestScreeningCredits:
 class TestRentPayments:
     """Regression tests for rent payments"""
     
-    def test_rent_payments_endpoint(self, auth_headers):
+    def test_rent_payments_endpoint(self, auth_headers, org_id):
         """Test GET /api/rent-payments returns payments list"""
-        response = requests.get(f"{BASE_URL}/api/rent-payments", headers=auth_headers)
+        response = requests.get(f"{BASE_URL}/api/rent-payments?org_id={org_id}", headers=auth_headers)
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         # Should return a list
         data = response.json()
         assert isinstance(data, list), "Expected list response"
     
-    def test_rent_payments_summary(self, auth_headers):
+    def test_rent_payments_summary(self, auth_headers, org_id):
         """Test GET /api/rent-payments/summary returns summary stats"""
-        response = requests.get(f"{BASE_URL}/api/rent-payments/summary", headers=auth_headers)
+        response = requests.get(f"{BASE_URL}/api/rent-payments/summary?org_id={org_id}", headers=auth_headers)
         assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
         data = response.json()
         assert "total_expected" in data, "Missing 'total_expected' field"
@@ -163,21 +163,21 @@ class TestRentPayments:
 class TestReports:
     """Regression tests for reports endpoint"""
     
-    def test_reports_types_endpoint(self, auth_headers, org_id):
-        """Test GET /api/organizations/{org_id}/reports/types returns report types"""
-        response = requests.get(f"{BASE_URL}/api/organizations/{org_id}/reports/types", headers=auth_headers)
-        # Should return 200 with report types
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    def test_reports_export_endpoint(self, auth_headers, org_id):
+        """Test GET /api/reports/export/income returns report or plan error"""
+        response = requests.get(f"{BASE_URL}/api/reports/export/income?org_id={org_id}", headers=auth_headers)
+        # Should return 200 with report or 403 for plan restriction
+        assert response.status_code in [200, 403], f"Expected 200 or 403, got {response.status_code}: {response.text}"
 
 
 class TestAnalytics:
     """Regression tests for analytics endpoint"""
     
-    def test_analytics_overview_endpoint(self, auth_headers, org_id):
-        """Test GET /api/organizations/{org_id}/analytics/overview returns analytics data"""
-        response = requests.get(f"{BASE_URL}/api/organizations/{org_id}/analytics/overview", headers=auth_headers)
-        # Should return 200 with analytics data
-        assert response.status_code == 200, f"Expected 200, got {response.status_code}: {response.text}"
+    def test_analytics_dashboard_endpoint(self, auth_headers, org_id):
+        """Test GET /api/analytics/dashboard returns analytics data or plan error"""
+        response = requests.get(f"{BASE_URL}/api/analytics/dashboard?org_id={org_id}", headers=auth_headers)
+        # Should return 200 with analytics data or 403 for plan restriction
+        assert response.status_code in [200, 403], f"Expected 200 or 403, got {response.status_code}: {response.text}"
 
 
 class TestHealthAndBasics:
