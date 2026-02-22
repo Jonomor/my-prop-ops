@@ -172,7 +172,9 @@ const Security = () => {
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="font-medium">Data Processing Agreement</p>
-                      <p className="text-sm text-muted-foreground">DPA available for enterprise customers upon request</p>
+                      <p className="text-sm text-muted-foreground">
+                        <Link to="/dpa" className="text-primary hover:underline">DPA available</Link> for enterprise customers upon request
+                      </p>
                     </div>
                   </li>
                 </ul>
