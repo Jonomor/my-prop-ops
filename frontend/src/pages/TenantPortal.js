@@ -75,6 +75,8 @@ const TenantPortal = () => {
   const [messages, setMessages] = useState([]);
   const [selectedConversation, setSelectedConversation] = useState(null);
   const [newMessage, setNewMessage] = useState('');
+  const [rentPayments, setRentPayments] = useState([]);
+  const [processingPayment, setProcessingPayment] = useState(false);
   
   // Maintenance request form
   const [maintenanceDialogOpen, setMaintenanceDialogOpen] = useState(false);
