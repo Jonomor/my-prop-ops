@@ -29,6 +29,8 @@ import Terms from './pages/Terms';
 import Security from './pages/Security';
 import Billing from './pages/Billing';
 import Maintenance from './pages/Maintenance';
+import Screening from './pages/Screening';
+import RentPayments from './pages/RentPayments';
 
 // Tenant Portal Pages
 import TenantLogin from './pages/TenantLogin';
