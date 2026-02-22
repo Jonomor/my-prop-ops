@@ -1,8 +1,32 @@
 # MyPropOps - Product Requirements Document
 
-## Latest Update: February 22, 2026
+## Latest Update: February 22, 2026 (Session 2)
 
 ### Completed This Session:
+
+#### Pricing Feature Alignment (COMPLETE)
+- ✅ Added "AI-Powered Insights Dashboard" to Pro tier on Landing page and Billing API
+- ✅ Added "Rent payment tracking" to Standard tier on Landing page and Billing API
+- ✅ All pricing features now match between Landing page, Billing page, and Backend API
+
+#### Online Rent Collection REMOVED
+- ❌ **Removed "Pay Now" button** from Tenant Portal - Online rent collection requires Stripe Connect for proper payment routing to landlords
+- ✅ **Kept "Rent Payments" tab** - Tenants can view payment history and upcoming dues
+- ✅ **Added "Contact your property manager for payment options" message**
+- **Reason:** Without Stripe Connect, payments would go to the platform instead of landlords. This is a Phase 2 feature.
+
+#### Contractor Assignment Verified (WORKING)
+- ✅ Backend endpoint `/api/maintenance-requests/{id}/assign-contractor` working
+- ✅ Frontend contractor dropdown in Maintenance page working
+- ✅ Test contractor "John Plumber" connected to test organization
+- ✅ Email notifications sent to contractors on assignment
+
+#### Bug Fix (Testing Agent)
+- ✅ Fixed SelectItem empty value bug in Maintenance.js causing runtime errors
+
+---
+
+### Previously Completed:
 
 #### Pricing Restructure (COMPLETE)
 - ✅ Removed Enterprise tier - now 3 tiers: Free, Standard ($39/mo), Pro ($119/mo)
@@ -36,12 +60,11 @@
 - Frontend page: `/ai-insights`
 - Uses: emergentintegrations with GPT-4o model
 
-#### Online Tenant Rent Payment (COMPLETE)
-- ✅ **Pay Rent tab** in Tenant Portal
-- ✅ **Stripe integration** for secure card payments
+#### Tenant Rent Payment Tracking (COMPLETE - View Only)
+- ✅ **Pay Rent tab** in Tenant Portal (view history only)
 - ✅ **Payment summary** - Total due, pending payments, paid this year
-- ✅ **Checkout flow** - Stripe Checkout for rent payment
-- Backend endpoints: `/api/tenant-portal/rent-payments`, `/api/tenant-portal/pay-rent/{payment_id}`
+- ❌ Online payment via Stripe REMOVED (requires Stripe Connect)
+- Backend endpoint: `/api/tenant-portal/rent-payments`
 
 #### Tenant Screening with Credits System (COMPLETE)
 - ✅ **Pay-per-use tenant screening** - Revenue stream for the platform
