@@ -98,4 +98,4 @@ tenant_portal_users, notifications, documents
 ## Deployment Command (Emergent Platform)
 The application is ready for deployment via the Emergent Platform's deployment feature.
 
-**Preview URL**: https://housing-ops-dev.preview.emergentagent.com
+**Preview URL**: https://property-ops-dev.preview.emergentagent.com
