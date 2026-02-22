@@ -27,6 +27,22 @@
   - Plan-gated: Requires Pro
   - Backend endpoints: `/api/branding` (GET, POST)
 
+#### AI-Powered Insights Dashboard (COMPLETE)
+- ✅ **GPT-4 powered insights** - Executive summary, occupancy analysis, maintenance tips, revenue optimization, 3-month forecasts
+- ✅ **Ask AI Anything** - Custom question interface for portfolio analysis
+- ✅ **Quick stats dashboard** - Properties, Occupancy, Revenue, Open Maintenance
+- ✅ **Plan-gated**: Requires Pro plan
+- Backend endpoints: `/api/ai/insights`, `/api/ai/quick-stats`
+- Frontend page: `/ai-insights`
+- Uses: emergentintegrations with GPT-4o model
+
+#### Online Tenant Rent Payment (COMPLETE)
+- ✅ **Pay Rent tab** in Tenant Portal
+- ✅ **Stripe integration** for secure card payments
+- ✅ **Payment summary** - Total due, pending payments, paid this year
+- ✅ **Checkout flow** - Stripe Checkout for rent payment
+- Backend endpoints: `/api/tenant-portal/rent-payments`, `/api/tenant-portal/pay-rent/{payment_id}`
+
 #### Tenant Screening with Credits System (COMPLETE)
 - ✅ **Pay-per-use tenant screening** - Revenue stream for the platform
 - ✅ **Credit packages**: $39 (1), $175 (5), $320 (10 - Best Value), $725 (25)
