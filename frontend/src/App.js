@@ -201,6 +201,7 @@ function App() {
               <Route path="/*" element={<AppRoutes />} />
             </Routes>
             <Toaster position="top-right" richColors />
+            <PWAInstallPrompt />
           </TenantAuthProvider>
         </AuthProvider>
       </BrowserRouter>
