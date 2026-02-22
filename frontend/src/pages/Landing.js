@@ -160,7 +160,6 @@ const planFeatures = {
     { text: '100GB document storage', included: true },
     { text: 'AI-Powered Insights Dashboard', included: true },
     { text: 'Advanced analytics dashboard', included: true },
-    { text: 'Custom branding (logo & colors)', included: true },
     { text: 'API access with key management', included: true },
     { text: 'Two-factor authentication (2FA)', included: true },
     { text: 'Full audit logs', included: true },
