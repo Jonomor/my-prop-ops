@@ -345,6 +345,22 @@ const ContractorDashboard = () => {
                             </span>
                           )}
                         </div>
+                        
+                        {/* Action buttons */}
+                        <div className="flex gap-2 mt-3">
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openMessageDialog(job);
+                            }}
+                            data-testid={`message-btn-${job.id}`}
+                          >
+                            <MessageSquare className="w-4 h-4 mr-1" />
+                            Message Manager
+                          </Button>
+                        </div>
                       </div>
                       
                       <ChevronRight className="w-5 h-5 text-muted-foreground" />
