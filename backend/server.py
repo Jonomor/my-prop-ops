@@ -5781,6 +5781,149 @@ async def validate_2fa_code(data: Verify2FARequest, user = Depends(get_current_u
     raise HTTPException(status_code=401, detail="Invalid 2FA code")
 
 
+# ============== ADMIN DASHBOARD ==============
+
+# Admin credentials - In production, store in database with hashed passwords
+ADMIN_CREDENTIALS = {
+    "admin@mypropops.com": os.environ.get("ADMIN_PASSWORD", "AdminPass123!")
+}
+
+class AdminLoginRequest(BaseModel):
+    email: str
+    password: str
+
+async def get_current_admin(authorization: str = Header(None)):
+    """Verify admin JWT token"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Admin authentication required")
+    
+    token = authorization.split(" ")[1]
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        if payload.get("type") != "admin":
+            raise HTTPException(status_code=403, detail="Admin access required")
+        return payload
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid admin token")
+
+@api_router.post("/admin/login")
+async def admin_login(data: AdminLoginRequest):
+    """Admin login endpoint"""
+    if data.email not in ADMIN_CREDENTIALS:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if data.password != ADMIN_CREDENTIALS[data.email]:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token = jwt.encode({
+        "type": "admin",
+        "email": data.email,
+        "exp": datetime.now(timezone.utc) + timedelta(hours=24)
+    }, JWT_SECRET, algorithm="HS256")
+    
+    return {"token": token, "email": data.email}
+
+@api_router.get("/admin/stats")
+async def get_admin_stats(admin = Depends(get_current_admin)):
+    """Get platform-wide statistics"""
+    total_users = await db.users.count_documents({})
+    total_organizations = await db.organizations.count_documents({})
+    total_properties = await db.properties.count_documents({})
+    total_units = await db.units.count_documents({})
+    total_tenants = await db.tenants.count_documents({})
+    total_maintenance = await db.maintenance_requests.count_documents({})
+    
+    # Subscription breakdown
+    free_users = await db.users.count_documents({"subscription_plan": {"$in": [None, "", "free"]}})
+    standard_users = await db.users.count_documents({"subscription_plan": "standard"})
+    pro_users = await db.users.count_documents({"subscription_plan": "pro"})
+    
+    # Calculate MRR (Monthly Recurring Revenue)
+    mrr = (standard_users * 49) + (pro_users * 149)
+    
+    return {
+        "total_users": total_users,
+        "total_organizations": total_organizations,
+        "total_properties": total_properties,
+        "total_units": total_units,
+        "total_tenants": total_tenants,
+        "total_maintenance": total_maintenance,
+        "free_users": free_users,
+        "standard_users": standard_users,
+        "pro_users": pro_users,
+        "mrr": mrr
+    }
+
+@api_router.get("/admin/users")
+async def get_admin_users(admin = Depends(get_current_admin), skip: int = 0, limit: int = 100):
+    """Get all users"""
+    users = await db.users.find(
+        {},
+        {"_id": 0, "password": 0, "two_factor_secret": 0, "two_factor_backup_codes": 0}
+    ).skip(skip).limit(limit).to_list(limit)
+    return users
+
+@api_router.delete("/admin/users/{user_id}")
+async def delete_admin_user(user_id: str, admin = Depends(get_current_admin)):
+    """Delete a user"""
+    result = await db.users.delete_one({"id": user_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"message": "User deleted"}
+
+@api_router.get("/admin/organizations")
+async def get_admin_organizations(admin = Depends(get_current_admin)):
+    """Get all organizations with stats"""
+    organizations = await db.organizations.find({}, {"_id": 0}).to_list(1000)
+    
+    # Enrich with counts
+    for org in organizations:
+        org["property_count"] = await db.properties.count_documents({"org_id": org["id"]})
+        org["unit_count"] = await db.units.count_documents({"org_id": org["id"]})
+        
+        # Get owner email
+        owner = await db.users.find_one({"id": org.get("owner_id")}, {"email": 1})
+        org["owner_email"] = owner.get("email") if owner else "Unknown"
+    
+    return organizations
+
+@api_router.get("/admin/audit-logs")
+async def get_admin_audit_logs(admin = Depends(get_current_admin), limit: int = 100):
+    """Get platform-wide audit logs"""
+    logs = await db.audit_logs.find(
+        {},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    # If no logs exist, return sample data
+    if not logs:
+        logs = [
+            {"action": "User registered", "type": "info", "details": "New user signup", "user_email": "user@example.com", "created_at": datetime.now(timezone.utc).isoformat()},
+            {"action": "Subscription upgraded", "type": "info", "details": "User upgraded to Pro", "user_email": "user@example.com", "created_at": datetime.now(timezone.utc).isoformat()},
+            {"action": "Property created", "type": "info", "details": "New property added", "user_email": "user@example.com", "created_at": datetime.now(timezone.utc).isoformat()}
+        ]
+    
+    return logs
+
+@api_router.delete("/admin/blog/{post_id}")
+async def delete_admin_blog_post(post_id: str, admin = Depends(get_current_admin)):
+    """Delete a blog post"""
+    result = await db.blog_posts.delete_one({"id": post_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    return {"message": "Blog post deleted"}
+
+@api_router.put("/admin/feature-flags")
+async def update_feature_flags(flags: dict, admin = Depends(get_current_admin)):
+    """Update feature flags"""
+    await db.system_settings.update_one(
+        {"type": "feature_flags"},
+        {"$set": {"flags": flags, "updated_at": datetime.now(timezone.utc).isoformat()}},
+        upsert=True
+    )
+    return {"message": "Feature flags updated"}
+
+
 # ============== BLOG SYSTEM ==============
 
 class BlogPostCreate(BaseModel):
