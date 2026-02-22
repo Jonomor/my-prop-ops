@@ -154,6 +154,10 @@ const TenantPortal = () => {
         const res = await api.get('/api/portal/maintenance-requests');
         setMaintenanceRequests(res.data);
       }
+      if (activeTab === 'payments') {
+        const res = await api.get('/api/tenant-portal/rent-payments');
+        setRentPayments(res.data);
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
