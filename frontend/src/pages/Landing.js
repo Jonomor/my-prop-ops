@@ -121,12 +121,14 @@ const pricingPlans = {
   monthly: {
     free: { price: 0, period: '/month' },
     standard: { price: 49, period: '/month' },
-    pro: { price: 149, period: '/month' }
+    pro: { price: 149, period: '/month' },
+    enterprise: { price: 299, period: '/month' }
   },
   annual: {
     free: { price: 0, period: '/month' },
     standard: { price: 39, period: '/month', savings: 'Save $120/year' },
-    pro: { price: 119, period: '/month', savings: 'Save $360/year' }
+    pro: { price: 119, period: '/month', savings: 'Save $360/year' },
+    enterprise: { price: 239, period: '/month', savings: 'Save $720/year' }
   }
 };
 
@@ -162,6 +164,17 @@ const planFeatures = {
     { text: 'Advanced analytics', included: true },
     { text: 'Full API access', included: true },
     { text: 'Custom branding', included: true }
+  ],
+  enterprise: [
+    { text: 'Everything in Pro', included: true },
+    { text: 'Unlimited contractors', included: true },
+    { text: 'Dedicated account manager', included: true },
+    { text: 'Custom integrations', included: true },
+    { text: 'SLA guarantee (99.9% uptime)', included: true },
+    { text: 'Advanced security features', included: true },
+    { text: 'Custom training', included: true },
+    { text: 'White-label options', included: true },
+    { text: 'Priority feature requests', included: true }
   ]
 };
 
