@@ -193,22 +193,28 @@ const Screening = () => {
               Run comprehensive background checks on prospective tenants
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button 
               variant="outline"
               onClick={() => setBuyCreditsOpen(true)}
               data-testid="buy-credits-btn"
+              size="sm"
+              className="text-xs sm:text-sm"
             >
-              <Coins className="w-4 h-4 mr-2" />
-              Buy Credits
+              <Coins className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Buy Credits</span>
+              <span className="sm:hidden">Credits</span>
             </Button>
             <Button 
               onClick={() => setNewScreeningOpen(true)}
               disabled={!planAllowsScreening}
               data-testid="new-screening-btn"
+              size="sm"
+              className="text-xs sm:text-sm"
             >
-              <Search className="w-4 h-4 mr-2" />
-              New Screening
+              <Search className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">New Screening</span>
+              <span className="sm:hidden">New</span>
             </Button>
           </div>
         </div>
