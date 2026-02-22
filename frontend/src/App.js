@@ -41,6 +41,7 @@ import AIInsights from './pages/AIInsights';
 import About from './pages/About';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
+import DPA from './pages/DPA';
 
 // Tenant Portal Pages
 import TenantLogin from './pages/TenantLogin';
