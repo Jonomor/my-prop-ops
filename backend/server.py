@@ -4895,6 +4895,137 @@ async def update_branding(
     
     return {"message": "Branding updated successfully"}
 
+
+# ============== SCREENING CREDITS ENDPOINTS ==============
+
+SCREENING_PACKAGES = {
+    "single": {"credits": 1, "price": 3900},  # $39
+    "pack5": {"credits": 5, "price": 17500},  # $175
+    "pack10": {"credits": 10, "price": 32000},  # $320
+    "pack25": {"credits": 25, "price": 72500}  # $725
+}
+
+@api_router.get("/screening/credits")
+async def get_screening_credits(user = Depends(get_current_user)):
+    """Get organization's screening credit balance"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    
+    # Get credit balance
+    credits_doc = await db.screening_credits.find_one({"org_id": org_id})
+    
+    if not credits_doc:
+        # Initialize with 0 credits
+        credits_doc = {
+            "org_id": org_id,
+            "balance": 0,
+            "purchased": 0,
+            "plan_included": 0,
+            "used": 0
+        }
+        await db.screening_credits.insert_one(credits_doc)
+    
+    return {
+        "balance": credits_doc.get("balance", 0),
+        "purchased": credits_doc.get("purchased", 0),
+        "plan_included": credits_doc.get("plan_included", 0),
+        "used": credits_doc.get("used", 0)
+    }
+
+
+class PurchaseCreditsRequest(BaseModel):
+    package_id: str
+    return_url: str = None
+
+@api_router.post("/screening/purchase-credits")
+async def purchase_screening_credits(
+    data: PurchaseCreditsRequest,
+    user = Depends(get_current_user)
+):
+    """Purchase screening credits via Stripe"""
+    if data.package_id not in SCREENING_PACKAGES:
+        raise HTTPException(status_code=400, detail="Invalid package")
+    
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    package = SCREENING_PACKAGES[data.package_id]
+    
+    # Check if Stripe is configured
+    if not stripe.api_key:
+        # Simulate purchase for demo
+        await db.screening_credits.update_one(
+            {"org_id": org_id},
+            {
+                "$inc": {
+                    "balance": package["credits"],
+                    "purchased": package["credits"]
+                },
+                "$setOnInsert": {"org_id": org_id}
+            },
+            upsert=True
+        )
+        return {"success": True, "credits_added": package["credits"], "message": "Credits added (demo mode)"}
+    
+    try:
+        # Create Stripe checkout session
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": f"Tenant Screening Credits ({package['credits']} screenings)",
+                        "description": f"Purchase {package['credits']} tenant screening credits for MyPropOps"
+                    },
+                    "unit_amount": package["price"],
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            success_url=data.return_url or f"{os.environ.get('FRONTEND_URL', '')}/screening?success=true",
+            cancel_url=data.return_url or f"{os.environ.get('FRONTEND_URL', '')}/screening?canceled=true",
+            metadata={
+                "org_id": org_id,
+                "package_id": data.package_id,
+                "credits": str(package["credits"]),
+                "type": "screening_credits"
+            }
+        )
+        
+        return {"checkout_url": checkout_session.url}
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+
+@api_router.post("/screening/use-credit")
+async def use_screening_credit(user = Depends(get_current_user)):
+    """Deduct one screening credit (called internally when screening is submitted)"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership:
+        raise HTTPException(status_code=403, detail="No organization membership")
+    
+    org_id = membership['org_id']
+    
+    # Check and deduct credit
+    result = await db.screening_credits.find_one_and_update(
+        {"org_id": org_id, "balance": {"$gt": 0}},
+        {"$inc": {"balance": -1, "used": 1}},
+        return_document=True
+    )
+    
+    if not result:
+        raise HTTPException(status_code=402, detail="No screening credits available")
+    
+    return {"success": True, "remaining_credits": result["balance"]}
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
