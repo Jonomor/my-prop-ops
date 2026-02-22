@@ -31,8 +31,7 @@ import {
   CreditCard,
   ShieldCheck,
   BadgeCheck,
-  Globe,
-  DollarSign
+  Globe
 } from 'lucide-react';
 
 const features = [
