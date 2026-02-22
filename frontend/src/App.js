@@ -201,6 +201,13 @@ function TenantPortalRoutes() {
 }
 
 function App() {
+  // Initialize native app features on mount
+  useEffect(() => {
+    if (isNative) {
+      initializeNativeApp();
+    }
+  }, []);
+
   return (
     <ThemeProvider>
       <BrowserRouter>
@@ -214,7 +221,8 @@ function App() {
               <Route path="/*" element={<AppRoutes />} />
             </Routes>
             <Toaster position="top-right" richColors />
-            <PWAInstallPrompt />
+            {/* Only show PWA prompt on web, not native */}
+            {!isNative && <PWAInstallPrompt />}
           </TenantAuthProvider>
         </AuthProvider>
       </BrowserRouter>
