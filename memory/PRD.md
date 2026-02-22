@@ -3,11 +3,64 @@
 ## Latest Update: February 22, 2026
 
 ### Completed This Session:
-- ✅ Added Enterprise tier ($239/month, $299 monthly, Save $720/year) to Landing page
-- ✅ Added Enterprise tier to Dashboard Billing page  
-- ✅ Fixed "Downgrade" button issue - now shows "Current Plan" for Free tier
-- ✅ Updated plan hierarchy to include Enterprise (free < standard < pro < enterprise)
-- ✅ Added Enterprise to PLAN_LIMITS in backend with unlimited properties, contractors, etc.
+
+#### Pricing Restructure (COMPLETE)
+- ✅ Removed Enterprise tier - now 3 tiers: Free, Standard ($39/mo), Pro ($119/mo)
+- ✅ Removed unimplementable features: White-label, Dedicated account manager, Custom integrations, SLA guarantee, Custom training
+- ✅ Updated both Landing page and Dashboard Billing page with consistent pricing
+- ✅ Fixed "Downgrade" button - now shows "Current Plan" for Free tier
+
+#### New Feature Pages Implemented (COMPLETE)
+- ✅ **Reports Page** (`/reports`) - Export properties, tenants, maintenance, inspections to CSV/PDF
+  - Plan-gated: Requires Standard or Pro
+  - Backend endpoint: `/api/reports/export/{type}`
+  
+- ✅ **Analytics Dashboard** (`/analytics`) - Occupancy trends, revenue tracking, maintenance analysis
+  - Plan-gated: Requires Pro (Free/Standard see sample data)
+  - Backend endpoint: `/api/analytics/dashboard`
+  
+- ✅ **API Key Management** (`/api-keys`) - Generate/manage API keys for external integrations
+  - Plan-gated: Requires Pro
+  - Backend endpoints: `/api/api-keys` (GET, POST, DELETE)
+  
+- ✅ **Custom Branding** (`/branding`) - Upload logo, set primary color, company name
+  - Plan-gated: Requires Pro
+  - Backend endpoints: `/api/branding` (GET, POST)
+
+#### Updated Sidebar Navigation (COMPLETE)
+- Added: Reports, Analytics, API Keys, Branding links
+- All new pages accessible and plan-gated appropriately
+
+---
+
+## Pricing Tiers (Current)
+
+### Free - $0/month
+- 2 properties, 5 units, 1 team member
+- Basic document storage (500MB)
+- Basic maintenance requests
+
+### Standard - $39/month (annual) / $49/month (monthly)
+- 20 properties, 40 units, 5 team members
+- Full inspection workflows
+- 10GB document storage
+- Tenant Portal with photo uploads
+- Email notifications
+- Contractor Portal access
+- One-tap contractor assignment
+- **Exportable reports (CSV/PDF)**
+- **Tenant Screening (pay per use)**
+
+### Pro - $119/month (annual) / $149/month (monthly)
+- Unlimited properties, units, team members
+- Everything in Standard
+- 100GB document storage
+- **Advanced analytics dashboard**
+- **Custom branding (logo & colors)**
+- **API access with key management**
+- **Two-factor authentication (2FA)**
+- **Full audit logs**
+- 24/7 priority support
 
 ---
 
