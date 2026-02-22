@@ -968,6 +968,22 @@ const AdminDashboard = () => {
               />
               <p className="text-xs text-muted-foreground">{blogForm.meta_description.length}/160 characters</p>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="keywords">SEO Keywords</Label>
+              <Input
+                id="keywords"
+                value={blogForm.keywords?.join(', ') || ''}
+                onChange={(e) => setBlogForm(prev => ({ 
+                  ...prev, 
+                  keywords: e.target.value.split(',').map(k => k.trim()).filter(k => k) 
+                }))}
+                placeholder="keyword1, keyword2, keyword3 (comma-separated)"
+                data-testid="blog-keywords-input"
+              />
+              <p className="text-xs text-muted-foreground">
+                {blogForm.keywords?.length || 0} keywords • Recommended: 5-7 relevant keywords
+              </p>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditBlogOpen(false)} data-testid="blog-cancel-btn">
