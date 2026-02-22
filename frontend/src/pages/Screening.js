@@ -1,28 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import axios from 'axios';
+import { Layout } from '../components/Layout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
+import { Progress } from '../components/ui/progress';
 import { 
   Search, UserCheck, AlertTriangle, CheckCircle, XCircle, 
   Clock, FileText, RefreshCw, Loader2, Shield, CreditCard,
-  Home, DollarSign, ChevronRight
+  Home, DollarSign, ChevronRight, Plus, Coins, ShoppingCart,
+  User, Building2, Phone, Mail, Calendar, TrendingUp, TrendingDown,
+  Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-const API = process.env.REACT_APP_BACKEND_URL;
-
 const Screening = () => {
-  const { token, currentOrg } = useAuth();
+  const { api, currentOrg } = useAuth();
   const [screenings, setScreenings] = useState([]);
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [credits, setCredits] = useState({ balance: 0, plan_included: 0, purchased: 0 });
+  const [planAllowsScreening, setPlanAllowsScreening] = useState(false);
+  
+  // Dialog states
+  const [newScreeningOpen, setNewScreeningOpen] = useState(false);
+  const [buyCreditsOpen, setBuyCreditsOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedScreening, setSelectedScreening] = useState(null);
+  
+  // Form states
   const [selectedTenant, setSelectedTenant] = useState('');
   const [screeningType, setScreeningType] = useState('comprehensive');
   const [includeCredit, setIncludeCredit] = useState(true);
@@ -30,37 +40,41 @@ const Screening = () => {
   const [includeEviction, setIncludeEviction] = useState(true);
   const [includeIncome, setIncludeIncome] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [selectedScreening, setSelectedScreening] = useState(null);
-  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
+
+  const creditPackages = [
+    { id: 'single', name: '1 Screening', credits: 1, price: 39, perCredit: 39 },
+    { id: 'pack5', name: '5 Screenings', credits: 5, price: 175, perCredit: 35, savings: 20 },
+    { id: 'pack10', name: '10 Screenings', credits: 10, price: 320, perCredit: 32, savings: 70, popular: true },
+    { id: 'pack25', name: '25 Screenings', credits: 25, price: 725, perCredit: 29, savings: 250 }
+  ];
 
   useEffect(() => {
     if (currentOrg) {
-      fetchScreenings();
-      fetchTenants();
+      fetchData();
     }
   }, [currentOrg]);
 
-  const fetchScreenings = async () => {
+  const fetchData = async () => {
+    setLoading(true);
     try {
-      const res = await axios.get(`${API}/api/screening/requests?org_id=${currentOrg.org_id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setScreenings(res.data);
+      const [screeningsRes, tenantsRes, creditsRes, planRes] = await Promise.all([
+        api.get(`/screening/requests?org_id=${currentOrg.org_id}`),
+        api.get(`/organizations/${currentOrg.org_id}/tenants`),
+        api.get('/screening/credits'),
+        api.get('/billing/subscription-status')
+      ]);
+      
+      setScreenings(screeningsRes.data);
+      setTenants(tenantsRes.data);
+      setCredits(creditsRes.data);
+      
+      const plan = planRes.data?.plan || 'free';
+      setPlanAllowsScreening(plan === 'standard' || plan === 'pro');
     } catch (error) {
-      console.error('Failed to fetch screenings:', error);
+      console.error('Failed to fetch data:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchTenants = async () => {
-    try {
-      const res = await axios.get(`${API}/api/organizations/${currentOrg.org_id}/tenants`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTenants(res.data);
-    } catch (error) {
-      console.error('Failed to fetch tenants:', error);
     }
   };
 
@@ -70,26 +84,52 @@ const Screening = () => {
       return;
     }
 
+    if (credits.balance <= 0) {
+      toast.error('No screening credits available. Please purchase credits.');
+      setBuyCreditsOpen(true);
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await axios.post(`${API}/api/screening/requests?org_id=${currentOrg.org_id}`, {
+      await api.post(`/screening/requests?org_id=${currentOrg.org_id}`, {
         tenant_id: selectedTenant,
         screening_type: screeningType,
         include_credit: includeCredit,
         include_criminal: includeCriminal,
         include_eviction: includeEviction,
         include_income: includeIncome
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
       });
-      toast.success('Screening request submitted');
-      setDialogOpen(false);
+      toast.success('Screening submitted! Results will be ready in 2-5 minutes.');
+      setNewScreeningOpen(false);
       setSelectedTenant('');
-      fetchScreenings();
+      fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to submit screening');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handlePurchaseCredits = async (packageId) => {
+    setPurchasing(true);
+    try {
+      const res = await api.post('/screening/purchase-credits', {
+        package_id: packageId,
+        return_url: window.location.href
+      });
+      
+      if (res.data.checkout_url) {
+        window.location.href = res.data.checkout_url;
+      } else {
+        toast.success('Credits purchased successfully!');
+        fetchData();
+        setBuyCreditsOpen(false);
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to purchase credits');
+    } finally {
+      setPurchasing(false);
     }
   };
 
@@ -99,396 +139,612 @@ const Screening = () => {
         return <Badge className="bg-green-100 text-green-700">Completed</Badge>;
       case 'pending':
         return <Badge className="bg-yellow-100 text-yellow-700">Processing</Badge>;
+      case 'failed':
+        return <Badge className="bg-red-100 text-red-700">Failed</Badge>;
       default:
-        return <Badge className="bg-gray-100 text-gray-700">{status}</Badge>;
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
   const getRecommendationBadge = (rec) => {
     switch (rec) {
       case 'approved':
-        return <Badge className="bg-green-500 text-white">Approved</Badge>;
+        return <Badge className="bg-green-500 text-white"><CheckCircle className="w-3 h-3 mr-1" /> Approved</Badge>;
       case 'conditional':
-        return <Badge className="bg-yellow-500 text-white">Conditional</Badge>;
+        return <Badge className="bg-yellow-500 text-white"><AlertTriangle className="w-3 h-3 mr-1" /> Conditional</Badge>;
       case 'denied':
-        return <Badge className="bg-red-500 text-white">Denied</Badge>;
+        return <Badge className="bg-red-500 text-white"><XCircle className="w-3 h-3 mr-1" /> Denied</Badge>;
       default:
         return null;
     }
   };
 
-  const getRiskColor = (score) => {
+  const getRiskScoreColor = (score) => {
     if (score >= 80) return 'text-green-600';
     if (score >= 60) return 'text-yellow-600';
     return 'text-red-600';
   };
 
-  const viewDetails = (screening) => {
-    setSelectedScreening(screening);
-    setDetailsOpen(true);
+  const getCreditScoreColor = (score) => {
+    if (score >= 750) return 'text-green-600';
+    if (score >= 700) return 'text-blue-600';
+    if (score >= 650) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-      </div>
+      <Layout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="space-y-6" data-testid="screening-page">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Tenant Screening</h1>
-          <p className="text-muted-foreground">Run background checks on prospective tenants</p>
+    <Layout>
+      <div className="max-w-7xl mx-auto space-y-6" data-testid="screening-page">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold font-heading">Tenant Screening</h1>
+            <p className="text-muted-foreground mt-1">
+              Run comprehensive background checks on prospective tenants
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="outline"
+              onClick={() => setBuyCreditsOpen(true)}
+              data-testid="buy-credits-btn"
+            >
+              <Coins className="w-4 h-4 mr-2" />
+              Buy Credits
+            </Button>
+            <Button 
+              onClick={() => setNewScreeningOpen(true)}
+              disabled={!planAllowsScreening}
+              data-testid="new-screening-btn"
+            >
+              <Search className="w-4 h-4 mr-2" />
+              New Screening
+            </Button>
+          </div>
         </div>
-        <Button 
-          className="bg-emerald-600 hover:bg-emerald-700"
-          onClick={() => setDialogOpen(true)}
-          data-testid="new-screening-btn"
-        >
-          <Search className="w-4 h-4 mr-2" />
-          New Screening
-        </Button>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <FileText className="w-5 h-5 text-blue-600" />
-              </div>
+        {/* Plan Notice */}
+        {!planAllowsScreening && (
+          <Card className="border-amber-500/50 bg-amber-50 dark:bg-amber-950/20">
+            <CardContent className="p-4 flex items-center gap-4">
+              <Lock className="w-8 h-8 text-amber-600" />
               <div>
-                <p className="text-2xl font-bold">{screenings.length}</p>
-                <p className="text-sm text-muted-foreground">Total Screenings</p>
+                <p className="font-medium text-amber-800 dark:text-amber-200">
+                  Tenant Screening requires Standard or Pro plan
+                </p>
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  Upgrade your plan to run background checks on prospective tenants.
+                </p>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{screenings.filter(s => s.overall_recommendation === 'approved').length}</p>
-                <p className="text-sm text-muted-foreground">Approved</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Clock className="w-5 h-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{screenings.filter(s => s.status === 'pending').length}</p>
-                <p className="text-sm text-muted-foreground">Pending</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-red-100 rounded-lg">
-                <XCircle className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold">{screenings.filter(s => s.overall_recommendation === 'denied').length}</p>
-                <p className="text-sm text-muted-foreground">Denied</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Screenings List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Screening Results</CardTitle>
-          <CardDescription>View and manage tenant screening reports</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {screenings.length === 0 ? (
-            <div className="text-center py-12">
-              <Shield className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-semibold mb-2">No screenings yet</h3>
-              <p className="text-muted-foreground mb-4">Run your first tenant screening to get started</p>
-              <Button onClick={() => setDialogOpen(true)}>
-                <Search className="w-4 h-4 mr-2" />
-                New Screening
+              <Button variant="outline" className="ml-auto" onClick={() => window.location.href = '/billing'}>
+                Upgrade Plan
               </Button>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {screenings.map((screening) => (
-                <div 
-                  key={screening.id} 
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
-                  onClick={() => viewDetails(screening)}
-                  data-testid={`screening-${screening.id}`}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Credits & Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Credit Balance Card */}
+          <Card className="border-primary/50 bg-primary/5">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-primary/20 rounded-xl">
+                  <Coins className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-primary">{credits.balance}</p>
+                  <p className="text-sm text-muted-foreground">Screening Credits</p>
+                </div>
+              </div>
+              {credits.balance <= 2 && credits.balance > 0 && (
+                <p className="text-xs text-amber-600 mt-2">Running low! Purchase more credits.</p>
+              )}
+              {credits.balance === 0 && (
+                <Button 
+                  size="sm" 
+                  className="w-full mt-3" 
+                  onClick={() => setBuyCreditsOpen(true)}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="p-2 bg-slate-100 rounded-full">
-                      <UserCheck className="w-5 h-5 text-slate-600" />
+                  Buy Credits
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Stats Cards */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <FileText className="w-5 h-5 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{screenings.length}</p>
+                  <p className="text-sm text-muted-foreground">Total Screenings</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{screenings.filter(s => s.overall_recommendation === 'approved').length}</p>
+                  <p className="text-sm text-muted-foreground">Approved</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-yellow-100 rounded-lg">
+                  <Clock className="w-5 h-5 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold">{screenings.filter(s => s.status === 'pending').length}</p>
+                  <p className="text-sm text-muted-foreground">Processing</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Screenings List */}
+        <Card className="glass">
+          <CardHeader>
+            <CardTitle>Screening History</CardTitle>
+            <CardDescription>View all tenant screening reports</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {screenings.length === 0 ? (
+              <div className="text-center py-12">
+                <Search className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">No screenings yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Run your first tenant screening to get started
+                </p>
+                <Button onClick={() => setNewScreeningOpen(true)} disabled={!planAllowsScreening}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Screening
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {screenings.map((screening) => (
+                  <div 
+                    key={screening.id}
+                    className="flex items-center justify-between p-4 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors cursor-pointer"
+                    onClick={() => {
+                      setSelectedScreening(screening);
+                      setDetailsOpen(true);
+                    }}
+                    data-testid={`screening-${screening.id}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <User className="w-6 h-6 text-primary" />
+                      </div>
+                      <div>
+                        <p className="font-medium">{screening.tenant_name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {screening.screening_type} screening · {new Date(screening.requested_at).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold">{screening.tenant_name}</h3>
+                    <div className="flex items-center gap-4">
+                      {screening.status === 'completed' && screening.risk_score !== undefined && (
+                        <div className="text-right">
+                          <p className={`text-xl font-bold ${getRiskScoreColor(screening.risk_score)}`}>
+                            {screening.risk_score}
+                          </p>
+                          <p className="text-xs text-muted-foreground">Risk Score</p>
+                        </div>
+                      )}
+                      <div className="flex flex-col items-end gap-1">
                         {getStatusBadge(screening.status)}
                         {screening.overall_recommendation && getRecommendationBadge(screening.overall_recommendation)}
                       </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
-                        <span>Type: {screening.screening_type}</span>
-                        <span>Requested: {new Date(screening.requested_at).toLocaleDateString()}</span>
-                        {screening.risk_score !== null && (
-                          <span className={`font-semibold ${getRiskColor(screening.risk_score)}`}>
-                            Risk Score: {screening.risk_score}
-                          </span>
-                        )}
-                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </div>
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground" />
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* New Screening Dialog */}
+        <Dialog open={newScreeningOpen} onOpenChange={setNewScreeningOpen}>
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                New Tenant Screening
+              </DialogTitle>
+              <DialogDescription>
+                Run a comprehensive background check on a prospective tenant.
+                This will use 1 screening credit.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              {/* Credit Balance Notice */}
+              <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Coins className="w-5 h-5 text-primary" />
+                  <span className="font-medium">Credits Available:</span>
                 </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <Badge variant={credits.balance > 0 ? "default" : "destructive"}>
+                  {credits.balance} credits
+                </Badge>
+              </div>
 
-      {/* New Screening Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>New Tenant Screening</DialogTitle>
-            <DialogDescription>Select a tenant and screening options</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Select Tenant *</Label>
-              <Select value={selectedTenant} onValueChange={setSelectedTenant}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Choose a tenant" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tenants.map((tenant) => (
-                    <SelectItem key={tenant.id} value={tenant.id}>
-                      {tenant.name || `${tenant.first_name} ${tenant.last_name}`} - {tenant.email}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Screening Type</Label>
-              <Select value={screeningType} onValueChange={setScreeningType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="basic">Basic ($15)</SelectItem>
-                  <SelectItem value="comprehensive">Comprehensive ($35)</SelectItem>
-                  <SelectItem value="premium">Premium ($55)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-3">
-              <Label>Include Checks</Label>
+              {/* Tenant Selection */}
               <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Checkbox 
-                    id="credit" 
-                    checked={includeCredit}
-                    onCheckedChange={setIncludeCredit}
-                  />
-                  <Label htmlFor="credit" className="flex items-center gap-2 cursor-pointer">
-                    <CreditCard className="w-4 h-4" /> Credit Check
-                  </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox 
-                    id="criminal" 
-                    checked={includeCriminal}
-                    onCheckedChange={setIncludeCriminal}
-                  />
-                  <Label htmlFor="criminal" className="flex items-center gap-2 cursor-pointer">
-                    <Shield className="w-4 h-4" /> Criminal Background
-                  </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox 
-                    id="eviction" 
-                    checked={includeEviction}
-                    onCheckedChange={setIncludeEviction}
-                  />
-                  <Label htmlFor="eviction" className="flex items-center gap-2 cursor-pointer">
-                    <Home className="w-4 h-4" /> Eviction History
-                  </Label>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Checkbox 
-                    id="income" 
-                    checked={includeIncome}
-                    onCheckedChange={setIncludeIncome}
-                  />
-                  <Label htmlFor="income" className="flex items-center gap-2 cursor-pointer">
-                    <DollarSign className="w-4 h-4" /> Income Verification
-                  </Label>
+                <Label>Select Tenant</Label>
+                <Select value={selectedTenant} onValueChange={setSelectedTenant}>
+                  <SelectTrigger data-testid="tenant-select">
+                    <SelectValue placeholder="Choose a tenant to screen..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((tenant) => (
+                      <SelectItem key={tenant.id} value={tenant.id}>
+                        {tenant.first_name} {tenant.last_name} - {tenant.email}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Screening Type */}
+              <div className="space-y-2">
+                <Label>Screening Type</Label>
+                <Select value={screeningType} onValueChange={setScreeningType}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basic">Basic - Credit & Identity</SelectItem>
+                    <SelectItem value="comprehensive">Comprehensive - Full Background</SelectItem>
+                    <SelectItem value="premium">Premium - Full + Income Verification</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Checks to Include */}
+              <div className="space-y-3">
+                <Label>Include in Report</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <label className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted">
+                    <Checkbox checked={includeCredit} onCheckedChange={setIncludeCredit} />
+                    <div>
+                      <p className="font-medium text-sm">Credit Check</p>
+                      <p className="text-xs text-muted-foreground">Credit score & history</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted">
+                    <Checkbox checked={includeCriminal} onCheckedChange={setIncludeCriminal} />
+                    <div>
+                      <p className="font-medium text-sm">Criminal Check</p>
+                      <p className="text-xs text-muted-foreground">Criminal records</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted">
+                    <Checkbox checked={includeEviction} onCheckedChange={setIncludeEviction} />
+                    <div>
+                      <p className="font-medium text-sm">Eviction Check</p>
+                      <p className="text-xs text-muted-foreground">Eviction history</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted">
+                    <Checkbox checked={includeIncome} onCheckedChange={setIncludeIncome} />
+                    <div>
+                      <p className="font-medium text-sm">Income Verify</p>
+                      <p className="text-xs text-muted-foreground">Employment & income</p>
+                    </div>
+                  </label>
                 </div>
               </div>
             </div>
 
-            <Button 
-              className="w-full bg-emerald-600 hover:bg-emerald-700" 
-              onClick={handleSubmitScreening}
-              disabled={submitting}
-            >
-              {submitting ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>
-              ) : (
-                <>Submit Screening Request</>
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setNewScreeningOpen(false)}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmitScreening} 
+                disabled={submitting || credits.balance <= 0}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2" />
+                    Run Screening (1 Credit)
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-      {/* Screening Details Dialog */}
-      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Screening Results</DialogTitle>
-            <DialogDescription>{selectedScreening?.tenant_name}</DialogDescription>
-          </DialogHeader>
-          {selectedScreening && (
-            <div className="space-y-4">
-              {selectedScreening.status === 'pending' ? (
-                <div className="text-center py-8">
-                  <Loader2 className="w-12 h-12 mx-auto animate-spin text-emerald-600 mb-4" />
-                  <p className="text-muted-foreground">Screening in progress...</p>
-                  <Button variant="outline" className="mt-4" onClick={() => { fetchScreenings(); setDetailsOpen(false); }}>
-                    <RefreshCw className="w-4 h-4 mr-2" /> Refresh
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  {/* Overall Recommendation */}
-                  <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Overall Recommendation</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        {getRecommendationBadge(selectedScreening.overall_recommendation)}
-                        <span className={`text-xl font-bold ${getRiskColor(selectedScreening.risk_score)}`}>
-                          Score: {selectedScreening.risk_score}/100
-                        </span>
+        {/* Buy Credits Dialog */}
+        <Dialog open={buyCreditsOpen} onOpenChange={setBuyCreditsOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5" />
+                Purchase Screening Credits
+              </DialogTitle>
+              <DialogDescription>
+                Buy credits to run tenant background checks. Credits never expire.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="grid grid-cols-2 gap-4 py-4">
+              {creditPackages.map((pkg) => (
+                <Card 
+                  key={pkg.id}
+                  className={`cursor-pointer transition-all hover:border-primary ${
+                    pkg.popular ? 'border-primary border-2 relative' : ''
+                  }`}
+                  onClick={() => handlePurchaseCredits(pkg.id)}
+                >
+                  {pkg.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <Badge className="bg-primary">Best Value</Badge>
+                    </div>
+                  )}
+                  <CardContent className="p-6 text-center">
+                    <p className="text-3xl font-bold">{pkg.credits}</p>
+                    <p className="text-muted-foreground mb-4">{pkg.name}</p>
+                    <p className="text-2xl font-bold text-primary">${pkg.price}</p>
+                    <p className="text-sm text-muted-foreground">${pkg.perCredit}/screening</p>
+                    {pkg.savings && (
+                      <Badge variant="secondary" className="mt-2 bg-green-100 text-green-700">
+                        Save ${pkg.savings}
+                      </Badge>
+                    )}
+                    <Button 
+                      className="w-full mt-4" 
+                      variant={pkg.popular ? "default" : "outline"}
+                      disabled={purchasing}
+                    >
+                      {purchasing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Purchase'}
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 text-sm text-muted-foreground p-4 bg-muted rounded-lg">
+              <Shield className="w-4 h-4" />
+              <span>Secure payment powered by Stripe. Credits never expire.</span>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Screening Details Dialog */}
+        <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            {selectedScreening && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <UserCheck className="w-5 h-5" />
+                    Screening Report: {selectedScreening.tenant_name}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {selectedScreening.screening_type} screening · Completed {selectedScreening.completed_at ? new Date(selectedScreening.completed_at).toLocaleDateString() : 'Processing...'}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-6 py-4">
+                  {/* Overall Result */}
+                  {selectedScreening.status === 'completed' && (
+                    <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Overall Recommendation</p>
+                        <div className="mt-1">
+                          {getRecommendationBadge(selectedScreening.overall_recommendation)}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Risk Score</p>
+                        <p className={`text-3xl font-bold ${getRiskScoreColor(selectedScreening.risk_score)}`}>
+                          {selectedScreening.risk_score}/100
+                        </p>
                       </div>
                     </div>
-                  </div>
+                  )}
 
-                  {/* Credit Check */}
+                  {selectedScreening.status === 'pending' && (
+                    <div className="flex items-center gap-4 p-4 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+                      <Loader2 className="w-6 h-6 animate-spin text-yellow-600" />
+                      <div>
+                        <p className="font-medium text-yellow-800 dark:text-yellow-200">Processing Screening</p>
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                          Results will be ready in 2-5 minutes. Refresh to check status.
+                        </p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={fetchData}>
+                        <RefreshCw className="w-4 h-4 mr-1" />
+                        Refresh
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Credit Score */}
                   {selectedScreening.credit_score && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CreditCard className="w-5 h-5 text-blue-600" />
-                        <h3 className="font-semibold">Credit Check</h3>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Credit Score</p>
-                          <p className="text-2xl font-bold">{selectedScreening.credit_score}</p>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <CreditCard className="w-4 h-4" />
+                          Credit Report
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className={`text-4xl font-bold ${getCreditScoreColor(selectedScreening.credit_score)}`}>
+                              {selectedScreening.credit_score}
+                            </p>
+                            <p className="text-sm text-muted-foreground capitalize">{selectedScreening.credit_status} Credit</p>
+                          </div>
+                          <div className="w-32">
+                            <Progress 
+                              value={(selectedScreening.credit_score - 300) / 5.5} 
+                              className="h-3"
+                            />
+                            <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                              <span>300</span>
+                              <span>850</span>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Status</p>
-                          <Badge className={
-                            selectedScreening.credit_status === 'excellent' ? 'bg-green-100 text-green-700' :
-                            selectedScreening.credit_status === 'good' ? 'bg-blue-100 text-blue-700' :
-                            selectedScreening.credit_status === 'fair' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
-                          }>
-                            {selectedScreening.credit_status}
-                          </Badge>
-                        </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   )}
 
                   {/* Criminal Check */}
                   {selectedScreening.criminal_check && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Shield className="w-5 h-5 text-purple-600" />
-                        <h3 className="font-semibold">Criminal Background</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {selectedScreening.criminal_check === 'clear' ? (
-                          <><CheckCircle className="w-5 h-5 text-green-600" /> No records found</>
-                        ) : (
-                          <><AlertTriangle className="w-5 h-5 text-yellow-600" /> Records found</>
-                        )}
-                      </div>
-                      {selectedScreening.criminal_details && (
-                        <p className="text-sm text-muted-foreground mt-2">{selectedScreening.criminal_details}</p>
-                      )}
-                    </div>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Criminal Background
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-3">
+                          {selectedScreening.criminal_check === 'clear' ? (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500" />
+                              <div>
+                                <p className="font-medium text-green-700">No Records Found</p>
+                                <p className="text-sm text-muted-foreground">Criminal background check is clear</p>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <AlertTriangle className="w-8 h-8 text-amber-500" />
+                              <div>
+                                <p className="font-medium text-amber-700">Records Found</p>
+                                <p className="text-sm text-muted-foreground">{selectedScreening.criminal_details}</p>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
 
-                  {/* Eviction Check */}
+                  {/* Eviction History */}
                   {selectedScreening.eviction_history && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Home className="w-5 h-5 text-orange-600" />
-                        <h3 className="font-semibold">Eviction History</h3>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {selectedScreening.eviction_history === 'clear' ? (
-                          <><CheckCircle className="w-5 h-5 text-green-600" /> No evictions found</>
-                        ) : (
-                          <><XCircle className="w-5 h-5 text-red-600" /> {selectedScreening.eviction_count} eviction(s) found</>
-                        )}
-                      </div>
-                    </div>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Home className="w-4 h-4" />
+                          Eviction History
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-3">
+                          {selectedScreening.eviction_history === 'clear' ? (
+                            <>
+                              <CheckCircle className="w-8 h-8 text-green-500" />
+                              <div>
+                                <p className="font-medium text-green-700">No Evictions Found</p>
+                                <p className="text-sm text-muted-foreground">No eviction records on file</p>
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="w-8 h-8 text-red-500" />
+                              <div>
+                                <p className="font-medium text-red-700">{selectedScreening.eviction_count} Eviction(s) Found</p>
+                                <p className="text-sm text-muted-foreground">Review detailed report for more information</p>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   )}
 
                   {/* Income Verification */}
                   {selectedScreening.income_verification && (
-                    <div className="p-4 border rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <DollarSign className="w-5 h-5 text-green-600" />
-                        <h3 className="font-semibold">Income Verification</h3>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground">Status</p>
-                          <Badge className="bg-green-100 text-green-700">Verified</Badge>
+                    <Card>
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <DollarSign className="w-4 h-4" />
+                          Income Verification
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            selectedScreening.income_ratio >= 3 ? 'bg-green-100' : 'bg-yellow-100'
+                          }`}>
+                            {selectedScreening.income_ratio >= 3 ? (
+                              <TrendingUp className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <TrendingDown className="w-5 h-5 text-yellow-600" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium">
+                              Income to Rent Ratio: <span className={selectedScreening.income_ratio >= 3 ? 'text-green-600' : 'text-yellow-600'}>
+                                {selectedScreening.income_ratio}x
+                              </span>
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {selectedScreening.income_ratio >= 3 
+                                ? 'Meets recommended 3x rent requirement'
+                                : 'Below recommended 3x rent requirement'}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground">Income-to-Rent Ratio</p>
-                          <p className="text-xl font-bold">{selectedScreening.income_ratio}x</p>
-                        </div>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   )}
+                </div>
 
-                  <p className="text-xs text-muted-foreground text-center">
-                    Completed: {new Date(selectedScreening.completed_at).toLocaleString()}
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setDetailsOpen(false)}>
+                    Close
+                  </Button>
+                  <Button>
+                    <FileText className="w-4 h-4 mr-2" />
+                    Download PDF Report
+                  </Button>
+                </DialogFooter>
+              </>
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    </Layout>
   );
 };
 
