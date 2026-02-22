@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -6,6 +6,8 @@ import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Textarea } from '../components/ui/textarea';
+import { Input } from '../components/ui/input';
+import { ScrollArea } from '../components/ui/scroll-area';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { 
@@ -22,7 +24,10 @@ import {
   Image,
   ChevronRight,
   Star,
-  Bell
+  Bell,
+  MessageSquare,
+  Send,
+  Loader2
 } from 'lucide-react';
 
 const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
