@@ -851,19 +851,19 @@ const Landing = () => {
           </div>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <span className={`text-sm font-medium ${billingPeriod === 'monthly' ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
+          <div className="flex items-center justify-center gap-6 mb-12">
+            <span className={`text-sm font-medium transition-colors ${billingPeriod === 'monthly' ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
             <button
               onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
-              className={`relative w-14 h-7 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+              className={`relative w-16 h-8 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-primary' : 'bg-muted-foreground/30'}`}
               data-testid="billing-toggle"
             >
-              <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-transform ${billingPeriod === 'annual' ? 'translate-x-8' : 'translate-x-1'}`} />
+              <span className={`absolute top-1.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${billingPeriod === 'annual' ? 'translate-x-9' : 'translate-x-1.5'}`} />
             </button>
-            <span className={`text-sm font-medium ${billingPeriod === 'annual' ? 'text-foreground' : 'text-muted-foreground'}`}>
-              Annual
-              <span className="ml-2 text-xs text-green-600 font-semibold">Save 17%</span>
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={`text-sm font-medium transition-colors ${billingPeriod === 'annual' ? 'text-foreground' : 'text-muted-foreground'}`}>Annual</span>
+              <span className="text-xs text-green-600 font-semibold bg-green-100 dark:bg-green-950/50 px-2 py-0.5 rounded-full">Save 17%</span>
+            </div>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
