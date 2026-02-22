@@ -38,6 +38,9 @@ import ApiKeys from './pages/ApiKeys';
 import Branding from './pages/Branding';
 import TwoFactorAuth from './pages/TwoFactorAuth';
 import AIInsights from './pages/AIInsights';
+import About from './pages/About';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 
 // Tenant Portal Pages
 import TenantLogin from './pages/TenantLogin';
