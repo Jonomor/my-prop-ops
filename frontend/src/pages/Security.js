@@ -236,7 +236,7 @@ const Security = () => {
                   </p>
                   <div className="space-y-3">
                     <p className="text-muted-foreground">
-                      <strong className="text-foreground">Email:</strong> security@propops.com
+                      <strong className="text-foreground">Email:</strong> security@mypropops.com
                     </p>
                     <p className="text-muted-foreground">
                       <strong className="text-foreground">PGP Key:</strong> Available upon request
