@@ -224,11 +224,11 @@ Build a full-stack SaaS web application for property and housing operations mana
 ### P1 - High Priority
 - [x] ~~Mailchimp email notifications~~ (DONE - needs keys)
 - [x] ~~Maintenance request workflow~~ (DONE)
-- [ ] Tenant screening feature (models exist, needs API/UI)
-- [ ] Link promotional videos from Google Drive to landing page (user provided URLs)
+- [x] ~~Tenant Screening feature~~ (DONE - mocked)
+- [x] ~~Rent Payment Tracking~~ (DONE)
+- [ ] Real tenant screening API integration (replace mocked data)
 
 ### P2 - Medium Priority
-- [ ] Rent payment tracking module
 - [ ] Advanced analytics dashboard
 - [ ] AI-powered dashboard insights
 
