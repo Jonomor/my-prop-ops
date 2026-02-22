@@ -281,7 +281,7 @@ const Screening = () => {
                 <SelectContent>
                   {tenants.map((tenant) => (
                     <SelectItem key={tenant.id} value={tenant.id}>
-                      {tenant.first_name} {tenant.last_name} - {tenant.email}
+                      {tenant.name || `${tenant.first_name} ${tenant.last_name}`} - {tenant.email}
                     </SelectItem>
                   ))}
                 </SelectContent>
