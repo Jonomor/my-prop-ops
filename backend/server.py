@@ -61,8 +61,6 @@ SUBSCRIPTION_PLANS = {
     "standard_annual": {"amount": 468.00, "plan": "standard", "period": "annual"},  # $39/mo billed annually
     "pro_monthly": {"amount": 149.00, "plan": "pro", "period": "monthly"},
     "pro_annual": {"amount": 1428.00, "plan": "pro", "period": "annual"},  # $119/mo billed annually
-    "enterprise_monthly": {"amount": 299.00, "plan": "enterprise", "period": "monthly"},
-    "enterprise_annual": {"amount": 2868.00, "plan": "enterprise", "period": "annual"},  # $239/mo billed annually
 }
 
 # Mailchimp Configuration
