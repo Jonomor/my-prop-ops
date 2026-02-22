@@ -31,6 +31,10 @@ import Billing from './pages/Billing';
 import Maintenance from './pages/Maintenance';
 import Screening from './pages/Screening';
 import RentPayments from './pages/RentPayments';
+import Reports from './pages/Reports';
+import Analytics from './pages/Analytics';
+import ApiKeys from './pages/ApiKeys';
+import Branding from './pages/Branding';
 
 // Tenant Portal Pages
 import TenantLogin from './pages/TenantLogin';
@@ -155,6 +159,10 @@ function AppRoutes() {
       <Route path="/maintenance" element={<ProtectedRoute><Maintenance /></ProtectedRoute>} />
       <Route path="/screening" element={<ProtectedRoute><Screening /></ProtectedRoute>} />
       <Route path="/rent-payments" element={<ProtectedRoute><RentPayments /></ProtectedRoute>} />
+      <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+      <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+      <Route path="/api-keys" element={<ProtectedRoute><ApiKeys /></ProtectedRoute>} />
+      <Route path="/branding" element={<ProtectedRoute><Branding /></ProtectedRoute>} />
       <Route path="/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
       
       {/* Default redirect */}
