@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
+import { isNative, takePhoto, haptics } from '../utils/native';
 import { 
   Home, 
   FileText, 
@@ -44,7 +45,8 @@ import {
   Trash2,
   CreditCard,
   Receipt,
-  AlertTriangle
+  AlertTriangle,
+  Smartphone
 } from 'lucide-react';
 
 const HOUSING_PROGRAMS = [
