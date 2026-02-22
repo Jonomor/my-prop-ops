@@ -130,6 +130,50 @@ const ContractorDashboard = () => {
     }
   };
 
+  // Messaging functions
+  const openMessageDialog = async (job) => {
+    setSelectedJob(job);
+    setMessageDialogOpen(true);
+    setLoadingMessages(true);
+    
+    try {
+      const res = await api.get(`/contractor/jobs/${job.id}/messages`);
+      setMessages(res.data);
+    } catch (error) {
+      toast.error('Failed to load messages');
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim() || !selectedJob) return;
+    
+    setSendingMessage(true);
+    try {
+      await api.post(`/contractor/jobs/${selectedJob.id}/messages`, {
+        content: newMessage,
+        job_id: selectedJob.id
+      });
+      setNewMessage('');
+      // Refresh messages
+      const res = await api.get(`/contractor/jobs/${selectedJob.id}/messages`);
+      setMessages(res.data);
+      toast.success('Message sent');
+    } catch (error) {
+      toast.error('Failed to send message');
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Scroll to bottom of messages
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
   const filteredJobs = jobs.filter(job => 
     statusFilter === 'all' || job.status === statusFilter
   );
