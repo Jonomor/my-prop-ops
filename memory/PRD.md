@@ -27,6 +27,22 @@
   - Plan-gated: Requires Pro
   - Backend endpoints: `/api/branding` (GET, POST)
 
+#### Tenant Screening with Credits System (COMPLETE)
+- ✅ **Pay-per-use tenant screening** - Revenue stream for the platform
+- ✅ **Credit packages**: $39 (1), $175 (5), $320 (10 - Best Value), $725 (25)
+- ✅ **Stripe integration** for credit purchases (demo mode when no API key)
+- ✅ **Plan-gated**: Requires Standard or Pro plan
+- ✅ **Simulated screening results** (ready for real API integration: TransUnion/RentPrep)
+- Backend endpoints: `/api/screening/credits`, `/api/screening/purchase-credits`
+
+#### Rent Payment Tracking (COMPLETE)
+- ✅ **Monthly payment tracking** - Track expected vs collected rent
+- ✅ **Auto-generate monthly payments** for all active tenants
+- ✅ **Summary dashboard** - Expected, Collected, Outstanding, Collection Rate
+- ✅ **Payment recording** - Track payments with method (check, cash, bank transfer, etc.)
+- ✅ **Month/Year filtering** with status filter (pending, paid, overdue, partial)
+- Backend endpoints: `/api/rent-payments`, `/api/rent-payments/summary`, `/api/rent-payments/generate-monthly`
+
 #### Updated Sidebar Navigation (COMPLETE)
 - Added: Reports, Analytics, API Keys, Branding links
 - All new pages accessible and plan-gated appropriately
