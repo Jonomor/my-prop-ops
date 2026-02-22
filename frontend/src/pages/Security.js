@@ -127,9 +127,9 @@ const Security = () => {
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
-              <h2 className="text-3xl font-bold font-heading mb-4">Compliance & Certifications</h2>
+              <h2 className="text-3xl font-bold font-heading mb-4">Compliance & Data Protection</h2>
               <p className="text-muted-foreground mb-8">
-                We maintain compliance with major industry standards and regulations to ensure your data meets the highest security requirements.
+                We follow industry best practices for data protection. Our privacy policies are designed with GDPR and CCPA requirements in mind.
               </p>
               <div className="grid grid-cols-2 gap-4">
                 {certifications.map((cert, i) => (
