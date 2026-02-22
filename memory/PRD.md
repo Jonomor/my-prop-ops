@@ -35,6 +35,15 @@
 - ✅ **Simulated screening results** (ready for real API integration: TransUnion/RentPrep)
 - Backend endpoints: `/api/screening/credits`, `/api/screening/purchase-credits`
 
+#### Two-Factor Authentication (2FA) - COMPLETE
+- ✅ **Full 2FA implementation** using TOTP (Time-based One-Time Password)
+- ✅ **QR code generation** for easy setup with authenticator apps
+- ✅ **Backup codes** - 10 codes generated at setup for recovery
+- ✅ **Plan-gated**: Requires Pro plan
+- ✅ **Supported apps**: Google Authenticator, Microsoft Authenticator, Authy, 1Password
+- Backend endpoints: `/api/auth/2fa/status`, `/api/auth/2fa/setup`, `/api/auth/2fa/verify`, `/api/auth/2fa/disable`, `/api/auth/2fa/validate`
+- Frontend page: `/2fa-settings`
+
 #### Rent Payment Tracking (COMPLETE)
 - ✅ **Monthly payment tracking** - Track expected vs collected rent
 - ✅ **Auto-generate monthly payments** for all active tenants
