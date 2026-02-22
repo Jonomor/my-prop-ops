@@ -51,16 +51,16 @@ const RentPayments = () => {
 
   const fetchData = async () => {
     try {
-      let url = `${API}/api/rent-payments?org_id=${currentOrg.id}&month=${selectedMonth}&year=${selectedYear}`;
+      let url = `${API}/api/rent-payments?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`;
       if (filter !== 'all') {
         url += `&status=${filter}`;
       }
       
       const [paymentsRes, summaryRes, tenantsRes, unitsRes] = await Promise.all([
         axios.get(url, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/api/rent-payments/summary?org_id=${currentOrg.id}&month=${selectedMonth}&year=${selectedYear}`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/api/organizations/${currentOrg.id}/tenants`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API}/api/organizations/${currentOrg.id}/units`, { headers: { Authorization: `Bearer ${token}` } })
+        axios.get(`${API}/api/rent-payments/summary?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/api/organizations/${currentOrg.org_id}/tenants`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API}/api/organizations/${currentOrg.org_id}/units`, { headers: { Authorization: `Bearer ${token}` } })
       ]);
       
       setPayments(paymentsRes.data);
