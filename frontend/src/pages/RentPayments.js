@@ -199,21 +199,23 @@ const RentPayments = () => {
     <Layout>
       <div className="max-w-7xl mx-auto space-y-6" data-testid="rent-payments-page">
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold font-heading">Rent Payments</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold font-heading">Rent Payments</h1>
+            <p className="text-muted-foreground mt-1 text-sm sm:text-base">
               Track and manage tenant rent payments
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => setGenerateDialogOpen(true)}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Generate Monthly
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button variant="outline" onClick={() => setGenerateDialogOpen(true)} size="sm" className="text-xs sm:text-sm">
+              <RefreshCw className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Generate Monthly</span>
+              <span className="sm:hidden">Generate</span>
             </Button>
-            <Button onClick={() => setCreateDialogOpen(true)} data-testid="add-payment-btn">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Payment
+            <Button onClick={() => setCreateDialogOpen(true)} data-testid="add-payment-btn" size="sm" className="text-xs sm:text-sm">
+              <Plus className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Add Payment</span>
+              <span className="sm:hidden">Add</span>
             </Button>
           </div>
         </div>
