@@ -422,7 +422,7 @@ const RentPayments = () => {
                 <SelectContent>
                   {tenants.map((tenant) => (
                     <SelectItem key={tenant.id} value={tenant.id}>
-                      {tenant.first_name} {tenant.last_name}
+                      {tenant.name || `${tenant.first_name} ${tenant.last_name}`}
                     </SelectItem>
                   ))}
                 </SelectContent>
