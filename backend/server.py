@@ -149,7 +149,13 @@ PLAN_LIMITS = {
         "max_team_members": 1,
         "document_storage_mb": 500,
         "tenant_portal": False,
+        "contractor_portal": False,
         "api_access": False,
+        "analytics": False,
+        "custom_branding": False,
+        "two_factor_auth": False,
+        "exportable_reports": False,
+        "tenant_screening": False,
     },
     "standard": {
         "max_properties": 20,
@@ -157,7 +163,13 @@ PLAN_LIMITS = {
         "max_team_members": 5,
         "document_storage_mb": 10240,  # 10GB
         "tenant_portal": True,
+        "contractor_portal": True,
         "api_access": False,
+        "analytics": False,
+        "custom_branding": False,
+        "two_factor_auth": False,
+        "exportable_reports": True,
+        "tenant_screening": True,  # pay per use
     },
     "pro": {
         "max_properties": None,  # Unlimited
@@ -165,19 +177,13 @@ PLAN_LIMITS = {
         "max_team_members": None,
         "document_storage_mb": 102400,  # 100GB
         "tenant_portal": True,
+        "contractor_portal": True,
         "api_access": True,
-    },
-    "enterprise": {
-        "max_properties": None,  # Unlimited
-        "max_units": None,       # Unlimited
-        "max_team_members": None,  # Unlimited
-        "max_contractors": None,  # Unlimited
-        "document_storage_mb": None,  # Unlimited
-        "tenant_portal": True,
-        "api_access": True,
-        "white_label": True,
-        "dedicated_support": True,
-        "custom_integrations": True,
+        "analytics": True,
+        "custom_branding": True,
+        "two_factor_auth": True,
+        "exportable_reports": True,
+        "tenant_screening": True,
     }
 }
 
