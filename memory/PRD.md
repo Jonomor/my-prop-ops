@@ -22,7 +22,24 @@ Build a full-stack SaaS web application for property and housing operations mana
 
 ## What's Been Implemented
 
-### February 2026 - Current Session
+### February 22, 2026 - UI Fixes & Maintenance Feature
+
+#### UI Bug Fixes (COMPLETE)
+- Fixed Stripe "S" missing in trust badges - replaced broken SVG with proper Stripe logo
+- Fixed Monthly/Annual toggle text overlap - improved spacing and added badge styling for "Save 17%"
+
+#### Tenant Portal Maintenance Tab (COMPLETE)
+- Added "Maintenance" tab to tenant portal navigation
+- Maintenance request submission form with:
+  - Category selection (Plumbing, Electrical, HVAC, etc.)
+  - Priority selection (Low, Medium, High, Emergency)
+  - Title and description fields
+  - Photo upload section (max 5 photos)
+  - "Permission to enter" checkbox
+- Maintenance request list view showing submitted requests
+- Form validation for required fields
+
+### February 2026 - Previous Session
 
 #### Contractor Portal (NEW)
 - Contractor registration with specialties selection
