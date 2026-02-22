@@ -36,7 +36,11 @@ import {
   CreditCard,
   Wrench,
   Search,
-  DollarSign
+  DollarSign,
+  BarChart3,
+  FileSpreadsheet,
+  Key,
+  Palette
 } from 'lucide-react';
 
 const navItems = [
@@ -49,8 +53,12 @@ const navItems = [
   { path: '/inspections', label: 'Inspections', icon: ClipboardCheck },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/documents', label: 'Documents', icon: FileText },
+  { path: '/reports', label: 'Reports', icon: FileSpreadsheet },
+  { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/team', label: 'Team', icon: UserPlus },
   { path: '/members', label: 'Members', icon: Users },
+  { path: '/api-keys', label: 'API Keys', icon: Key },
+  { path: '/branding', label: 'Branding', icon: Palette },
   { path: '/billing', label: 'Billing', icon: CreditCard },
   { path: '/audit-logs', label: 'Audit Logs', icon: History },
 ];
