@@ -13,6 +13,7 @@ import {
 } from './ui/dropdown-menu';
 import { Badge } from './ui/badge';
 import { ScrollArea } from './ui/scroll-area';
+import MobileNav from './MobileNav';
 import {
   Building2,
   Home,
