@@ -109,6 +109,7 @@
 - Full inspection workflows
 - 10GB document storage
 - Tenant Portal with photo uploads
+- **Rent payment tracking**
 - Email notifications
 - Contractor Portal access
 - One-tap contractor assignment
@@ -119,6 +120,7 @@
 - Unlimited properties, units, team members
 - Everything in Standard
 - 100GB document storage
+- **AI-Powered Insights Dashboard**
 - **Advanced analytics dashboard**
 - **Custom branding (logo & colors)**
 - **API access with key management**
