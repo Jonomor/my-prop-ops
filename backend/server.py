@@ -6159,121 +6159,190 @@ async def get_blog_post(slug: str):
 
 @api_router.post("/blog/generate")
 async def generate_blog_post(topic: str = None):
-    """Generate a new blog post using AI (admin only, called by scheduler)"""
+    """Generate an SEO-optimized blog post using AI"""
     
-    # Default topics for property management blog
-    topics = [
-        "5 Tips for Screening Tenants Like a Pro",
-        "How to Handle Late Rent Payments Without Losing Tenants",
-        "The Complete Guide to Property Inspections",
-        "Maximizing Rental Income: Strategies That Actually Work",
-        "Dealing with Difficult Tenants: A Landlord's Guide",
-        "Understanding Fair Housing Laws: What Every Landlord Must Know",
-        "Maintenance Requests: How to Prioritize and Save Money",
-        "Building a Strong Landlord-Tenant Relationship",
-        "The Future of Property Management: AI and Automation",
-        "Section 8 Housing: Pros, Cons, and Best Practices",
-        "How to Set the Right Rent Price for Your Property",
-        "Eviction Process: A Step-by-Step Legal Guide",
-        "Property Management Software: What to Look For",
-        "Tax Deductions Every Landlord Should Know",
-        "Emergency Repairs: When to Act and When to Wait"
+    # SEO-focused topics with target keywords
+    topics_with_keywords = [
+        {"topic": "Tenant Screening Best Practices", "keywords": ["tenant screening", "background check", "rental application", "credit check tenant"]},
+        {"topic": "Late Rent Payment Solutions", "keywords": ["late rent payment", "rent collection", "tenant payment plans", "landlord rent tips"]},
+        {"topic": "Property Inspection Checklist", "keywords": ["property inspection", "rental inspection checklist", "move-in inspection", "landlord inspection guide"]},
+        {"topic": "Increase Rental Property ROI", "keywords": ["rental property ROI", "maximize rental income", "property investment returns", "landlord profit tips"]},
+        {"topic": "Difficult Tenant Management", "keywords": ["difficult tenants", "tenant disputes", "landlord tenant conflict", "problem tenant solutions"]},
+        {"topic": "Fair Housing Compliance Guide", "keywords": ["fair housing laws", "housing discrimination", "landlord legal requirements", "rental compliance"]},
+        {"topic": "Maintenance Request Management", "keywords": ["maintenance requests", "property maintenance", "rental repairs", "landlord maintenance tips"]},
+        {"topic": "Landlord Tenant Communication", "keywords": ["landlord tenant relationship", "tenant communication", "property management communication", "tenant retention"]},
+        {"topic": "Property Management Automation", "keywords": ["property management software", "landlord automation", "rental management tools", "proptech solutions"]},
+        {"topic": "Section 8 Housing Guide", "keywords": ["Section 8 housing", "HUD rental program", "housing voucher landlord", "affordable housing"]},
+        {"topic": "Rental Pricing Strategy", "keywords": ["rental pricing", "rent price analysis", "market rent calculation", "competitive rental rates"]},
+        {"topic": "Eviction Process Guide", "keywords": ["eviction process", "tenant eviction", "legal eviction steps", "landlord eviction rights"]},
+        {"topic": "Property Management Software Guide", "keywords": ["property management software", "landlord software", "rental management app", "best PM software"]},
+        {"topic": "Landlord Tax Deductions", "keywords": ["landlord tax deductions", "rental property taxes", "property tax write-offs", "real estate tax tips"]},
+        {"topic": "Emergency Repair Protocol", "keywords": ["emergency repairs", "urgent maintenance", "rental emergency response", "landlord repair duties"]}
     ]
     
-    # Pick random topic if not provided
     import random
-    selected_topic = topic or random.choice(topics)
     
-    categories = ["Property Management", "Landlord Tips", "Industry News", "Product Updates"]
-    selected_category = random.choice(categories[:3])  # Exclude Product Updates for auto-gen
+    # Pick random topic with keywords if not provided
+    if topic:
+        selected = {"topic": topic, "keywords": ["property management", "landlord tips", "rental property"]}
+    else:
+        selected = random.choice(topics_with_keywords)
+    
+    selected_topic = selected["topic"]
+    target_keywords = selected["keywords"]
+    
+    categories = ["Property Management", "Landlord Tips", "Legal & Compliance", "Technology"]
+    selected_category = random.choice(categories[:3])
     
     try:
-        # Generate blog content using AI
-        system_message = """You are a professional blog writer for MyPropOps, a property management software company. 
-        Write engaging, actionable content for landlords and property managers."""
+        # SEO-optimized system message
+        system_message = """You are an expert SEO content writer for MyPropOps, a leading property management software company. 
+You specialize in creating high-ranking, engaging blog content for landlords and property managers.
+Your content consistently ranks on the first page of Google because you understand:
+- Search intent and user needs
+- Strategic keyword placement (title, H1, H2s, first paragraph, throughout)
+- Proper content structure with clear hierarchy
+- E-E-A-T principles (Experience, Expertise, Authoritativeness, Trustworthiness)
+- Engaging hooks and compelling CTAs"""
         
-        prompt = f"""Write a professional blog post about: "{selected_topic}"
+        prompt = f"""Create an SEO-optimized blog post about: "{selected_topic}"
 
-The blog should be:
-- 800-1200 words
-- Written in a friendly, professional tone
-- Include practical tips and examples
-- Use subheadings (format as <h2> tags)
-- End with a call-to-action mentioning MyPropOps
+TARGET KEYWORDS (use naturally throughout): {', '.join(target_keywords)}
 
-Format the content as HTML with proper paragraphs (<p>), headings (<h2>), and lists (<ul><li>) where appropriate.
+REQUIREMENTS:
 
-Start with:
-Title: [Your improved title]
-Excerpt: [2-3 sentence summary]
-Read time: [estimated minutes]
+1. SEO TITLE (50-60 characters):
+   - Include primary keyword near the beginning
+   - Use power words (Ultimate, Complete, Essential, Proven, Expert)
+   - Make it compelling and click-worthy
 
-Then the HTML content."""
+2. META DESCRIPTION (150-160 characters):
+   - Include primary keyword
+   - Clear value proposition
+   - Call-to-action hint
+
+3. CONTENT STRUCTURE:
+   - Opening hook that addresses reader's pain point (use primary keyword in first 100 words)
+   - 3-5 H2 subheadings with keywords where natural
+   - H3 subheadings for detailed sections
+   - Bullet points and numbered lists for scannability
+   - 1000-1500 words total
+   - Internal linking suggestions marked as [INTERNAL LINK: topic]
+   - Strong CTA mentioning MyPropOps at the end
+
+4. SEO BEST PRACTICES:
+   - Use keywords 3-5 times naturally (avoid stuffing)
+   - Include semantic variations and LSI keywords
+   - Write for humans first, search engines second
+   - Answer the "People Also Ask" questions on this topic
+
+FORMAT YOUR RESPONSE EXACTLY AS:
+---
+TITLE: [Your SEO-optimized title]
+META_DESCRIPTION: [Your 150-160 character meta description]
+KEYWORDS: [comma-separated list of 5-7 keywords used]
+READ_TIME: [estimated minutes]
+EXCERPT: [2-3 sentence compelling summary for previews]
+---
+
+[HTML content starting with <p> - use <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em> tags]"""
 
         chat = LlmChat(
             api_key=EMERGENT_LLM_KEY,
-            session_id=f"blog-{datetime.now().timestamp()}",
+            session_id=f"blog-seo-{datetime.now().timestamp()}",
             system_message=system_message
         ).with_model("openai", "gpt-4o")
         
         user_message = UserMessage(text=prompt)
         response_text = await chat.send_message(user_message)
         
-        # Parse AI response
+        # Parse AI response with enhanced SEO fields
         content_text = response_text
         
-        # Extract title, excerpt, read_time
+        # Extract SEO metadata
         lines = content_text.split('\n')
-        title = selected_topic  # default
+        title = selected_topic
+        meta_description = ""
+        keywords = target_keywords
         excerpt = ""
         read_time = 5
         content_start = 0
         
         for i, line in enumerate(lines):
-            if line.lower().startswith('title:'):
-                title = line.replace('Title:', '').replace('title:', '').strip()
-            elif line.lower().startswith('excerpt:'):
-                excerpt = line.replace('Excerpt:', '').replace('excerpt:', '').strip()
-            elif line.lower().startswith('read time:'):
+            line_lower = line.lower().strip()
+            if line_lower.startswith('title:'):
+                title = line.split(':', 1)[1].strip() if ':' in line else title
+            elif line_lower.startswith('meta_description:') or line_lower.startswith('meta description:'):
+                meta_description = line.split(':', 1)[1].strip() if ':' in line else ""
+            elif line_lower.startswith('keywords:'):
+                kw_str = line.split(':', 1)[1].strip() if ':' in line else ""
+                keywords = [k.strip() for k in kw_str.split(',') if k.strip()]
+            elif line_lower.startswith('read_time:') or line_lower.startswith('read time:'):
                 try:
                     read_time = int(''.join(filter(str.isdigit, line)))
+                    read_time = max(3, min(15, read_time))  # Clamp between 3-15 minutes
                 except:
                     read_time = 5
-            elif '<' in line:  # Start of HTML content
+            elif line_lower.startswith('excerpt:'):
+                excerpt = line.split(':', 1)[1].strip() if ':' in line else ""
+            elif '<p>' in line.lower() or '<h2>' in line.lower():
                 content_start = i
                 break
         
         content = '\n'.join(lines[content_start:])
         
-        # If no excerpt found, create one from content
+        # Clean up content - remove any remaining metadata markers
+        content = content.replace('---', '').strip()
+        
+        # If no meta description found, create from excerpt or content
+        if not meta_description:
+            if excerpt:
+                meta_description = excerpt[:157] + "..." if len(excerpt) > 160 else excerpt
+            else:
+                import re
+                p_match = re.search(r'<p>(.*?)</p>', content, re.DOTALL)
+                if p_match:
+                    clean_text = re.sub(r'<[^>]+>', '', p_match.group(1))
+                    meta_description = clean_text[:157] + "..." if len(clean_text) > 160 else clean_text
+        
+        # If no excerpt found, create one
         if not excerpt:
             import re
             p_match = re.search(r'<p>(.*?)</p>', content, re.DOTALL)
             if p_match:
-                excerpt = re.sub(r'<[^>]+>', '', p_match.group(1))[:200] + "..."
+                excerpt = re.sub(r'<[^>]+>', '', p_match.group(1))[:250]
             else:
-                excerpt = selected_topic
+                excerpt = meta_description or selected_topic
         
-        # Create slug from title
+        # Create SEO-friendly slug from title
         slug = title.lower()
         slug = ''.join(c if c.isalnum() or c == ' ' else '' for c in slug)
-        slug = slug.replace(' ', '-')[:50]
-        slug = f"{slug}-{str(uuid.uuid4())[:8]}"
+        slug = '-'.join(slug.split())[:60]  # Limit slug length
+        slug = f"{slug}-{str(uuid.uuid4())[:6]}"
         
-        # Save to database
+        # Calculate word count
+        import re
+        word_count = len(re.sub(r'<[^>]+>', '', content).split())
+        
+        # Save to database with SEO metadata
         post = {
             "id": str(uuid.uuid4()),
             "slug": slug,
             "title": title,
             "excerpt": excerpt,
+            "meta_description": meta_description,
+            "keywords": keywords,
             "content": content,
             "category": selected_category,
             "read_time": read_time,
+            "word_count": word_count,
             "image_url": None,
             "status": "published",
             "published_at": datetime.now(timezone.utc).isoformat(),
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "auto_generated": True
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "auto_generated": True,
+            "seo_score": "optimized"
         }
         
         await db.blog_posts.insert_one(post)
