@@ -19,7 +19,8 @@ import {
   Loader2,
   CheckCircle,
   Sparkles,
-  X
+  X,
+  Building
 } from 'lucide-react';
 
 const Billing = () => {
@@ -144,8 +145,13 @@ const Billing = () => {
   };
 
   const canUpgrade = (planId) => {
-    const hierarchy = { free: 0, standard: 1, pro: 2 };
+    const hierarchy = { free: 0, standard: 1, pro: 2, enterprise: 3 };
     return hierarchy[planId] > hierarchy[subscription?.plan || 'free'];
+  };
+
+  const canDowngrade = (planId) => {
+    const hierarchy = { free: 0, standard: 1, pro: 2, enterprise: 3 };
+    return hierarchy[planId] < hierarchy[subscription?.plan || 'free'];
   };
 
   if (loading || checkingPayment) {
@@ -287,7 +293,7 @@ const Billing = () => {
         </div>
 
         {/* Pricing Plans */}
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {plans.map((plan) => (
             <Card 
               key={plan.id}
@@ -307,6 +313,7 @@ const Billing = () => {
               
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  {plan.id === 'enterprise' && <Building className="w-5 h-5 text-purple-500" />}
                   {plan.id === 'pro' && <Crown className="w-5 h-5 text-yellow-500" />}
                   {plan.id === 'standard' && <Zap className="w-5 h-5 text-blue-500" />}
                   {plan.name}
@@ -350,9 +357,13 @@ const Billing = () => {
                     Upgrade
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                ) : (
+                ) : plan.id === 'free' ? (
                   <Button className="w-full" variant="secondary" disabled>
-                    {plan.id === 'free' ? 'Free Forever' : 'Downgrade'}
+                    Free Forever
+                  </Button>
+                ) : (
+                  <Button className="w-full" variant="outline" disabled>
+                    Contact Support to Change
                   </Button>
                 )}
               </CardFooter>
