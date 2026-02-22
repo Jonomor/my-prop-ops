@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const RentPayments = () => {
-  const { token, currentOrg } = useContext(AuthContext);
+  const { token, currentOrg } = useAuth();
   const [payments, setPayments] = useState([]);
   const [summary, setSummary] = useState(null);
   const [tenants, setTenants] = useState([]);

@@ -18,7 +18,7 @@ import { toast } from 'sonner';
 const API = process.env.REACT_APP_BACKEND_URL;
 
 const Screening = () => {
-  const { token, currentOrg } = useContext(AuthContext);
+  const { token, currentOrg } = useAuth();
   const [screenings, setScreenings] = useState([]);
   const [tenants, setTenants] = useState([]);
   const [loading, setLoading] = useState(true);
