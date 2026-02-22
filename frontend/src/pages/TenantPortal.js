@@ -180,6 +180,38 @@ const TenantPortal = () => {
     setMaintenancePhotos([...maintenancePhotos, ...newPhotos]);
   };
 
+  // Native camera photo capture
+  const handleNativePhoto = async (source = 'prompt') => {
+    if (maintenancePhotos.length >= 5) {
+      toast.error('Maximum 5 photos allowed');
+      return;
+    }
+
+    try {
+      // Haptic feedback on native
+      await haptics.light();
+      
+      const photo = await takePhoto(source);
+      
+      // Convert base64 to blob/file
+      const response = await fetch(photo.dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `photo_${Date.now()}.${photo.format}`, { type: `image/${photo.format}` });
+      
+      setMaintenancePhotos([...maintenancePhotos, {
+        file,
+        preview: photo.dataUrl
+      }]);
+      
+      await haptics.success();
+      toast.success('Photo added!');
+    } catch (error) {
+      if (!error.message?.includes('cancel')) {
+        toast.error('Failed to capture photo');
+      }
+    }
+  };
+
   const handlePhotoRemove = (index) => {
     const newPhotos = [...maintenancePhotos];
     URL.revokeObjectURL(newPhotos[index].preview);
