@@ -132,7 +132,7 @@ const RentPayments = () => {
     setSubmitting(true);
     try {
       const res = await axios.post(
-        `${API}/api/rent-payments/generate-monthly?org_id=${currentOrg.id}&month=${selectedMonth}&year=${selectedYear}`,
+        `${API}/api/rent-payments/generate-monthly?org_id=${currentOrg.org_id}&month=${selectedMonth}&year=${selectedYear}`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
