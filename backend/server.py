@@ -5923,6 +5923,188 @@ async def update_feature_flags(flags: dict, admin = Depends(get_current_admin)):
     )
     return {"message": "Feature flags updated"}
 
+@api_router.get("/admin/feature-flags")
+async def get_feature_flags(admin = Depends(get_current_admin)):
+    """Get current feature flags"""
+    settings = await db.system_settings.find_one({"type": "feature_flags"}, {"_id": 0})
+    if settings and "flags" in settings:
+        return settings["flags"]
+    return {
+        "maintenance_requests": True,
+        "tenant_screening": True,
+        "ai_insights": True,
+        "auto_blog": True
+    }
+
+@api_router.get("/admin/users/{user_id}")
+async def get_admin_user_details(user_id: str, admin = Depends(get_current_admin)):
+    """Get detailed user information"""
+    user = await db.users.find_one(
+        {"id": user_id},
+        {"_id": 0, "password": 0, "two_factor_secret": 0, "two_factor_backup_codes": 0}
+    )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Get user's memberships and organizations
+    memberships = await db.memberships.find({"user_id": user_id}, {"_id": 0}).to_list(100)
+    org_ids = [m["org_id"] for m in memberships]
+    organizations = await db.organizations.find({"id": {"$in": org_ids}}, {"_id": 0}).to_list(100)
+    
+    # Get activity stats
+    properties_count = 0
+    units_count = 0
+    tenants_count = 0
+    maintenance_count = 0
+    
+    for org_id in org_ids:
+        properties_count += await db.properties.count_documents({"org_id": org_id})
+        units_count += await db.units.count_documents({"org_id": org_id})
+        tenants_count += await db.tenants.count_documents({"org_id": org_id})
+        maintenance_count += await db.maintenance_requests.count_documents({"org_id": org_id})
+    
+    user["organizations"] = organizations
+    user["memberships"] = memberships
+    user["stats"] = {
+        "properties": properties_count,
+        "units": units_count,
+        "tenants": tenants_count,
+        "maintenance_requests": maintenance_count
+    }
+    
+    return user
+
+@api_router.put("/admin/users/{user_id}/status")
+async def toggle_user_status(user_id: str, admin = Depends(get_current_admin)):
+    """Enable or disable a user account"""
+    user = await db.users.find_one({"id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    new_status = not user.get("disabled", False)
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {"disabled": new_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Log the action
+    await db.audit_logs.insert_one({
+        "action": f"User {'disabled' if new_status else 'enabled'}",
+        "type": "warning" if new_status else "info",
+        "details": f"User {user.get('email')} was {'disabled' if new_status else 'enabled'} by admin",
+        "user_email": user.get("email"),
+        "admin_action": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"message": f"User {'disabled' if new_status else 'enabled'}", "disabled": new_status}
+
+@api_router.post("/admin/users/{user_id}/impersonate")
+async def impersonate_user(user_id: str, admin = Depends(get_current_admin)):
+    """Generate a token to impersonate a user"""
+    user = await db.users.find_one({"id": user_id}, {"_id": 0, "password": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Generate an impersonation token
+    token = jwt.encode({
+        "user_id": user["id"],
+        "email": user["email"],
+        "impersonated_by": admin["email"],
+        "exp": datetime.now(timezone.utc) + timedelta(hours=2)
+    }, JWT_SECRET, algorithm="HS256")
+    
+    # Log the impersonation
+    await db.audit_logs.insert_one({
+        "action": "User impersonation",
+        "type": "warning",
+        "details": f"Admin impersonated user {user.get('email')}",
+        "user_email": user.get("email"),
+        "admin_email": admin["email"],
+        "admin_action": True,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    return {"token": token, "user": user}
+
+class AdminBlogPost(BaseModel):
+    title: str
+    excerpt: str
+    content: str
+    category: str = "Property Management"
+    status: str = "published"
+    meta_description: Optional[str] = None
+    keywords: Optional[List[str]] = None
+
+@api_router.post("/admin/blog")
+async def create_admin_blog_post(post: AdminBlogPost, admin = Depends(get_current_admin)):
+    """Create a new blog post"""
+    slug = post.title.lower().replace(" ", "-").replace("'", "").replace('"', "")
+    slug = ''.join(c for c in slug if c.isalnum() or c == '-')
+    
+    blog_post = {
+        "id": str(uuid.uuid4()),
+        "title": post.title,
+        "slug": slug,
+        "excerpt": post.excerpt,
+        "content": post.content,
+        "category": post.category,
+        "status": post.status,
+        "author": "MyPropOps Team",
+        "read_time": max(1, len(post.content.split()) // 200),
+        "meta_description": post.meta_description or post.excerpt[:160],
+        "keywords": post.keywords or [],
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "published_at": datetime.now(timezone.utc).isoformat() if post.status == "published" else None,
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.blog_posts.insert_one(blog_post)
+    del blog_post["_id"] if "_id" in blog_post else None
+    
+    return blog_post
+
+@api_router.put("/admin/blog/{post_id}")
+async def update_admin_blog_post(post_id: str, post: AdminBlogPost, admin = Depends(get_current_admin)):
+    """Update a blog post"""
+    existing = await db.blog_posts.find_one({"id": post_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    
+    update_data = {
+        "title": post.title,
+        "excerpt": post.excerpt,
+        "content": post.content,
+        "category": post.category,
+        "status": post.status,
+        "meta_description": post.meta_description or post.excerpt[:160],
+        "keywords": post.keywords or [],
+        "read_time": max(1, len(post.content.split()) // 200),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    if post.status == "published" and existing.get("status") != "published":
+        update_data["published_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.blog_posts.update_one({"id": post_id}, {"$set": update_data})
+    
+    updated = await db.blog_posts.find_one({"id": post_id}, {"_id": 0})
+    return updated
+
+@api_router.get("/admin/blog/{post_id}")
+async def get_admin_blog_post(post_id: str, admin = Depends(get_current_admin)):
+    """Get a blog post by ID (including drafts)"""
+    post = await db.blog_posts.find_one({"id": post_id}, {"_id": 0})
+    if not post:
+        raise HTTPException(status_code=404, detail="Blog post not found")
+    return post
+
+@api_router.get("/admin/blog")
+async def get_admin_all_blog_posts(admin = Depends(get_current_admin)):
+    """Get all blog posts including drafts"""
+    posts = await db.blog_posts.find({}, {"_id": 0}).sort("created_at", -1).to_list(1000)
+    return posts
+
 
 # ============== BLOG SYSTEM ==============
 
