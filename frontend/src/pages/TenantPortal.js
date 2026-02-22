@@ -355,6 +355,7 @@ const TenantPortal = () => {
     { id: 'dashboard', label: 'Dashboard', icon: Home },
     { id: 'documents', label: 'Documents', icon: FileText },
     { id: 'status', label: 'Application Status', icon: CheckCircle },
+    { id: 'maintenance', label: 'Maintenance', icon: Wrench },
     { id: 'appointments', label: 'Appointments', icon: Calendar },
     { id: 'messages', label: 'Messages', icon: MessageSquare },
     { id: 'profile', label: 'My Profile', icon: User },
