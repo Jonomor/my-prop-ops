@@ -1,0 +1,81 @@
+{
+  "summary": "All tests PASSED for the 3-tier pricing update and new feature pages. Verified: Landing page shows 3 tiers (Free $0, Standard $39, Pro $119). Dashboard Billing page shows same 3 tiers. All 4 new feature pages load correctly: Reports, Analytics, API Keys, Branding. All pages show appropriate upgrade notices for Free plan users. Enterprise tier has been successfully removed from both Landing and Billing pages.",
+
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "Backend: GET /api/billing/plans returns exactly 3 plans (free, standard, pro)",
+    "Backend: Free plan pricing is $0",
+    "Backend: Standard plan pricing is $39/annual, $49/monthly",
+    "Backend: Pro plan pricing is $119/annual, $149/monthly",
+    "Backend: Enterprise plan NOT in plans list (correctly removed)",
+    "Backend: GET /api/billing/subscription-status works",
+    "Backend: GET /api/reports/export/{type} endpoint exists for all 4 types",
+    "Backend: GET /api/analytics/dashboard returns proper data structure",
+    "Backend: GET /api/api-keys returns keys list or plan_required notice",
+    "Backend: GET /api/branding returns branding settings",
+    "Backend: All endpoints properly gate features by plan",
+    "Landing Page: Shows 3 pricing tiers (Free, Standard, Pro)",
+    "Landing Page: Monthly/Annual toggle works correctly",
+    "Landing Page: Free tier shows $0/month",
+    "Landing Page: Standard tier shows $39/month annual, $49/month monthly",
+    "Landing Page: Pro tier shows $119/month annual, $149/month monthly",
+    "Landing Page: Enterprise tier NOT displayed (correctly removed)",
+    "Landing Page: Standard plan features include Contractor Portal, Exportable reports, Tenant Screening",
+    "Landing Page: Pro plan features include Analytics, Custom branding, API access, 2FA",
+    "Dashboard Sidebar: Reports link visible",
+    "Dashboard Sidebar: Analytics link visible",
+    "Dashboard Sidebar: API Keys link visible",
+    "Dashboard Sidebar: Branding link visible",
+    "Dashboard Billing: 3 plan cards displayed (Free, Standard, Pro)",
+    "Dashboard Billing: Enterprise card NOT displayed (correctly removed)",
+    "Dashboard Billing: Upgrade buttons work for Standard and Pro",
+    "Reports Page: Loads correctly with 4 report types",
+    "Reports Page: Shows upgrade notice for Free users",
+    "Analytics Page: Loads correctly with charts and metrics",
+    "Analytics Page: Shows upgrade notice for Free users viewing sample data",
+    "API Keys Page: Loads correctly with upgrade notice for non-Pro users",
+    "Branding Page: Loads correctly with logo/color options and upgrade notice"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_new_features.py",
+    "/app/test_reports/pytest/new_features_results.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [],
+
+  "updated_files": [
+    "/app/backend/tests/test_new_features.py"
+  ],
+
+  "success_rate": {
+    "backend": "100%",
+    "frontend": "100%"
+  },
+
+  "test_credentials": {
+    "manager_login": {
+      "email": "test@test.com",
+      "password": "test123"
+    }
+  },
+
+  "seed_data_creation": "None - used existing test user",
+
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "context_for_next_testing_agent": "Enterprise tier has been removed from both Landing page and Dashboard Billing page. Now showing 3 tiers: Free ($0), Standard ($39/$49), Pro ($119/$149). Four new feature pages added: Reports, Analytics, API Keys, Branding. All pages are plan-gated: Reports requires Standard+, Analytics/API Keys/Branding require Pro. Free users see upgrade notices. All backend endpoints working correctly with proper plan validation."
+}
