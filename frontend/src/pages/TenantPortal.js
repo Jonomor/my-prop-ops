@@ -41,7 +41,10 @@ import {
   Wrench,
   Camera,
   Image,
-  Trash2
+  Trash2,
+  CreditCard,
+  Receipt,
+  AlertTriangle
 } from 'lucide-react';
 
 const HOUSING_PROGRAMS = [
