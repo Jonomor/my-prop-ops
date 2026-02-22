@@ -1289,6 +1289,156 @@ const TenantPortal = () => {
                 )}
               </div>
             )}
+
+            {/* Payments Tab */}
+            {activeTab === 'payments' && (
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-2xl font-bold">Rent Payments</h1>
+                  <p className="text-muted-foreground">Pay your rent securely online.</p>
+                </div>
+
+                {/* Payment Summary */}
+                {rentPayments.length > 0 && (
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+                      <CardContent className="p-4">
+                        <p className="text-sm text-emerald-100">Total Due This Month</p>
+                        <p className="text-3xl font-bold">
+                          ${rentPayments.filter(p => p.status !== 'paid').reduce((sum, p) => sum + (p.amount - (p.paid_amount || 0)), 0).toLocaleString()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Pending Payments</p>
+                        <p className="text-3xl font-bold text-amber-600">
+                          {rentPayments.filter(p => p.status === 'pending').length}
+                        </p>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-4">
+                        <p className="text-sm text-muted-foreground">Paid This Year</p>
+                        <p className="text-3xl font-bold text-green-600">
+                          ${rentPayments.filter(p => p.status === 'paid').reduce((sum, p) => sum + p.amount, 0).toLocaleString()}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+
+                {/* Payment List */}
+                {rentPayments.length === 0 ? (
+                  <Card>
+                    <CardContent className="p-12 text-center">
+                      <Receipt className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                      <h3 className="font-semibold mb-2">No rent payments due</h3>
+                      <p className="text-muted-foreground">You're all caught up! Check back later for new invoices.</p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="space-y-4">
+                    {rentPayments.map((payment) => (
+                      <Card key={payment.id} className={`hover:shadow-md transition-shadow ${
+                        payment.status === 'overdue' ? 'border-red-300 bg-red-50/50' : ''
+                      }`}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between gap-4">
+                            <div className="flex items-center gap-4">
+                              <div className={`p-3 rounded-xl ${
+                                payment.status === 'paid' ? 'bg-green-100' :
+                                payment.status === 'overdue' ? 'bg-red-100' :
+                                'bg-amber-100'
+                              }`}>
+                                {payment.status === 'paid' ? (
+                                  <CheckCircle className="w-6 h-6 text-green-600" />
+                                ) : payment.status === 'overdue' ? (
+                                  <AlertTriangle className="w-6 h-6 text-red-600" />
+                                ) : (
+                                  <Clock className="w-6 h-6 text-amber-600" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="font-semibold">
+                                  {payment.property_name && `${payment.property_name} - `}
+                                  {payment.unit_number ? `Unit ${payment.unit_number}` : 'Rent Payment'}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  Due: {new Date(payment.due_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                </p>
+                                <Badge className={
+                                  payment.status === 'paid' ? 'bg-green-100 text-green-700' :
+                                  payment.status === 'overdue' ? 'bg-red-100 text-red-700' :
+                                  payment.status === 'partial' ? 'bg-blue-100 text-blue-700' :
+                                  'bg-amber-100 text-amber-700'
+                                }>
+                                  {payment.status === 'paid' ? 'Paid' : 
+                                   payment.status === 'overdue' ? 'Overdue' :
+                                   payment.status === 'partial' ? 'Partial Payment' : 'Due'}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-2xl font-bold">${payment.amount.toLocaleString()}</p>
+                              {payment.paid_amount > 0 && payment.paid_amount < payment.amount && (
+                                <p className="text-sm text-green-600">
+                                  Paid: ${payment.paid_amount.toLocaleString()}
+                                </p>
+                              )}
+                              {payment.status !== 'paid' && (
+                                <Button 
+                                  className="mt-2 bg-emerald-600 hover:bg-emerald-700"
+                                  onClick={async () => {
+                                    setProcessingPayment(true);
+                                    try {
+                                      const res = await api.post(`/api/tenant-portal/pay-rent/${payment.id}`, {
+                                        return_url: window.location.href
+                                      });
+                                      if (res.data.checkout_url) {
+                                        window.location.href = res.data.checkout_url;
+                                      }
+                                    } catch (error) {
+                                      toast.error(error.response?.data?.detail || 'Failed to initiate payment');
+                                    } finally {
+                                      setProcessingPayment(false);
+                                    }
+                                  }}
+                                  disabled={processingPayment}
+                                  data-testid={`pay-rent-${payment.id}`}
+                                >
+                                  {processingPayment ? (
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  ) : (
+                                    <CreditCard className="w-4 h-4 mr-2" />
+                                  )}
+                                  Pay ${(payment.amount - (payment.paid_amount || 0)).toLocaleString()}
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
+                {/* Payment Methods Info */}
+                <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-blue-800 dark:text-blue-200">Secure Payment</p>
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          All payments are processed securely through Stripe. We accept all major credit and debit cards.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </main>
         </div>
       </div>
