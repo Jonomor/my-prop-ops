@@ -61,7 +61,6 @@ const navItems = [
   { path: '/team', label: 'Team', icon: UserPlus },
   { path: '/members', label: 'Members', icon: Users },
   { path: '/api-keys', label: 'API Keys', icon: Key },
-  { path: '/branding', label: 'Branding', icon: Palette },
   { path: '/2fa-settings', label: 'Security (2FA)', icon: Shield },
   { path: '/billing', label: 'Billing', icon: CreditCard },
   { path: '/audit-logs', label: 'Audit Logs', icon: History },
