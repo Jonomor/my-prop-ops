@@ -342,10 +342,13 @@ export const Layout = ({ children }) => {
         </header>
 
         {/* Page content */}
-        <main className="p-6 md:p-8">
+        <main className="p-4 md:p-8 pb-20 lg:pb-8">
           {children}
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileNav onMenuClick={() => setSidebarOpen(true)} />
     </div>
   );
 };
