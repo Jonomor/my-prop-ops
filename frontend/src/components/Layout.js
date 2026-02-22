@@ -219,6 +219,11 @@ export const Layout = ({ children }) => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => navigate('/')} data-testid="back-to-website-btn">
+                  <Home className="w-4 h-4 mr-2" />
+                  Back to Website
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => navigate('/invites')} data-testid="pending-invites-btn">
                   <Mail className="w-4 h-4 mr-2" />
                   Pending Invites
