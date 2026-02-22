@@ -4905,6 +4905,234 @@ SCREENING_PACKAGES = {
     "pack25": {"credits": 25, "price": 72500}  # $725
 }
 
+
+# ============== RENT PAYMENTS ENDPOINTS ==============
+
+class RentPaymentCreate(BaseModel):
+    tenant_id: str
+    unit_id: str
+    amount: float
+    due_date: str
+    notes: Optional[str] = None
+
+class RecordPaymentRequest(BaseModel):
+    amount: float
+    payment_method: str = "check"
+    notes: Optional[str] = None
+
+@api_router.get("/rent-payments")
+async def get_rent_payments(
+    org_id: str,
+    month: int = None,
+    year: int = None,
+    status: str = None,
+    user = Depends(get_current_user)
+):
+    """Get rent payments for organization"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership or membership['org_id'] != org_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    query = {"org_id": org_id}
+    
+    if month and year:
+        # Filter by month/year
+        start_date = datetime(year, month, 1, tzinfo=timezone.utc)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+        else:
+            end_date = datetime(year, month + 1, 1, tzinfo=timezone.utc)
+        query["due_date"] = {"$gte": start_date.isoformat(), "$lt": end_date.isoformat()}
+    
+    if status and status != 'all':
+        query["status"] = status
+    
+    payments = await db.rent_payments.find(query, {"_id": 0}).sort("due_date", -1).to_list(500)
+    return payments
+
+@api_router.get("/rent-payments/summary")
+async def get_rent_payments_summary(
+    org_id: str,
+    month: int = None,
+    year: int = None,
+    user = Depends(get_current_user)
+):
+    """Get rent payment summary for organization"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership or membership['org_id'] != org_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    query = {"org_id": org_id}
+    
+    if month and year:
+        start_date = datetime(year, month, 1, tzinfo=timezone.utc)
+        if month == 12:
+            end_date = datetime(year + 1, 1, 1, tzinfo=timezone.utc)
+        else:
+            end_date = datetime(year, month + 1, 1, tzinfo=timezone.utc)
+        query["due_date"] = {"$gte": start_date.isoformat(), "$lt": end_date.isoformat()}
+    
+    payments = await db.rent_payments.find(query, {"_id": 0}).to_list(500)
+    
+    total_expected = sum(p.get("amount", 0) for p in payments)
+    total_collected = sum(p.get("paid_amount", 0) for p in payments if p.get("status") == "paid")
+    pending_count = len([p for p in payments if p.get("status") == "pending"])
+    paid_count = len([p for p in payments if p.get("status") == "paid"])
+    overdue_count = len([p for p in payments if p.get("status") == "overdue"])
+    
+    return {
+        "total_expected": total_expected,
+        "total_collected": total_collected,
+        "outstanding": total_expected - total_collected,
+        "collection_rate": round((total_collected / total_expected * 100) if total_expected > 0 else 0, 1),
+        "pending_count": pending_count,
+        "paid_count": paid_count,
+        "overdue_count": overdue_count,
+        "total_payments": len(payments)
+    }
+
+@api_router.post("/rent-payments")
+async def create_rent_payment(
+    org_id: str,
+    data: RentPaymentCreate,
+    user = Depends(get_current_user)
+):
+    """Create a rent payment record"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership or membership['org_id'] != org_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get tenant and unit info
+    tenant = await db.tenants.find_one({"id": data.tenant_id, "org_id": org_id})
+    unit = await db.units.find_one({"id": data.unit_id, "org_id": org_id})
+    
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+    
+    payment_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc)
+    
+    due_date = datetime.fromisoformat(data.due_date.replace('Z', '+00:00'))
+    status = "overdue" if due_date < now else "pending"
+    
+    payment_doc = {
+        "id": payment_id,
+        "org_id": org_id,
+        "tenant_id": data.tenant_id,
+        "tenant_name": f"{tenant['first_name']} {tenant['last_name']}",
+        "tenant_email": tenant.get("email"),
+        "unit_id": data.unit_id,
+        "unit_number": unit.get("unit_number") if unit else None,
+        "property_name": unit.get("property_name") if unit else None,
+        "amount": data.amount,
+        "paid_amount": 0,
+        "due_date": data.due_date,
+        "status": status,
+        "notes": data.notes,
+        "created_by": user['id'],
+        "created_at": now.isoformat()
+    }
+    
+    await db.rent_payments.insert_one(payment_doc)
+    
+    return {"id": payment_id, "message": "Rent payment created"}
+
+@api_router.post("/rent-payments/{payment_id}/record")
+async def record_payment(
+    payment_id: str,
+    data: RecordPaymentRequest,
+    user = Depends(get_current_user)
+):
+    """Record a payment received"""
+    payment = await db.rent_payments.find_one({"id": payment_id})
+    if not payment:
+        raise HTTPException(status_code=404, detail="Payment not found")
+    
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership or membership['org_id'] != payment['org_id']:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    now = datetime.now(timezone.utc)
+    new_paid_amount = payment.get("paid_amount", 0) + data.amount
+    new_status = "paid" if new_paid_amount >= payment['amount'] else "partial"
+    
+    await db.rent_payments.update_one(
+        {"id": payment_id},
+        {"$set": {
+            "paid_amount": new_paid_amount,
+            "status": new_status,
+            "payment_method": data.payment_method,
+            "payment_date": now.isoformat(),
+            "payment_notes": data.notes
+        }}
+    )
+    
+    return {"message": "Payment recorded", "new_status": new_status}
+
+@api_router.post("/rent-payments/generate-monthly")
+async def generate_monthly_payments(
+    org_id: str,
+    month: int,
+    year: int,
+    user = Depends(get_current_user)
+):
+    """Generate rent payment records for all active tenants"""
+    membership = await db.memberships.find_one({"user_id": user['id']})
+    if not membership or membership['org_id'] != org_id:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    # Get all active tenants with their units
+    tenants = await db.tenants.find({"org_id": org_id, "status": "active"}, {"_id": 0}).to_list(500)
+    
+    created_count = 0
+    skipped_count = 0
+    
+    for tenant in tenants:
+        unit = await db.units.find_one({"tenant_id": tenant['id'], "org_id": org_id})
+        if not unit or not unit.get("rent"):
+            skipped_count += 1
+            continue
+        
+        # Check if payment already exists for this tenant/month
+        due_date = datetime(year, month, 1, tzinfo=timezone.utc)
+        existing = await db.rent_payments.find_one({
+            "tenant_id": tenant['id'],
+            "org_id": org_id,
+            "due_date": {"$regex": f"^{year}-{month:02d}"}
+        })
+        
+        if existing:
+            skipped_count += 1
+            continue
+        
+        payment_id = str(uuid.uuid4())
+        payment_doc = {
+            "id": payment_id,
+            "org_id": org_id,
+            "tenant_id": tenant['id'],
+            "tenant_name": f"{tenant['first_name']} {tenant['last_name']}",
+            "tenant_email": tenant.get("email"),
+            "unit_id": unit['id'],
+            "unit_number": unit.get("unit_number"),
+            "property_name": unit.get("property_name"),
+            "amount": unit['rent'],
+            "paid_amount": 0,
+            "due_date": due_date.isoformat(),
+            "status": "pending",
+            "created_by": user['id'],
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.rent_payments.insert_one(payment_doc)
+        created_count += 1
+    
+    return {
+        "message": f"Generated {created_count} payment records, skipped {skipped_count}",
+        "created": created_count,
+        "skipped": skipped_count
+    }
+
+
 @api_router.get("/screening/credits")
 async def get_screening_credits(user = Depends(get_current_user)):
     """Get organization's screening credit balance"""
