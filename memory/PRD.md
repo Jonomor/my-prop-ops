@@ -41,11 +41,29 @@
   - Splash Screen & Status Bar
   - Keyboard handling
   - App lifecycle & deep links
-- ✅ **capacitor.config.ts** - Configured with app settings
+- ✅ **capacitor.config.ts** - Configured for API 35+ (Android) and iOS 18+
 - ✅ **Native integration utilities** - `/src/utils/native.js` created
 - ✅ **TenantPortal updated** - Native camera support for maintenance photos
 - ✅ **Build scripts added** - `yarn cap:sync`, `yarn cap:android`, `yarn cap:ios`
 - ✅ **Build guide created** - `/frontend/NATIVE_APP_BUILD_GUIDE.md`
+
+#### App Store Publishing Setup (COMPLETE)
+- ✅ **GitHub Actions CI/CD** - `/.github/workflows/build-native-apps.yml`
+  - Automated Android APK/AAB builds
+  - Automated iOS IPA builds
+  - Auto-upload to Play Store (internal) and App Store Connect on version tags
+  - GitHub Release creation with artifacts
+- ✅ **App Store Publishing Guide** - `/APP_STORE_PUBLISHING_GUIDE.md`
+  - Google Play Store requirements (Data Safety, Content Rating, 14-day testing)
+  - Apple App Store requirements (Privacy Manifest, App Privacy labels)
+  - Complete submission checklist
+- ✅ **iOS Privacy Manifest** - `/frontend/ios-privacy-manifest/PrivacyInfo.xcprivacy`
+  - NSPrivacyCollectedDataTypes (email, name, phone, photos, etc.)
+  - NSPrivacyAccessedAPITypes (UserDefaults, FileTimestamp)
+- ✅ **Reviewer Demo Account Created**
+  - Email: reviewer@mypropops.com
+  - Password: ReviewerAccess2026!
+  - Pre-populated with Pro subscription, properties, tenants, maintenance requests
 
 #### Super Admin Dashboard (COMPLETE)
 - ✅ **Admin Login** at `/admin/login` with secure authentication
