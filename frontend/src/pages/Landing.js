@@ -584,14 +584,14 @@ const Landing = () => {
 
             {/* CTA Card */}
             <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-primary/80 shadow-lg flex flex-col items-center justify-center p-6 text-white aspect-video">
-              <div className="text-center">
-                <Play className="w-16 h-16 mx-auto mb-6 opacity-80" />
-                <h3 className="text-2xl font-bold mb-2">Ready to Transform Your Workflow?</h3>
-                <p className="text-white/80 mb-6">Join 500+ property managers who made the switch</p>
+              <div className="text-center flex flex-col items-center justify-center h-full">
+                <Play className="w-10 h-10 mb-3 opacity-80" />
+                <h3 className="text-lg font-bold mb-1">Ready to Transform?</h3>
+                <p className="text-white/80 text-xs mb-3">Join 500+ property managers</p>
                 <Link to="/register">
-                  <Button size="lg" variant="secondary" className="font-semibold">
-                    Start Free Trial
-                    <ArrowRight className="w-4 h-4 ml-2" />
+                  <Button size="sm" variant="secondary" className="font-semibold">
+                    Start Free
+                    <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
                 </Link>
               </div>
