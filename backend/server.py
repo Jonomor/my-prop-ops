@@ -139,6 +139,55 @@ def is_feature_enabled(feature: str) -> bool:
     """Check if a feature flag is enabled"""
     return FEATURE_FLAGS.get(feature, False)
 
+# ============== RATE LIMITING ==============
+from collections import defaultdict
+import time
+
+class RateLimiter:
+    """Simple in-memory rate limiter for login endpoints"""
+    def __init__(self, max_attempts: int = 5, window_seconds: int = 300):
+        self.max_attempts = max_attempts  # Max attempts per window
+        self.window_seconds = window_seconds  # Time window in seconds (5 minutes)
+        self.attempts = defaultdict(list)  # IP -> list of timestamps
+    
+    def is_rate_limited(self, identifier: str) -> bool:
+        """Check if identifier (IP or email) is rate limited"""
+        now = time.time()
+        # Clean old attempts outside the window
+        self.attempts[identifier] = [
+            ts for ts in self.attempts[identifier] 
+            if now - ts < self.window_seconds
+        ]
+        return len(self.attempts[identifier]) >= self.max_attempts
+    
+    def record_attempt(self, identifier: str):
+        """Record a login attempt"""
+        self.attempts[identifier].append(time.time())
+    
+    def get_remaining_time(self, identifier: str) -> int:
+        """Get seconds until rate limit resets"""
+        if not self.attempts[identifier]:
+            return 0
+        oldest = min(self.attempts[identifier])
+        remaining = self.window_seconds - (time.time() - oldest)
+        return max(0, int(remaining))
+    
+    def clear(self, identifier: str):
+        """Clear attempts for identifier (on successful login)"""
+        if identifier in self.attempts:
+            del self.attempts[identifier]
+
+# Initialize rate limiters
+login_rate_limiter = RateLimiter(max_attempts=5, window_seconds=300)  # 5 attempts per 5 minutes
+register_rate_limiter = RateLimiter(max_attempts=3, window_seconds=600)  # 3 attempts per 10 minutes
+
+def get_client_ip(request: Request) -> str:
+    """Get client IP from request, handling proxies"""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
 # ============== PLAN LIMITS ==============
 PLAN_LIMITS = {
     "free": {
