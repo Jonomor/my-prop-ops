@@ -1,587 +1,86 @@
 # MyPropOps - Product Requirements Document
 
-## Latest Update: February 23, 2026 (Session 6 - WebSocket Real-time Notifications)
+## Project Overview
+MyPropOps is a full-stack SaaS web application for property and housing operations management, deployed on Railway with MongoDB Atlas.
 
-### Completed This Session:
+**Production URL:** https://mypropops.com
+**Backend URL:** https://backend-production-0325.up.railway.app
 
-#### WebSocket Real-time Notifications (COMPLETE)
-- ✅ **Backend WebSocket Manager** - Connection manager supporting multiple user types
-  - Endpoint: `/api/ws/{user_type}/{token}` (manager, contractor, tenant, admin)
-  - Status endpoint: `/api/ws/status` - Returns active connection counts
-  - Automatic token validation and user authentication
-- ✅ **Frontend WebSocket Integration**
-  - WebSocketContext with auto-reconnection (exponential backoff)
-  - Ping/pong keep-alive mechanism (30-second intervals)
-  - Real-time toast notifications based on priority
-- ✅ **UI Enhancements**
-  - "Live" status indicator in header (green when connected, amber when offline)
-  - Notification priority indicators (red=critical, amber=important)
-  - Live badge in notifications dropdown
-- ✅ **Notification Broadcasting**
-  - Maintenance requests trigger real-time notifications
-  - Contractor job assignments broadcast instantly
-  - All notifications persist to database AND push via WebSocket
-
-#### Test Results
-- **Backend:** 100% (7/7 WebSocket tests passed)
-- **Frontend:** 100% (all WebSocket UI features working)
-
----
-
-### Deployment Readiness Check (COMPLETE - Session 6)
-- ✅ **Full Regression Testing** - All critical features tested via testing_agent_v3_fork
-- ✅ **All Authentication Flows Verified**:
-  - Manager Login: test@test.com / test123 ✓
-  - Contractor Login: testcontractor@test.com / test123 ✓
-  - Tenant Portal Login: testtenant@test.com / test123 ✓
-  - Admin Login: admin@mypropops.com / MyPropOps@Admin2026! ✓
-- ✅ **Recently Fixed Bugs Verified**:
-  - Contractor specialty selection - No more infinite loop ✓
-  - Mobile sidebar logout button - Now visible and accessible ✓
-- ✅ **Dashboard & Navigation** - All menu items accessible, stats loading correctly
-- ✅ **Public Pages** - Landing, Blog, About, Privacy, Terms all working
-- ✅ **Admin Dashboard** - Stats display, user management working
-- ✅ **Billing/Stripe** - Pricing tiers displayed, checkout flow configured
-- ✅ **Rate Limiting** - Active on all login endpoints (5 attempts/5 min)
-- ✅ **Custom Branding** - Logo and favicon properly configured
-- ✅ **PWA Configuration** - manifest.json, service worker, icons all set
-
-#### Test Results Summary
-- **Backend:** 85% (22/26 tests passed - 4 failures due to test path issues, not actual bugs)
-- **Frontend:** 100% passed
-- **Critical Issues:** 0
-- **Deployment Status:** ✅ READY FOR PRODUCTION
-
----
-
-### Previously Completed (Session 5):
-
-#### Favicon Fix (COMPLETE)
-- ✅ Generated new favicon icons using AI image generation
-- ✅ Created proper icon sizes: 16x16, 32x32, 180x180, 192x192, 512x512
-- ✅ Updated index.html with cache-busting version strings (v3)
-- ✅ Updated manifest.json with all icon sizes
-
-#### Blog SEO Enhancement (COMPLETE)
-- ✅ **SEO-optimized AI prompts** - Title with power words, meta descriptions, keyword targeting
-- ✅ **Meta Description generation** - 150-160 character descriptions for search engines
-- ✅ **Keyword extraction** - 5-7 relevant keywords per post
-- ✅ **Proper heading structure** - H2/H3 hierarchy for content
-- ✅ **Word count tracking** - Stored in database and displayed on posts
-- ✅ **Dynamic meta tags** - BlogPost.js injects SEO meta tags into document head
-- ✅ **JSON-LD structured data** - Article schema for rich search results
-- ✅ **Admin SEO fields** - Keywords input field added to blog editor
-- ✅ **Open Graph & Twitter cards** - Dynamic social sharing metadata
-
-#### Launch Readiness Fixes (COMPLETE)
-- ✅ **Rate Limiting** - Added to all login endpoints (Manager, Tenant, Contractor, Admin)
-  - 5 attempts per 5 minutes for regular logins
-  - Displays remaining cooldown time to users
-- ✅ **Email Configuration** - Updated Mandrill API key and added Mailchimp OAuth credentials
-  - Mailchimp Marketing and Transactional clients now initialize correctly
-- ✅ **Tenant Screening Demo Mode Banner** - Added clear disclaimer on Screening.js
-  - Amber warning banner explains results are simulated
-  - Mentions real integration coming with TransUnion, RentPrep, etc.
-
-#### Native App (Capacitor) Setup (COMPLETE)
-- ✅ **Capacitor 6 installed** - Core, CLI, Android, iOS packages
-- ✅ **Native plugins configured:**
-  - Camera (photo capture for maintenance requests)
-  - Push Notifications
-  - Haptics (touch feedback)
-  - Share (native sharing)
-  - Splash Screen & Status Bar
-  - Keyboard handling
-  - App lifecycle & deep links
-- ✅ **capacitor.config.ts** - Configured for API 35+ (Android) and iOS 18+
-- ✅ **Native integration utilities** - `/src/utils/native.js` created
-- ✅ **TenantPortal updated** - Native camera support for maintenance photos
-- ✅ **Build scripts added** - `yarn cap:sync`, `yarn cap:android`, `yarn cap:ios`
-- ✅ **Build guide created** - `/frontend/NATIVE_APP_BUILD_GUIDE.md`
-
-#### App Store Publishing Setup (COMPLETE)
-- ✅ **GitHub Actions CI/CD** - `/.github/workflows/build-native-apps.yml`
-  - Automated Android APK/AAB builds
-  - Automated iOS IPA builds
-  - Auto-upload to Play Store (internal) and App Store Connect on version tags
-  - GitHub Release creation with artifacts
-- ✅ **App Store Publishing Guide** - `/APP_STORE_PUBLISHING_GUIDE.md`
-  - Google Play Store requirements (Data Safety, Content Rating, 14-day testing)
-  - Apple App Store requirements (Privacy Manifest, App Privacy labels)
-  - Complete submission checklist
-- ✅ **iOS Privacy Manifest** - `/frontend/ios-privacy-manifest/PrivacyInfo.xcprivacy`
-  - NSPrivacyCollectedDataTypes (email, name, phone, photos, etc.)
-  - NSPrivacyAccessedAPITypes (UserDefaults, FileTimestamp)
-- ✅ **Reviewer Demo Account Created**
-  - Email: reviewer@mypropops.com
-  - Password: ReviewerAccess2026!
-  - Pre-populated with Pro subscription, properties, tenants, maintenance requests
-
-#### Comprehensive Bug Fixes (COMPLETE - Feb 23, 2026)
-- ✅ **CRITICAL: Contractor Specialty Selection Fixed**
-  - Bug: Clicking specialty caused blue screen (infinite loop "Maximum update depth exceeded")
-  - Root cause: Radix UI Checkbox onCheckedChange conflicted with parent onClick
-  - Fix: Replaced with custom div-based checkbox, single click handler
-  - File: `/frontend/src/pages/ContractorRegister.js`
-- ✅ **Mobile Sidebar Logout Fixed**
-  - Bug: User menu with logout was hidden on mobile
-  - Fix: Added pb-16 padding to account for bottom nav, ensured user section always visible
-  - Added X close button for mobile sidebar
-  - File: `/frontend/src/components/Layout.js`
-- ✅ **Safe Area Support Added** for iOS devices with notches
-  - Added CSS env() for safe-area-inset support
-  - File: `/frontend/src/index.css`
-
-#### Super Admin Dashboard (COMPLETE)
-- ✅ **Admin Login** at `/admin/login` with secure authentication
-- ✅ **Overview Tab** - Total Users, Organizations, MRR, Properties, Subscription Breakdown, Recent Activity
-- ✅ **Users Tab** - List all users with search, view details, impersonate, disable/enable, delete
-- ✅ **Organizations Tab** - List all organizations with property/unit counts, owner info
-- ✅ **Billing Tab** - MRR, ARR, Paying Customers, Revenue Breakdown by plan
-- ✅ **Blog Tab** - Full CRUD for blog posts, AI Generate button, category/status management
-- ✅ **Audit Logs Tab** - Platform-wide activity logging with timestamps
-- ✅ **Settings Tab** - Feature flags toggles for maintenance, screening, AI insights, auto-blog
-- ✅ **User Impersonation** - Admin can log in as any user for support
-- ✅ **User Details Dialog** - View user stats, organizations, memberships
-
-#### Admin Backend Endpoints (NEW)
-- `POST /api/admin/login` - Admin authentication
-- `GET /api/admin/stats` - Platform statistics
-- `GET /api/admin/users` - List all users
-- `GET /api/admin/users/{id}` - Get user details with stats
-- `PUT /api/admin/users/{id}/status` - Toggle user enabled/disabled
-- `POST /api/admin/users/{id}/impersonate` - Generate impersonation token
-- `DELETE /api/admin/users/{id}` - Delete user
-- `GET /api/admin/organizations` - List all organizations
-- `GET /api/admin/blog` - List all blog posts (including drafts)
-- `POST /api/admin/blog` - Create blog post
-- `PUT /api/admin/blog/{id}` - Update blog post
-- `DELETE /api/admin/blog/{id}` - Delete blog post
-- `GET /api/admin/feature-flags` - Get feature flag settings
-- `PUT /api/admin/feature-flags` - Update feature flags
-- `GET /api/admin/audit-logs` - Get platform audit logs
-
----
-
-### Previously Completed (Session 4):
-
-#### About Page (NEW)
-- ✅ Professional "About Us" page at `/about`
-- ✅ Company story, values, and milestones
-- ✅ Call-to-action for sign-ups
-
-#### Automated Blog System (NEW)
-- ✅ Blog listing page at `/blog` with category filtering
-- ✅ Individual blog post pages at `/blog/{slug}`
-- ✅ AI-powered blog generation using GPT-4o
-- ✅ Backend endpoints: `/api/blog/posts`, `/api/blog/posts/{slug}`, `/api/blog/generate`
-- ✅ Scheduling script: `/app/backend/generate_blog.py`
-- ✅ Schedule: Monday, Thursday, Sunday
-- ✅ Initial 3 posts generated and published
-
-#### Footer Updates
-- ✅ Removed "Careers" link (user request)
-- ✅ Added proper links to About and Blog pages
-- ✅ Updated contact email to support@mypropops.com
-
----
-
-### Previously Completed (Sessions 1-3):
-
-#### Pricing Restructure (COMPLETE)
-- ✅ Removed Enterprise tier - now 3 tiers: Free, Standard ($39/mo), Pro ($119/mo)
-- ✅ Removed unimplementable features: White-label, Dedicated account manager, Custom integrations, SLA guarantee, Custom training
-- ✅ Updated both Landing page and Dashboard Billing page with consistent pricing
-- ✅ Fixed "Downgrade" button - now shows "Current Plan" for Free tier
-
-#### New Feature Pages Implemented (COMPLETE)
-- ✅ **Reports Page** (`/reports`) - Export properties, tenants, maintenance, inspections to CSV/PDF
-  - Plan-gated: Requires Standard or Pro
-  - Backend endpoint: `/api/reports/export/{type}`
-  
-- ✅ **Analytics Dashboard** (`/analytics`) - Occupancy trends, revenue tracking, maintenance analysis
-  - Plan-gated: Requires Pro (Free/Standard see sample data)
-  - Backend endpoint: `/api/analytics/dashboard`
-  
-- ✅ **API Key Management** (`/api-keys`) - Generate/manage API keys for external integrations
-  - Plan-gated: Requires Pro
-  - Backend endpoints: `/api/api-keys` (GET, POST, DELETE)
-  
-- ✅ **Custom Branding** (`/branding`) - Upload logo, set primary color, company name
-  - Plan-gated: Requires Pro
-  - Backend endpoints: `/api/branding` (GET, POST)
-
-#### AI-Powered Insights Dashboard (COMPLETE)
-- ✅ **GPT-4 powered insights** - Executive summary, occupancy analysis, maintenance tips, revenue optimization, 3-month forecasts
-- ✅ **Ask AI Anything** - Custom question interface for portfolio analysis
-- ✅ **Quick stats dashboard** - Properties, Occupancy, Revenue, Open Maintenance
-- ✅ **Plan-gated**: Requires Pro plan
-- Backend endpoints: `/api/ai/insights`, `/api/ai/quick-stats`
-- Frontend page: `/ai-insights`
-- Uses: emergentintegrations with GPT-4o model
-
-#### Tenant Rent Payment Tracking (COMPLETE - View Only)
-- ✅ **Pay Rent tab** in Tenant Portal (view history only)
-- ✅ **Payment summary** - Total due, pending payments, paid this year
-- ❌ Online payment via Stripe REMOVED (requires Stripe Connect)
-- Backend endpoint: `/api/tenant-portal/rent-payments`
-
-#### Tenant Screening with Credits System (COMPLETE)
-- ✅ **Pay-per-use tenant screening** - Revenue stream for the platform
-- ✅ **Credit packages**: $39 (1), $175 (5), $320 (10 - Best Value), $725 (25)
-- ✅ **Stripe integration** for credit purchases (demo mode when no API key)
-- ✅ **Plan-gated**: Requires Standard or Pro plan
-- ✅ **Simulated screening results** (ready for real API integration: TransUnion/RentPrep)
-- Backend endpoints: `/api/screening/credits`, `/api/screening/purchase-credits`
-
-#### Two-Factor Authentication (2FA) - COMPLETE
-- ✅ **Full 2FA implementation** using TOTP (Time-based One-Time Password)
-- ✅ **QR code generation** for easy setup with authenticator apps
-- ✅ **Backup codes** - 10 codes generated at setup for recovery
-- ✅ **Plan-gated**: Requires Pro plan
-- ✅ **Supported apps**: Google Authenticator, Microsoft Authenticator, Authy, 1Password
-- Backend endpoints: `/api/auth/2fa/status`, `/api/auth/2fa/setup`, `/api/auth/2fa/verify`, `/api/auth/2fa/disable`, `/api/auth/2fa/validate`
-- Frontend page: `/2fa-settings`
-
-#### Rent Payment Tracking (COMPLETE)
-- ✅ **Monthly payment tracking** - Track expected vs collected rent
-- ✅ **Auto-generate monthly payments** for all active tenants
-- ✅ **Summary dashboard** - Expected, Collected, Outstanding, Collection Rate
-- ✅ **Payment recording** - Track payments with method (check, cash, bank transfer, etc.)
-- ✅ **Month/Year filtering** with status filter (pending, paid, overdue, partial)
-- Backend endpoints: `/api/rent-payments`, `/api/rent-payments/summary`, `/api/rent-payments/generate-monthly`
-
-#### Updated Sidebar Navigation (COMPLETE)
-- Added: Reports, Analytics, API Keys, Branding links
-- All new pages accessible and plan-gated appropriately
-
----
-
-## Pricing Tiers (Current)
-
-### Free - $0/month
-- 2 properties, 5 units, 1 team member
-- Basic document storage (500MB)
-- Basic maintenance requests
-
-### Standard - $39/month (annual) / $49/month (monthly)
-- 20 properties, 40 units, 5 team members
-- Full inspection workflows
-- 10GB document storage
-- Tenant Portal with photo uploads
-- **Rent payment tracking**
-- Email notifications
-- Contractor Portal access
-- One-tap contractor assignment
-- **Exportable reports (CSV/PDF)**
-- **Tenant Screening (pay per use)**
-
-### Pro - $119/month (annual) / $149/month (monthly)
-- Unlimited properties, units, team members
-- Everything in Standard
-- 100GB document storage
-- **AI-Powered Insights Dashboard**
-- **Advanced analytics dashboard**
-- **API access with key management**
-- **Two-factor authentication (2FA)**
-- **Full audit logs**
-- 24/7 priority support
-
----
-
-## Original Problem Statement
-Build a full-stack SaaS web application for property and housing operations management named "MyPropOps".
-
-## Core Features
-- User authentication (Admin, Manager, Staff) and a separate portal for Tenants
-- Organization-based multi-tenant architecture
-- Management of properties, units, and tenants
-- Inspection workflow system, task/reminder system, and document management
-- A secure Tenant Portal for housing program tenants with document checklists, application status tracking, secure messaging, a document vault, and educational resources
-- Enforce subscription limits on a free tier (2 properties, 5 units)
-- Achieve high search engine ranking through advanced SEO
-- Stripe billing integration with embedded checkout
-- Mailchimp email notifications
+## Core Features (Implemented)
+- Multi-tenant architecture with organization-based data isolation
+- User authentication (Admin, Manager, Staff, Contractor roles)
+- Tenant Portal for housing program participants
+- Contractor Portal for maintenance professionals
+- Property and unit management
+- Tenant tracking and lease management
+- Inspection workflows and compliance tracking
+- Document management system
+- Maintenance request system
+- Real-time WebSocket notifications
+- AI-powered dashboard insights
+- Stripe billing integration
+- Automated blog generation
+- Super Admin dashboard
 
 ## Tech Stack
-- **Backend:** FastAPI, Pydantic, MongoDB (motor), JWT, WebSockets, Stripe SDK
-- **Frontend:** React, React Router, Tailwind CSS, Shadcn/UI, Axios, React Context, @stripe/react-stripe-js
-- **Architecture:** Full-stack, Multi-tenant SaaS, Monolithic Backend (needs refactoring)
-- **Integrations:** Stripe (payments), Mailchimp (emails - configured but keys needed)
+- **Frontend:** React 18, TailwindCSS, Shadcn UI, React Router v6
+- **Backend:** FastAPI (Python), MongoDB (Atlas)
+- **Deployment:** Railway (Frontend + Backend), MongoDB Atlas
+- **Integrations:** Stripe, OpenAI GPT-4, Mailchimp/Mandrill
 
-## What's Been Implemented
+## Recent Updates (Feb 23, 2026)
 
-### February 22, 2026 - Major Feature Release
+### Production Deployment
+- Successfully deployed to Railway
+- Fixed $PORT environment variable issue in backend Dockerfile
+- Configured frontend with CI=false for production builds
 
-#### UI Bug Fixes (COMPLETE)
-- Fixed Stripe "S" missing in trust badges
-- Fixed Monthly/Annual toggle text overlap
-- Fixed video aspect ratio from 9:16 to 16:9 (landscape)
-- Fixed CTA card "Start Free" button visibility
+### PageSpeed Optimizations
+- Added preconnect hints for external resources
+- Optimized logo images (created logo-small.jpg at 2KB)
+- Added explicit width/height to images for CLS improvement
+- Improved accessibility: main landmark, ARIA labels, contrast fixes
+- Fixed heading hierarchy in footer
 
-#### Tenant Portal Maintenance Tab (COMPLETE)
-- Maintenance request submission with photo upload
-- Category/priority selection
-- Request list view with status tracking
+### Favicon Updates
+- Implemented new rounded logo design
+- Generated all required sizes (ico, png, apple-touch-icon)
+- Version bumped to v=5 for cache busting
 
-#### Backend Modular Architecture (COMPLETE)
-- Created `/backend/models/` - enums.py, schemas.py
-- Created `/backend/utils/` - database.py, config.py, auth.py, email.py
-- Created `/backend/routers/` - auth.py, billing.py, contractors.py, organizations.py, properties.py, tenants.py, maintenance.py, inspections.py, screening.py, payments.py
+## Environment Variables
 
-#### Tenant Screening Feature (COMPLETE - MOCKED)
-- New Screening page with stats dashboard
-- Screening request dialog with tenant selection
-- Screening types: Basic ($15), Comprehensive ($35), Premium ($55)
-- Check options: Credit, Criminal, Eviction, Income
-- Results display with risk score and recommendation
-- **NOTE:** Uses SIMULATED results - credit scores and checks are randomly generated
+### Backend (Railway)
+- `MONGO_URL`: MongoDB Atlas connection string
+- `DB_NAME`: mypropops
+- `JWT_SECRET`: Production secret key
+- `PORT`: Auto-set by Railway
 
-#### Rent Payment Tracking (COMPLETE)
-- Rent Payments page with month/year filtering
-- Summary cards: Expected, Collected, Outstanding, Collection Rate
-- Generate Monthly feature to auto-create rent records
-- Manual payment creation
-- Record Payment functionality with payment method tracking
-- Overdue alerts
+### Frontend (Railway)
+- `CI`: false (treats warnings as warnings, not errors)
+- `REACT_APP_BACKEND_URL`: https://backend-production-0325.up.railway.app
 
-### February 2026 - Previous Session
+## Credentials
+- **Admin:** admin@mypropops.com / MyPropOps@Admin2026!
 
-#### Contractor Portal (NEW)
-- Contractor registration with specialties selection
-- Contractor login with separate authentication
-- Contractor dashboard showing jobs, stats
-- Job status updates from contractor side
-- Backend endpoints: `/api/contractor/register`, `/api/contractor/login`, `/api/contractor/jobs`
-
-#### Tenant Portal Photo Uploads (NEW)  
-- Endpoint: `/api/portal/maintenance-requests/with-photos`
-- Supports up to 5 photos per maintenance request
-- Photos stored in uploads directory
-
-#### Contractor Assignment System (NEW)
-- Connect contractors to organizations
-- Assign contractors to maintenance requests
-- Endpoint: `/api/maintenance-requests/{id}/assign-contractor`
-- Email notifications to contractors on assignment
-
-#### Updated Pricing Structure
-- Free: $0 (2 properties, 5 units)
-- Standard: $49/mo or $39/mo annual (20 properties)
-- Pro: $149/mo or $119/mo annual (Unlimited + Contractor Portal)
-- Enterprise: $299/mo or $239/mo annual (White-label, SLA)
-
-#### Stripe Embedded Checkout (COMPLETE)
-- Embedded checkout modal using Stripe's `initEmbeddedCheckout`
-- Backend endpoint: `/api/billing/create-embedded-checkout` returns client_secret
-- Backend endpoint: `/api/billing/session-status/{session_id}` checks payment status
-- Multiple payment methods: Card, Cash App Pay, Affirm, Klarna, Bank
-- Plan upgrade flow: checkout -> payment -> org plan update
-- User-provided Stripe API keys integrated
-
-#### Mailchimp Email Integration (COMPLETE - Keys Required)
-- Welcome email on user registration
-- Subscription upgrade confirmation email
-- Maintenance request notification emails (to admins and tenants)
-- Team invitation emails
-- All emails sent via background tasks for non-blocking performance
-- Graceful fallback when Mailchimp keys not configured
-
-#### Maintenance Request System (COMPLETE)
-- Full CRUD for maintenance requests
-- Categories: Plumbing, Electrical, HVAC, Appliances, Structural, Pest Control, Landscaping
-- Priority levels: Low, Medium, High, Emergency
-- Status workflow: Open -> In Progress -> Scheduled -> Completed
-- Stats dashboard with counts by status and priority
-- Email notifications to property managers and tenants
-
-#### Frontend Billing Page (COMPLETE)
-- Current plan and usage display with progress bars
-- Three pricing tiers: Free ($0), Standard ($24/mo annual), Pro ($82/mo annual)
-- Monthly/Annual billing toggle with savings indicator
-- Embedded Stripe checkout modal
-- Payment verification and plan upgrade polling
-
-### December 2025 - Previous Session Items
-
-#### Tenant Portal (COMPLETE)
-- Full tenant authentication system (separate from landlord auth)
-- Document upload/download/request workflow
-- Downloadable authorization templates (credit check, criminal background)
-- Tenant-organization connection via invite codes
-- Document vault with status tracking
-
-#### Landlord Portal Features (COMPLETE)
-- Generate tenant invite codes in Settings
-- View and manage tenant document requests
-- Organization-level tenant management
-
-#### Subscription Limits (COMPLETE)
-- Free tier limits enforced: 2 properties, 5 units
-- Backend validation on property/unit creation
-- `/api/organization/usage` endpoint for checking limits
-
-#### SEO Implementation (COMPLETE)
-- Meta tags and Open Graph protocol
-- sitemap.xml and robots.txt (corrected for indexing)
-- Custom favicon and og-image
-- Rebranding to "MyPropOps"
-
-## Key API Endpoints
-
-### Billing
-- `POST /api/billing/create-embedded-checkout` - Create Stripe embedded checkout session
-- `GET /api/billing/session-status/{session_id}` - Check payment status
-- `GET /api/billing/subscription-status` - Get current plan and usage
-- `GET /api/billing/plans` - Get available subscription plans
-
-### Maintenance
-- `POST /api/maintenance-requests` - Create maintenance request
-- `GET /api/maintenance-requests` - List maintenance requests
-- `PUT /api/maintenance-requests/{id}` - Update maintenance request
-- `GET /api/maintenance-requests/stats/summary` - Get maintenance stats
-
-### Tenant Portal
-- `/api/portal/connect_organization` - Connect tenant to org
-- `/api/portal/documents/request` - Request documents from landlord
-- `/api/portal/documents/templates/{template_name}` - Download templates
-
-## Database Schema
-
-### Organizations Collection
-```json
-{
-  "id": "uuid",
-  "name": "string",
-  "plan": "free|standard|pro",
-  "billing_period": "monthly|annual",
-  "plan_updated_at": "datetime",
-  "subscription_active": "boolean",
-  "tenant_invite_code": "string"
-}
-```
-
-### Maintenance Requests Collection
-```json
-{
-  "id": "uuid",
-  "org_id": "uuid",
-  "property_id": "uuid",
-  "unit_id": "uuid (optional)",
-  "tenant_id": "uuid (optional)",
-  "category": "plumbing|electrical|hvac|...",
-  "priority": "low|medium|high|emergency",
-  "status": "open|in_progress|scheduled|completed",
-  "title": "string",
-  "description": "string",
-  "assigned_to": "uuid (optional)",
-  "created_at": "datetime"
-}
-```
-
-### Payment Transactions Collection
-```json
-{
-  "id": "uuid",
-  "session_id": "stripe_session_id",
-  "org_id": "uuid",
-  "user_id": "uuid",
-  "plan_id": "standard_monthly|pro_annual|...",
-  "amount": "float",
-  "currency": "usd",
-  "status": "pending|complete",
-  "payment_status": "initiated|paid",
-  "checkout_type": "embedded"
-}
-```
-
-## Test Credentials
-- **Manager:** test@test.com / test123
-- **Tenant:** testtenant@test.com / test123
-- **Contractor:** testcontractor@test.com / test123
-
-## Prioritized Backlog
-
-### P0 - Critical
-- [x] ~~Stripe billing integration~~ (DONE)
-- [x] ~~Tenant Portal maintenance with photo upload~~ (DONE)
-- [x] ~~Video aspect ratio fix (16:9)~~ (DONE)
-- [x] ~~Backend refactoring - Modular routers~~ (DONE)
-- [x] ~~Tenant Screening Feature~~ (DONE - MOCKED)
-- [x] ~~Rent Payment Tracking~~ (DONE)
-- [x] ~~AI-Powered Insights Dashboard~~ (DONE)
-- [x] ~~Contractor Assignment~~ (DONE)
-- [x] ~~Feature alignment in pricing~~ (DONE)
+## Backlog
 
 ### P1 - High Priority
-- [x] ~~Mailchimp email notifications~~ (DONE - needs keys)
-- [x] ~~Maintenance request workflow~~ (DONE)
-- [x] ~~Tenant Screening feature~~ (DONE - mocked)
-- [x] ~~Rent Payment Tracking~~ (DONE)
-- [x] ~~Contractor-Manager Messaging~~ (DONE)
-- [ ] Real tenant screening API integration (wait for first paying customer)
+- Video optimization (self-host compressed versions)
+- Code splitting for route-based chunking
+- Backend refactoring (server.py is 6100+ lines)
 
 ### P2 - Medium Priority
-- [x] ~~Advanced analytics dashboard~~ (DONE)
-- [x] ~~AI-powered dashboard insights~~ (DONE)
-- [x] ~~Mobile app optimization~~ (DONE - PWA + Bottom Nav)
-- [x] ~~Real-time notifications via WebSocket~~ (DONE)
+- Real tenant screening API integration (currently demo mode)
+- Browser push notifications
+- CDN integration for static assets
 
-### P3 - Next Up
-- [ ] Real tenant screening API integration (when provider selected)
-- [ ] Browser push notifications (extend WebSocket feature)
+### P3 - Future
+- AI-enhanced security monitoring
+- Accounting software integration
+- Stripe Connect for online rent payments
+- AI-powered document processing
 
-### Someday/Maybe (Low Priority - Not Blocking)
-- [ ] Backend refactoring - Extract routes from server.py to routers/
-  - *Only needed when hiring developers or adding complex features*
-- [ ] AI-Enhanced Security Monitoring
-  - *Only needed at scale (1000+ users) or if security issues arise*
-- [ ] AI-powered document processing
-- [ ] Integration with accounting software
-- [ ] Stripe Connect for online rent payments
-
-## Known Technical Debt
-
-### LOW PRIORITY (Someday/Maybe)
-1. **Monolithic server.py (~6100+ lines)** - All business logic in one file
-   - Router structure exists at `/backend/routers/` but largely unused
-   - Refactoring guide at `/backend/REFACTORING_GUIDE.md`
-   - *Not blocking - defer until hiring devs or adding complex features*
-
-### EXPECTED LIMITATIONS (By Design)
-2. **Tenant Screening uses MOCKED API** - Returns simulated credit scores
-   - "Demo Mode" banner clearly shown in UI
-   - Ready for real provider (TransUnion, RentPrep) when customer pays
-   
-3. **Online Rent Collection not available** - Requires Stripe Connect
-   - Workaround: Landlords collect externally, mark as paid in app
-
-## Files of Reference
-- `/app/backend/server.py` - Main backend (needs refactoring)
-- `/app/backend/REFACTORING_GUIDE.md` - Step-by-step refactoring plan
-- `/app/backend/.env` - Contains Stripe keys and Mailchimp placeholders
-- `/app/frontend/src/pages/Billing.js` - Billing page with embedded checkout
-- `/app/frontend/src/pages/Landing.js` - Pricing tiers (lines 134-167)
-- `/app/frontend/src/pages/Maintenance.js` - Maintenance with contractor assignment
-- `/app/frontend/src/pages/TenantPortal.js` - Tenant portal (payments tab updated)
-- `/app/frontend/src/pages/AIInsights.js` - AI dashboard
-- `/app/test_reports/iteration_14.json` - Latest test results
-
-## Project Health
-- **Working:** All core features, authentication, tenant portal, contractor portal, billing, maintenance, AI insights, messaging, real-time WebSocket notifications
-- **Configured:** Stripe (LIVE KEYS), Mailchimp Marketing & Mandrill Transactional emails
-- **PWA Ready:** Service worker, offline support, install prompt, mobile bottom nav
-- **Real-time:** WebSocket notifications with "Live" status indicator
-
-## Deployment Status: ✅ READY FOR PRODUCTION
-
-## Test Credentials
-- **Manager:** test@test.com / test123
-- **Contractor:** testcontractor@test.com / test123
-- **Tenant:** testpayments3@test.com / Test123!
-
-## Legal & IP Protection
-- **Terms of Service:** Updated with Software License Grant, IP protection, and trademark notices
-- **Privacy Policy:** Comprehensive data handling and user rights documentation
-- **Trademark:** "#1 Property Management Software" and MyPropOps registered
-- **Site Description:** Marketing copy and SEO keywords at `/app/SITE_DESCRIPTION.md`
+## Known Limitations
+- Tenant Screening is in "Demo Mode" (mock data)
+- Large video files hosted on Emergent CDN (no cache control)
+- Monolithic server.py needs refactoring post-launch
