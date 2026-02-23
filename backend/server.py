@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, status, Query, Request, BackgroundTasks, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File, Form, status, Query, Request, BackgroundTasks, Header, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -18,6 +18,9 @@ import jwt
 from enum import Enum
 import shutil
 import secrets
+
+# WebSocket Manager for real-time notifications
+from websocket_manager import manager as ws_manager, create_notification_message
 
 # Stripe Integration
 from emergentintegrations.payments.stripe.checkout import StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
