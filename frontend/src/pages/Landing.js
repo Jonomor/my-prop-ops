@@ -109,6 +109,7 @@ const VideoCard = ({ src, icon: Icon, iconBg, tagColor, tag, title, subtitle }) 
         <button
           onClick={toggleMute}
           className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
+          aria-label={isMuted ? 'Unmute video' : 'Mute video'}
         >
           {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
         </button>
