@@ -156,9 +156,11 @@ export const Layout = ({ children }) => {
           {/* Logo */}
           <div className="p-4 sm:p-6 border-b border-border flex-shrink-0">
             <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
-              <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
-                <Building className="w-6 h-6 text-primary-foreground" />
-              </div>
+              <img 
+                src="/logo.jpg" 
+                alt="MyPropOps" 
+                className="w-10 h-10 rounded-lg object-contain"
+              />
               <span className="text-xl font-bold font-heading">MyPropOps</span>
             </Link>
           </div>
