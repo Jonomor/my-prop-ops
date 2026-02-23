@@ -3466,23 +3466,22 @@ async def tenant_submit_maintenance_with_photos(
     
     await db.maintenance_requests.insert_one(request_doc)
     
-    # Create notification for property managers
+    # Create notification for property managers with WebSocket broadcast
     admin_memberships = await db.memberships.find(
         {"org_id": org_id, "role": {"$in": ["admin", "manager"]}},
         {"_id": 0, "user_id": 1}
     ).to_list(10)
     
     for membership in admin_memberships:
-        await db.notifications.insert_one({
-            "id": str(uuid.uuid4()),
-            "org_id": org_id,
-            "user_id": membership["user_id"],
-            "title": "New Maintenance Request",
-            "message": f"Tenant {tenant['name']} submitted: {title}",
-            "is_read": False,
-            "link": f"/maintenance/{request_id}",
-            "created_at": datetime.now(timezone.utc).isoformat()
-        })
+        await create_notification(
+            org_id=org_id,
+            user_id=membership["user_id"],
+            title="New Maintenance Request",
+            message=f"Tenant {tenant['name']} submitted: {title}",
+            priority="important" if priority in ["high", "emergency"] else "info",
+            notification_type="maintenance",
+            data={"request_id": request_id, "link": f"/maintenance/{request_id}"}
+        )
     
     # Send email notification in background
     background_tasks.add_task(
