@@ -1106,6 +1106,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      </main>
 
       {/* Footer */}
       <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-border">
