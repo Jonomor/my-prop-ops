@@ -1,6 +1,16 @@
 # MyPropOps Changelog
 
 ## February 23, 2026 - Session 6
+### WebSocket Real-time Notifications
+- Implemented WebSocket backend with connection manager (`/app/backend/websocket_manager.py`)
+- WebSocket endpoint at `/api/ws/{user_type}/{token}` supporting manager, contractor, tenant, admin
+- Status endpoint at `/api/ws/status` for monitoring connections
+- Frontend WebSocketContext with auto-reconnection and keep-alive
+- "Live" status indicator in header showing connection state
+- Real-time toast notifications with priority-based styling
+- All notifications now both persist to DB and broadcast via WebSocket
+- **Test Results:** Backend 100%, Frontend 100%
+
 ### Deployment Readiness Check
 - Conducted final comprehensive regression testing
 - Verified all 4 authentication flows working (Manager, Contractor, Tenant, Admin)
