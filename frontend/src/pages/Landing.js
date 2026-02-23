@@ -1124,7 +1124,9 @@ const Landing = () => {
               <div className="flex items-center gap-2 mb-4">
                 <img 
                   src="/logo.jpg" 
-                  alt="MyPropOps" 
+                  alt="MyPropOps"
+                  width="32"
+                  height="32"
                   className="w-8 h-8 rounded-lg object-contain"
                 />
                 <span className="font-semibold">MyPropOps</span>
