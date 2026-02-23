@@ -98,4 +98,4 @@ tenant_portal_users, notifications, documents
 ## Deployment Command (Emergent Platform)
 The application is ready for deployment via the Emergent Platform's deployment feature.
 
-**Preview URL**: https://mypropops-launch.preview.emergentagent.com
+**Preview URL**: https://mypropops-preview.preview.emergentagent.com
