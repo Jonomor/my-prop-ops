@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { useWebSocket } from '../contexts/WebSocketContext';
 import { Button } from './ui/button';
 import {
   DropdownMenu,
@@ -42,7 +43,9 @@ import {
   FileSpreadsheet,
   Key,
   Shield,
-  Sparkles
+  Sparkles,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 
 const navItems = [
