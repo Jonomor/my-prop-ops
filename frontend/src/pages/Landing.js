@@ -1054,7 +1054,7 @@ const Landing = () => {
             </Card>
           </div>
           <p className="text-center text-sm text-muted-foreground mt-8">
-            Need enterprise features? <a href="mailto:sales@propops.com" className="text-primary hover:underline">Contact us</a> for custom pricing.
+            Need enterprise features? <a href="mailto:sales@mypropops.com" className="text-primary font-medium hover:underline underline-offset-2">Contact us</a> for custom pricing.
           </p>
         </div>
       </section>
