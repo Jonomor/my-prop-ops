@@ -218,24 +218,38 @@ const ContractorRegister = () => {
               <div className="space-y-4">
                 <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wider">Specialties *</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {specialties.map((specialty) => (
-                    <div
-                      key={specialty.value}
-                      className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
-                        form.specialties.includes(specialty.value)
-                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
-                          : 'border-border hover:border-orange-300'
-                      }`}
-                      onClick={() => toggleSpecialty(specialty.value)}
-                      data-testid={`specialty-${specialty.value}`}
-                    >
-                      <Checkbox
-                        checked={form.specialties.includes(specialty.value)}
-                        className="pointer-events-none"
-                      />
-                      <span className="text-sm">{specialty.label}</span>
-                    </div>
-                  ))}
+                  {specialties.map((specialty) => {
+                    const isSelected = form.specialties.includes(specialty.value);
+                    return (
+                      <div
+                        key={specialty.value}
+                        role="checkbox"
+                        aria-checked={isSelected}
+                        tabIndex={0}
+                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          isSelected
+                            ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30'
+                            : 'border-border hover:border-orange-300'
+                        }`}
+                        onClick={() => toggleSpecialty(specialty.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && toggleSpecialty(specialty.value)}
+                        data-testid={`specialty-${specialty.value}`}
+                      >
+                        <div className={`h-4 w-4 shrink-0 rounded-sm border shadow ${
+                          isSelected 
+                            ? 'bg-orange-500 border-orange-500 text-white' 
+                            : 'border-gray-300'
+                        } flex items-center justify-center`}>
+                          {isSelected && (
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className="text-sm">{specialty.label}</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
