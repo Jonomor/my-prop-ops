@@ -143,10 +143,10 @@ export const Layout = ({ children }) => {
 
       {/* Sidebar */}
       <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-card border-r border-border transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full overflow-hidden">
           {/* Logo */}
-          <div className="p-6 border-b border-border">
-            <Link to="/dashboard" className="flex items-center gap-3">
+          <div className="p-4 sm:p-6 border-b border-border flex-shrink-0">
+            <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
               <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                 <Building className="w-6 h-6 text-primary-foreground" />
               </div>
@@ -155,7 +155,7 @@ export const Layout = ({ children }) => {
           </div>
 
           {/* Organization Switcher */}
-          <div className="p-4 border-b border-border">
+          <div className="p-3 sm:p-4 border-b border-border flex-shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="w-full justify-between" data-testid="org-switcher">
