@@ -311,7 +311,9 @@ const Landing = () => {
             <Link to="/" className="flex items-center gap-3">
               <img 
                 src="/logo.jpg" 
-                alt="MyPropOps" 
+                alt="MyPropOps"
+                width="40"
+                height="40"
                 className="w-10 h-10 rounded-lg object-contain"
               />
               <span className="text-xl font-bold font-heading">MyPropOps</span>
