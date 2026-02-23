@@ -6588,6 +6588,15 @@ async def schedule_blog_generation():
     return {"message": "Blog post generated", "should_publish": True, "result": result}
 
 
+@api_router.get("/ws/status")
+async def websocket_status():
+    """Get WebSocket connection statistics"""
+    return {
+        "connections": ws_manager.get_connection_count(),
+        "total": sum(ws_manager.get_connection_count().values())
+    }
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
