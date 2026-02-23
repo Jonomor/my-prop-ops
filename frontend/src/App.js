@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { TenantAuthProvider, useTenantAuth } from './contexts/TenantAuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { WebSocketProvider } from './contexts/WebSocketContext';
 import { Toaster } from './components/ui/sonner';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import { initializeNativeApp, isNative } from './utils/native';
