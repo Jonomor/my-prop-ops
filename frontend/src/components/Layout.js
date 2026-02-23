@@ -70,8 +70,18 @@ const navItems = [
 ];
 
 export const Layout = ({ children }) => {
-  const { user, logout, organizations, currentOrg, switchOrganization } = useAuth();
+  const { user, logout, organizations, currentOrg, switchOrganization, token } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { 
+    isConnected: wsConnected, 
+    connect: wsConnect, 
+    disconnect: wsDisconnect,
+    notifications: wsNotifications,
+    unreadCount: wsUnreadCount,
+    markAsRead: wsMarkAsRead,
+    setNotifications: wsSetNotifications,
+    setUnreadCount: wsSetUnreadCount
+  } = useWebSocket();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -80,18 +90,64 @@ export const Layout = ({ children }) => {
   const [pendingInvitesCount, setPendingInvitesCount] = useState(0);
   const { api } = useAuth();
 
-  React.useEffect(() => {
+  // Connect to WebSocket when user is authenticated
+  useEffect(() => {
+    if (user && token) {
+      wsConnect('manager', token);
+    }
+    return () => {
+      wsDisconnect();
+    };
+  }, [user, token, wsConnect, wsDisconnect]);
+
+  // Merge WebSocket notifications with local notifications
+  useEffect(() => {
+    if (wsNotifications.length > 0) {
+      setNotifications(prev => {
+        // Merge, dedupe by id, and sort by created_at
+        const merged = [...wsNotifications, ...prev];
+        const deduped = merged.reduce((acc, n) => {
+          if (!acc.find(existing => existing.id === n.id)) {
+            acc.push(n);
+          }
+          return acc;
+        }, []);
+        return deduped.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 20);
+      });
+    }
+  }, [wsNotifications]);
+
+  // Update unread count from WebSocket
+  useEffect(() => {
+    if (wsUnreadCount > 0) {
+      setUnreadCount(prev => Math.max(prev, wsUnreadCount));
+    }
+  }, [wsUnreadCount]);
+
+  useEffect(() => {
     const fetchNotifications = async () => {
       try {
         const response = await api.get('/notifications');
-        setNotifications(response.data.slice(0, 10));
+        setNotifications(prev => {
+          // Merge with WebSocket notifications
+          const apiNotifications = response.data.slice(0, 10);
+          const merged = [...prev, ...apiNotifications];
+          const deduped = merged.reduce((acc, n) => {
+            if (!acc.find(existing => existing.id === n.id)) {
+              acc.push(n);
+            }
+            return acc;
+          }, []);
+          return deduped.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 20);
+        });
         setUnreadCount(response.data.filter(n => !n.is_read).length);
       } catch (error) {
         console.error('Failed to fetch notifications:', error);
       }
     };
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000);
+    // Only poll every 60 seconds since WebSocket handles real-time
+    const interval = setInterval(fetchNotifications, 60000);
     return () => clearInterval(interval);
   }, [api]);
 
