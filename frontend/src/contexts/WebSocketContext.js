@@ -27,7 +27,7 @@ export const WebSocketProvider = ({ children }) => {
     // Convert http(s) to ws(s)
     const wsProtocol = backendUrl.startsWith('https') ? 'wss' : 'ws';
     const wsHost = backendUrl.replace(/^https?:\/\//, '');
-    return `${wsProtocol}://${wsHost}/ws/${userType}/${token}`;
+    return `${wsProtocol}://${wsHost}/api/ws/${userType}/${token}`;
   }, []);
 
   const connect = useCallback((userType, token) => {
