@@ -696,6 +696,9 @@ const Landing = () => {
                   src={INFOGRAPHIC_URL} 
                   alt="MyPropOps Financial Analytics Dashboard showing property metrics, occupancy rates, and revenue insights"
                   className="w-full h-auto rounded-xl shadow-lg"
+                  width="1280"
+                  height="896"
+                  loading="lazy"
                 />
               </CardContent>
             </Card>
