@@ -142,8 +142,17 @@ export const Layout = ({ children }) => {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 z-50 h-full w-64 bg-card border-r border-border transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex flex-col h-full overflow-hidden">
+      <aside className={`fixed top-0 left-0 z-50 h-[100dvh] w-64 bg-card border-r border-border transform transition-transform duration-300 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex flex-col h-full overflow-hidden safe-area-inset">
+          {/* Close button for mobile */}
+          <button 
+            className="lg:hidden absolute top-4 right-4 p-2 rounded-lg hover:bg-accent z-10"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          
           {/* Logo */}
           <div className="p-4 sm:p-6 border-b border-border flex-shrink-0">
             <Link to="/dashboard" className="flex items-center gap-3" onClick={() => setSidebarOpen(false)}>
