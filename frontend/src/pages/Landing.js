@@ -1136,7 +1136,7 @@ const Landing = () => {
               </p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
+              <p className="font-semibold mb-4">Product</p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><a href="#features" className="hover:text-foreground">Features</a></li>
                 <li><a href="#pricing" className="hover:text-foreground">Pricing</a></li>
@@ -1145,7 +1145,7 @@ const Landing = () => {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
+              <p className="font-semibold mb-4">Company</p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/about" className="hover:text-foreground">About</Link></li>
                 <li><Link to="/blog" className="hover:text-foreground">Blog</Link></li>
@@ -1153,7 +1153,7 @@ const Landing = () => {
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <p className="font-semibold mb-4">Legal</p>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><Link to="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
                 <li><Link to="/terms" className="hover:text-foreground">Terms of Service</Link></li>
