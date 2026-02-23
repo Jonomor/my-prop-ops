@@ -933,6 +933,9 @@ const Landing = () => {
               onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
               className={`relative w-16 h-8 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-primary' : 'bg-muted-foreground/30'}`}
               data-testid="billing-toggle"
+              aria-label={`Switch to ${billingPeriod === 'monthly' ? 'annual' : 'monthly'} billing`}
+              role="switch"
+              aria-checked={billingPeriod === 'annual'}
             >
               <span className={`absolute top-1.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${billingPeriod === 'annual' ? 'translate-x-9' : 'translate-x-1.5'}`} />
             </button>
