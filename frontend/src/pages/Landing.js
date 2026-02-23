@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselPrevious,
+  CarouselNext,
+} from '../components/ui/carousel';
 import { 
   Building2, 
   Users, 
@@ -31,7 +38,9 @@ import {
   CreditCard,
   ShieldCheck,
   BadgeCheck,
-  Globe
+  Globe,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
 const features = [
