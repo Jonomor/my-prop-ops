@@ -3884,16 +3884,15 @@ async def assign_contractor_to_request(
         {"$set": update_data}
     )
     
-    # Create notification for contractor (stored for when they log in)
-    await db.contractor_notifications.insert_one({
-        "id": str(uuid.uuid4()),
-        "contractor_id": contractor["id"],
-        "title": "New Job Assigned",
-        "message": f"You've been assigned to: {request['title']}",
-        "request_id": request_id,
-        "is_read": False,
-        "created_at": datetime.now(timezone.utc).isoformat()
-    })
+    # Create notification for contractor with WebSocket broadcast
+    await create_contractor_notification(
+        contractor_id=contractor["id"],
+        title="New Job Assigned",
+        message=f"You've been assigned to: {request['title']}",
+        priority="important",
+        notification_type="job_assignment",
+        data={"request_id": request_id}
+    )
     
     # Send email to contractor
     background_tasks.add_task(
