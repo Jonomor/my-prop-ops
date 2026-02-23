@@ -170,6 +170,8 @@ export const Layout = ({ children }) => {
       await api.put(`/notifications/${id}/read`);
       setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
       setUnreadCount(prev => Math.max(0, prev - 1));
+      // Also update WebSocket state
+      wsMarkAsRead(id);
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
     }
