@@ -65,6 +65,21 @@
   - Password: ReviewerAccess2026!
   - Pre-populated with Pro subscription, properties, tenants, maintenance requests
 
+#### Comprehensive Bug Fixes (COMPLETE - Feb 23, 2026)
+- ✅ **CRITICAL: Contractor Specialty Selection Fixed**
+  - Bug: Clicking specialty caused blue screen (infinite loop "Maximum update depth exceeded")
+  - Root cause: Radix UI Checkbox onCheckedChange conflicted with parent onClick
+  - Fix: Replaced with custom div-based checkbox, single click handler
+  - File: `/frontend/src/pages/ContractorRegister.js`
+- ✅ **Mobile Sidebar Logout Fixed**
+  - Bug: User menu with logout was hidden on mobile
+  - Fix: Added pb-16 padding to account for bottom nav, ensured user section always visible
+  - Added X close button for mobile sidebar
+  - File: `/frontend/src/components/Layout.js`
+- ✅ **Safe Area Support Added** for iOS devices with notches
+  - Added CSS env() for safe-area-inset support
+  - File: `/frontend/src/index.css`
+
 #### Super Admin Dashboard (COMPLETE)
 - ✅ **Admin Login** at `/admin/login` with secure authentication
 - ✅ **Overview Tab** - Total Users, Organizations, MRR, Properties, Subscription Breakdown, Recent Activity
