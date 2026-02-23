@@ -444,11 +444,6 @@ export const Layout = ({ children }) => {
                         </div>
                       ))
                     )}
-                            {new Date(notification.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      ))
-                    )}
                   </ScrollArea>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => navigate('/notifications')} className="justify-center" data-testid="view-all-notifications">
