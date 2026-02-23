@@ -214,16 +214,18 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <TenantAuthProvider>
-            <Routes>
-              {/* Tenant Portal routes - handled separately with its own auth */}
-              <Route path="/tenant-portal/*" element={<TenantPortalRoutes />} />
-              
-              {/* Main app routes */}
-              <Route path="/*" element={<AppRoutes />} />
-            </Routes>
-            <Toaster position="top-right" richColors />
-            {/* Only show PWA prompt on web, not native */}
-            {!isNative && <PWAInstallPrompt />}
+            <WebSocketProvider>
+              <Routes>
+                {/* Tenant Portal routes - handled separately with its own auth */}
+                <Route path="/tenant-portal/*" element={<TenantPortalRoutes />} />
+                
+                {/* Main app routes */}
+                <Route path="/*" element={<AppRoutes />} />
+              </Routes>
+              <Toaster position="top-right" richColors />
+              {/* Only show PWA prompt on web, not native */}
+              {!isNative && <PWAInstallPrompt />}
+            </WebSocketProvider>
           </TenantAuthProvider>
         </AuthProvider>
       </BrowserRouter>
