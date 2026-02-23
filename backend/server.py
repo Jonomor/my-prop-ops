@@ -37,10 +37,21 @@ except ImportError:
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
-# MongoDB connection
-mongo_url = os.environ["MONGO_URL"]
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ["DB_NAME"]]
+# MongoDB connection - safe initialization for Railway deployment
+mongo_url = os.environ.get("MONGO_URL")
+db_name = os.environ.get("DB_NAME", "mypropops")
+
+if mongo_url:
+    client = AsyncIOMotorClient(mongo_url)
+    db = client[db_name]
+    logger = logging.getLogger(__name__)
+    logger.info(f"MongoDB connected to database: {db_name}")
+else:
+    # Degraded mode - allows healthcheck to pass during Railway startup
+    client = None
+    db = None
+    logger = logging.getLogger(__name__)
+    logger.warning("MONGO_URL not set - running in degraded mode (DB operations will fail)")
 
 # JWT Configuration
 JWT_SECRET = os.environ.get("JWT_SECRET", "propops-secret-key-change-in-production")
