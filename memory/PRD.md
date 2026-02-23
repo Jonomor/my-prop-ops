@@ -525,12 +525,20 @@ Build a full-stack SaaS web application for property and housing operations mana
 - [x] ~~Advanced analytics dashboard~~ (DONE)
 - [x] ~~AI-powered dashboard insights~~ (DONE)
 - [x] ~~Mobile app optimization~~ (DONE - PWA + Bottom Nav)
-- [ ] Backend refactoring - Extract routes from server.py to routers/ (optional, not blocking)
-- [ ] Real-time notifications via WebSocket (last priority)
+- [x] ~~Real-time notifications via WebSocket~~ (DONE)
 
-### P3 - Future
+### P3 - Next Up
+- [ ] Real tenant screening API integration (when provider selected)
+- [ ] Browser push notifications (extend WebSocket feature)
+
+### Someday/Maybe (Low Priority - Not Blocking)
+- [ ] Backend refactoring - Extract routes from server.py to routers/
+  - *Only needed when hiring developers or adding complex features*
+- [ ] AI-Enhanced Security Monitoring
+  - *Only needed at scale (1000+ users) or if security issues arise*
 - [ ] AI-powered document processing
 - [ ] Integration with accounting software
+- [ ] Stripe Connect for online rent payments
 
 ## Known Technical Debt
 
