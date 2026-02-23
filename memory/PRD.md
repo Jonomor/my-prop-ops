@@ -542,21 +542,19 @@ Build a full-stack SaaS web application for property and housing operations mana
 
 ## Known Technical Debt
 
-### CRITICAL
-1. **Monolithic server.py (~5700+ lines)** - All business logic in one file
+### LOW PRIORITY (Someday/Maybe)
+1. **Monolithic server.py (~6100+ lines)** - All business logic in one file
    - Router structure exists at `/backend/routers/` but largely unused
-   - Only `screening` and `payments` routers are included
-   - Refactoring guide created at `/backend/REFACTORING_GUIDE.md`
+   - Refactoring guide at `/backend/REFACTORING_GUIDE.md`
+   - *Not blocking - defer until hiring devs or adding complex features*
 
-### HIGH
-2. **Tenant Screening uses MOCKED API** - Returns simulated credit scores and background checks
-   - Ready for integration with real provider (TransUnion, RentPrep)
+### EXPECTED LIMITATIONS (By Design)
+2. **Tenant Screening uses MOCKED API** - Returns simulated credit scores
+   - "Demo Mode" banner clearly shown in UI
+   - Ready for real provider (TransUnion, RentPrep) when customer pays
    
-3. **Online Rent Collection removed** - Requires Stripe Connect implementation
-   - Current workaround: Landlords collect payments externally, mark as paid manually
-
-### MEDIUM
-4. Mailchimp keys not configured (emails gracefully skip when unconfigured)
+3. **Online Rent Collection not available** - Requires Stripe Connect
+   - Workaround: Landlords collect externally, mark as paid in app
 
 ## Files of Reference
 - `/app/backend/server.py` - Main backend (needs refactoring)
