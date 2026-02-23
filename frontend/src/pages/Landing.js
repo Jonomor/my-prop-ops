@@ -487,7 +487,7 @@ const Landing = () => {
 
       {/* Video Showcase Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-muted/30" data-testid="video-showcase">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
               <Play className="w-4 h-4" />
@@ -501,118 +501,134 @@ const Landing = () => {
             </p>
           </div>
 
-          {/* Video Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Video 1: Spreadsheet Killer */}
-            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-              <video 
-                className="w-full aspect-video object-cover"
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-              >
-                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/j0e4chjv_prop5.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
-                    <X className="w-3 h-3" />
+          {/* Video Carousel */}
+          <div className="px-12">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                {/* Video 1: Spreadsheet Killer */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
+                  <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+                    <video 
+                      className="w-full aspect-video object-cover"
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline
+                    >
+                      <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/j0e4chjv_prop5.mp4" type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
+                          <X className="w-3 h-3" />
+                        </div>
+                        <span className="text-xs font-medium text-red-300">No More Spreadsheets</span>
+                      </div>
+                      <h3 className="text-lg font-bold">Spreadsheet Killer</h3>
+                      <p className="text-xs text-white/80">Ditch the spreadsheets. Get the dashboard.</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-medium text-red-300">No More Spreadsheets</span>
-                </div>
-                <h3 className="text-lg font-bold">Spreadsheet Killer</h3>
-                <p className="text-xs text-white/80">Ditch the spreadsheets. Get the dashboard.</p>
-              </div>
-            </div>
+                </CarouselItem>
 
-            {/* Video 2: Compliance Shield */}
-            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-              <video 
-                className="w-full aspect-video object-cover"
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-              >
-                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fzrlnm2b_prop3.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                    <Shield className="w-3 h-3" />
+                {/* Video 2: Compliance Shield */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
+                  <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+                    <video 
+                      className="w-full aspect-video object-cover"
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline
+                    >
+                      <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fzrlnm2b_prop3.mp4" type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
+                          <Shield className="w-3 h-3" />
+                        </div>
+                        <span className="text-xs font-medium text-blue-300">100% Compliant</span>
+                      </div>
+                      <h3 className="text-lg font-bold">Compliance Shield</h3>
+                      <p className="text-xs text-white/80">Compliance deadlines? Already handled.</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-medium text-blue-300">100% Compliant</span>
-                </div>
-                <h3 className="text-lg font-bold">Compliance Shield</h3>
-                <p className="text-xs text-white/80">Compliance deadlines? Already handled.</p>
-              </div>
-            </div>
+                </CarouselItem>
 
-            {/* Video 3: Maintenance Magic */}
-            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-              <video 
-                className="w-full aspect-video object-cover"
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-              >
-                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/lf1xwx6w_prop2.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-                    <Wrench className="w-3 h-3" />
+                {/* Video 3: Maintenance Magic */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
+                  <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+                    <video 
+                      className="w-full aspect-video object-cover"
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline
+                    >
+                      <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/lf1xwx6w_prop2.mp4" type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
+                          <Wrench className="w-3 h-3" />
+                        </div>
+                        <span className="text-xs font-medium text-orange-300">One-Tap Fixes</span>
+                      </div>
+                      <h3 className="text-lg font-bold">Maintenance Magic</h3>
+                      <p className="text-xs text-white/80">Click. Assigned. Done.</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-medium text-orange-300">One-Tap Fixes</span>
-                </div>
-                <h3 className="text-lg font-bold">Maintenance Magic</h3>
-                <p className="text-xs text-white/80">Click. Assigned. Done.</p>
-              </div>
-            </div>
+                </CarouselItem>
 
-            {/* Video 4: Whole Team */}
-            <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-              <video 
-                className="w-full aspect-video object-cover"
-                autoPlay 
-                loop 
-                muted 
-                playsInline
-              >
-                <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fyzgszf2_prop1.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-              <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
-                    <Users className="w-3 h-3" />
+                {/* Video 4: Whole Team */}
+                <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
+                  <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
+                    <video 
+                      className="w-full aspect-video object-cover"
+                      autoPlay 
+                      loop 
+                      muted 
+                      playsInline
+                    >
+                      <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fyzgszf2_prop1.mp4" type="video/mp4" />
+                    </video>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
+                          <Users className="w-3 h-3" />
+                        </div>
+                        <span className="text-xs font-medium text-purple-300">Team Sync</span>
+                      </div>
+                      <h3 className="text-lg font-bold">Whole Team</h3>
+                      <p className="text-xs text-white/80">Get your whole team on the same page.</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-medium text-purple-300">Team Sync</span>
-                </div>
-                <h3 className="text-lg font-bold">Whole Team</h3>
-                <p className="text-xs text-white/80">Get your whole team on the same page.</p>
-              </div>
-            </div>
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious className="hidden md:flex -left-6 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
+              <CarouselNext className="hidden md:flex -right-6 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
+            </Carousel>
+          </div>
 
-            {/* CTA Card */}
-            <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-primary to-primary/80 shadow-lg flex flex-col items-center justify-center p-6 text-white aspect-video">
-              <div className="text-center flex flex-col items-center justify-center h-full">
-                <Play className="w-10 h-10 mb-3 opacity-80" />
-                <h3 className="text-lg font-bold mb-1">Ready to Transform?</h3>
-                <p className="text-white/80 text-xs mb-3">Join 500+ property managers</p>
-                <Link to="/register">
-                  <Button size="sm" variant="secondary" className="font-semibold">
-                    Start Free
-                    <ArrowRight className="w-3 h-3 ml-1" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
+          {/* CTA Below Carousel */}
+          <div className="mt-10 text-center">
+            <Link to="/register">
+              <Button size="lg" className="font-semibold">
+                Start Free Trial
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+            <p className="text-sm text-muted-foreground mt-2">Join 500+ property managers</p>
           </div>
         </div>
       </section>
