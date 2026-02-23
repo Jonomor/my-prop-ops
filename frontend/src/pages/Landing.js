@@ -311,7 +311,7 @@ const Landing = () => {
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-3">
               <img 
-                src="/logo.jpg" 
+                src="/logo-small.jpg" 
                 alt="MyPropOps"
                 width="40"
                 height="40"
