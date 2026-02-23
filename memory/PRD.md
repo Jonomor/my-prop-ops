@@ -568,10 +568,10 @@ Build a full-stack SaaS web application for property and housing operations mana
 - `/app/test_reports/iteration_14.json` - Latest test results
 
 ## Project Health
-- **Working:** All core features, authentication, tenant portal, contractor portal, billing, maintenance, AI insights, messaging
+- **Working:** All core features, authentication, tenant portal, contractor portal, billing, maintenance, AI insights, messaging, real-time WebSocket notifications
 - **Configured:** Stripe (LIVE KEYS), Mailchimp Marketing & Mandrill Transactional emails
 - **PWA Ready:** Service worker, offline support, install prompt, mobile bottom nav
-- **Domain:** mypropops.com configured
+- **Real-time:** WebSocket notifications with "Live" status indicator
 
 ## Deployment Status: ✅ READY FOR PRODUCTION
 
