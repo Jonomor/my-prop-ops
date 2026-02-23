@@ -227,10 +227,11 @@ const ContractorRegister = () => {
                           : 'border-border hover:border-orange-300'
                       }`}
                       onClick={() => toggleSpecialty(specialty.value)}
+                      data-testid={`specialty-${specialty.value}`}
                     >
                       <Checkbox
                         checked={form.specialties.includes(specialty.value)}
-                        onCheckedChange={() => toggleSpecialty(specialty.value)}
+                        className="pointer-events-none"
                       />
                       <span className="text-sm">{specialty.label}</span>
                     </div>
