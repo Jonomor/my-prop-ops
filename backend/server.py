@@ -1018,17 +1018,106 @@ def get_client_info(request: Request) -> tuple:
     user_agent = request.headers.get("User-Agent", "")[:500]  # Limit length
     return ip_address, user_agent
 
-async def create_notification(org_id: str, user_id: str, title: str, message: str):
+async def create_notification(org_id: str, user_id: str, title: str, message: str, priority: str = "info", notification_type: str = "general", data: dict = None):
+    """Create a notification and broadcast it via WebSocket"""
     notification = {
         "id": str(uuid.uuid4()),
         "org_id": org_id,
         "user_id": user_id,
         "title": title,
         "message": message,
+        "priority": priority,
+        "notification_type": notification_type,
         "is_read": False,
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.notifications.insert_one(notification)
+    
+    # Broadcast via WebSocket (non-blocking)
+    try:
+        ws_notification = create_notification_message(
+            notification_type=notification_type,
+            title=title,
+            message=message,
+            priority=priority,
+            data={**notification, **(data or {})}
+        )
+        await ws_manager.send_personal("manager", user_id, ws_notification)
+    except Exception as e:
+        logger.debug(f"WebSocket broadcast failed: {e}")
+    
+    return notification
+
+
+async def create_contractor_notification(contractor_id: str, title: str, message: str, priority: str = "info", notification_type: str = "job", data: dict = None):
+    """Create a contractor notification and broadcast it via WebSocket"""
+    notification = {
+        "id": str(uuid.uuid4()),
+        "contractor_id": contractor_id,
+        "title": title,
+        "message": message,
+        "priority": priority,
+        "notification_type": notification_type,
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.contractor_notifications.insert_one(notification)
+    
+    # Broadcast via WebSocket
+    try:
+        ws_notification = create_notification_message(
+            notification_type=notification_type,
+            title=title,
+            message=message,
+            priority=priority,
+            data={**notification, **(data or {})}
+        )
+        await ws_manager.send_personal("contractor", contractor_id, ws_notification)
+    except Exception as e:
+        logger.debug(f"WebSocket broadcast to contractor failed: {e}")
+    
+    return notification
+
+
+async def create_tenant_notification(tenant_id: str, title: str, message: str, priority: str = "info", notification_type: str = "general", data: dict = None):
+    """Create a tenant notification and broadcast it via WebSocket"""
+    notification = {
+        "id": str(uuid.uuid4()),
+        "tenant_id": tenant_id,
+        "title": title,
+        "message": message,
+        "priority": priority,
+        "notification_type": notification_type,
+        "is_read": False,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.tenant_notifications.insert_one(notification)
+    
+    # Broadcast via WebSocket
+    try:
+        ws_notification = create_notification_message(
+            notification_type=notification_type,
+            title=title,
+            message=message,
+            priority=priority,
+            data={**notification, **(data or {})}
+        )
+        await ws_manager.send_personal("tenant", tenant_id, ws_notification)
+    except Exception as e:
+        logger.debug(f"WebSocket broadcast to tenant failed: {e}")
+    
+    return notification
+
+
+async def broadcast_to_org(org_id: str, title: str, message: str, priority: str = "info", notification_type: str = "general", exclude_user_id: str = None, data: dict = None):
+    """Broadcast a notification to all users in an organization"""
+    # Get all members in the organization
+    members = await db.memberships.find({"org_id": org_id}).to_list(100)
+    
+    for member in members:
+        user_id = member.get("user_id")
+        if user_id and user_id != exclude_user_id:
+            await create_notification(org_id, user_id, title, message, priority, notification_type, data)
 
 # ============== AUTH ROUTES ==============
 @api_router.post("/auth/register", response_model=TokenResponse)
