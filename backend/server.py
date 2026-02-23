@@ -6620,7 +6620,7 @@ app.add_middleware(
 
 # ============== WEBSOCKET ENDPOINTS ==============
 
-@app.websocket("/ws/{user_type}/{token}")
+@app.websocket("/api/ws/{user_type}/{token}")
 async def websocket_endpoint(websocket: WebSocket, user_type: str, token: str):
     """
     WebSocket endpoint for real-time notifications
