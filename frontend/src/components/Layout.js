@@ -187,9 +187,9 @@ export const Layout = ({ children }) => {
             </DropdownMenu>
           </div>
 
-          {/* Navigation */}
-          <ScrollArea className="flex-1 py-4">
-            <nav className="px-3 space-y-1">
+          {/* Navigation - Scrollable */}
+          <ScrollArea className="flex-1 min-h-0">
+            <nav className="px-3 py-4 space-y-1">
               {navItems.map(item => {
                 const Icon = item.icon;
                 const isActive = location.pathname.startsWith(item.path);
@@ -213,36 +213,37 @@ export const Layout = ({ children }) => {
             </nav>
           </ScrollArea>
 
-          {/* User menu */}
-          <div className="p-4 border-t border-border">
+          {/* User menu - Always visible at bottom */}
+          <div className="p-3 sm:p-4 border-t border-border flex-shrink-0 bg-card">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="w-full justify-start gap-3" data-testid="user-menu">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                <Button variant="ghost" className="w-full justify-start gap-3 h-auto py-2" data-testid="user-menu">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
                     <span className="text-sm font-semibold text-primary">
                       {user?.name?.charAt(0).toUpperCase()}
                     </span>
                   </div>
-                  <div className="flex-1 text-left">
+                  <div className="flex-1 text-left min-w-0">
                     <p className="text-sm font-medium truncate">{user?.name}</p>
                     <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                   </div>
+                  <ChevronDown className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate('/')} data-testid="back-to-website-btn">
+                <DropdownMenuItem onClick={() => { navigate('/'); setSidebarOpen(false); }} data-testid="back-to-website-btn">
                   <Home className="w-4 h-4 mr-2" />
                   Back to Website
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate('/invites')} data-testid="pending-invites-btn">
+                <DropdownMenuItem onClick={() => { navigate('/invites'); setSidebarOpen(false); }} data-testid="pending-invites-btn">
                   <Mail className="w-4 h-4 mr-2" />
                   Pending Invites
                   {pendingInvitesCount > 0 && (
                     <Badge variant="default" className="ml-auto text-xs">{pendingInvitesCount}</Badge>
                   )}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/settings')} data-testid="settings-btn">
+                <DropdownMenuItem onClick={() => { navigate('/settings'); setSidebarOpen(false); }} data-testid="settings-btn">
                   <Settings className="w-4 h-4 mr-2" />
                   Settings
                 </DropdownMenuItem>
