@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
-import { Checkbox } from '../components/ui/checkbox';
 import { toast } from 'sonner';
 import axios from 'axios';
 import { Wrench, Mail, Lock, User, Phone, Building, MapPin, ArrowRight, DollarSign, FileText } from 'lucide-react';
