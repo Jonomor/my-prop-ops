@@ -143,8 +143,15 @@ class TestWebSocketFeatures:
         
         headers = {"Authorization": f"Bearer {token}"}
         
-        # Get dashboard stats
-        response = requests.get(f"{BASE_URL}/api/dashboard/stats", headers=headers)
+        # Get organizations first to get org_id
+        orgs_response = requests.get(f"{BASE_URL}/api/organizations", headers=headers)
+        assert orgs_response.status_code == 200, "Failed to get organizations"
+        orgs = orgs_response.json()
+        assert len(orgs) > 0, "User has no organizations"
+        org_id = orgs[0]["org_id"]
+        
+        # Get dashboard stats (requires org_id)
+        response = requests.get(f"{BASE_URL}/api/organizations/{org_id}/dashboard", headers=headers)
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
