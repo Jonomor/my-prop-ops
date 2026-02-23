@@ -586,7 +586,7 @@ const Landing = () => {
               Property Management, Simplified
             </h2>
             <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
-              Watch how MyPropOps transforms the way you manage properties in just seconds
+              Click to play with sound and see how MyPropOps transforms property management
             </p>
           </div>
 
@@ -602,106 +602,54 @@ const Landing = () => {
               <CarouselContent className="-ml-2 md:-ml-4">
                 {/* Video 1: Spreadsheet Killer */}
                 <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
-                  <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-                    <video 
-                      className="w-full aspect-video object-cover"
-                      autoPlay 
-                      loop 
-                      muted 
-                      playsInline
-                    >
-                      <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/j0e4chjv_prop5.mp4" type="video/mp4" />
-                    </video>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center">
-                          <X className="w-3 h-3" />
-                        </div>
-                        <span className="text-xs font-medium text-red-300">No More Spreadsheets</span>
-                      </div>
-                      <h3 className="text-lg font-bold">Spreadsheet Killer</h3>
-                      <p className="text-xs text-white/80">Ditch the spreadsheets. Get the dashboard.</p>
-                    </div>
-                  </div>
+                  <VideoCard
+                    src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/j0e4chjv_prop5.mp4"
+                    icon={X}
+                    iconBg="bg-red-500"
+                    tagColor="text-red-300"
+                    tag="No More Spreadsheets"
+                    title="Spreadsheet Killer"
+                    subtitle="Ditch the spreadsheets. Get the dashboard."
+                  />
                 </CarouselItem>
 
                 {/* Video 2: Compliance Shield */}
                 <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
-                  <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-                    <video 
-                      className="w-full aspect-video object-cover"
-                      autoPlay 
-                      loop 
-                      muted 
-                      playsInline
-                    >
-                      <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fzrlnm2b_prop3.mp4" type="video/mp4" />
-                    </video>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
-                          <Shield className="w-3 h-3" />
-                        </div>
-                        <span className="text-xs font-medium text-blue-300">100% Compliant</span>
-                      </div>
-                      <h3 className="text-lg font-bold">Compliance Shield</h3>
-                      <p className="text-xs text-white/80">Compliance deadlines? Already handled.</p>
-                    </div>
-                  </div>
+                  <VideoCard
+                    src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fzrlnm2b_prop3.mp4"
+                    icon={Shield}
+                    iconBg="bg-blue-500"
+                    tagColor="text-blue-300"
+                    tag="100% Compliant"
+                    title="Compliance Shield"
+                    subtitle="Compliance deadlines? Already handled."
+                  />
                 </CarouselItem>
 
                 {/* Video 3: Maintenance Magic */}
                 <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
-                  <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-                    <video 
-                      className="w-full aspect-video object-cover"
-                      autoPlay 
-                      loop 
-                      muted 
-                      playsInline
-                    >
-                      <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/lf1xwx6w_prop2.mp4" type="video/mp4" />
-                    </video>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center">
-                          <Wrench className="w-3 h-3" />
-                        </div>
-                        <span className="text-xs font-medium text-orange-300">One-Tap Fixes</span>
-                      </div>
-                      <h3 className="text-lg font-bold">Maintenance Magic</h3>
-                      <p className="text-xs text-white/80">Click. Assigned. Done.</p>
-                    </div>
-                  </div>
+                  <VideoCard
+                    src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/lf1xwx6w_prop2.mp4"
+                    icon={Wrench}
+                    iconBg="bg-orange-500"
+                    tagColor="text-orange-300"
+                    tag="One-Tap Fixes"
+                    title="Maintenance Magic"
+                    subtitle="Click. Assigned. Done."
+                  />
                 </CarouselItem>
 
                 {/* Video 4: Whole Team */}
                 <CarouselItem className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/2">
-                  <div className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all">
-                    <video 
-                      className="w-full aspect-video object-cover"
-                      autoPlay 
-                      loop 
-                      muted 
-                      playsInline
-                    >
-                      <source src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fyzgszf2_prop1.mp4" type="video/mp4" />
-                    </video>
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center">
-                          <Users className="w-3 h-3" />
-                        </div>
-                        <span className="text-xs font-medium text-purple-300">Team Sync</span>
-                      </div>
-                      <h3 className="text-lg font-bold">Whole Team</h3>
-                      <p className="text-xs text-white/80">Get your whole team on the same page.</p>
-                    </div>
-                  </div>
+                  <VideoCard
+                    src="https://customer-assets.emergentagent.com/job_9fe5d8d9-7e94-4b0b-a436-c83b4b94ab4a/artifacts/fyzgszf2_prop1.mp4"
+                    icon={Users}
+                    iconBg="bg-purple-500"
+                    tagColor="text-purple-300"
+                    tag="Team Sync"
+                    title="Whole Team"
+                    subtitle="Get your whole team on the same page."
+                  />
                 </CarouselItem>
               </CarouselContent>
               <CarouselPrevious className="hidden md:flex -left-6 bg-background/80 backdrop-blur-sm border-border hover:bg-background" />
