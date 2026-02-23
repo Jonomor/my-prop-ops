@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
@@ -40,8 +40,97 @@ import {
   BadgeCheck,
   Globe,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Volume2,
+  VolumeX,
+  Pause
 } from 'lucide-react';
+
+// Video Card Component with Play/Pause and Audio controls
+const VideoCard = ({ src, icon: Icon, iconBg, tagColor, tag, title, subtitle }) => {
+  const videoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
+  const [showControls, setShowControls] = useState(true);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.muted = false;
+        setIsMuted(false);
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const toggleMute = (e) => {
+    e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  return (
+    <div 
+      className="group relative rounded-2xl overflow-hidden bg-card shadow-lg hover:shadow-xl transition-all cursor-pointer"
+      onClick={togglePlay}
+      onMouseEnter={() => setShowControls(true)}
+      onMouseLeave={() => !isPlaying && setShowControls(true)}
+    >
+      <video 
+        ref={videoRef}
+        className="w-full aspect-video object-cover"
+        loop 
+        muted={isMuted}
+        playsInline
+        poster=""
+      >
+        <source src={src} type="video/mp4" />
+      </video>
+      
+      {/* Play Button Overlay */}
+      <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${isPlaying ? 'opacity-0 hover:opacity-100' : 'opacity-100'}`}>
+        <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-lg transform transition-transform hover:scale-110">
+          {isPlaying ? (
+            <Pause className="w-7 h-7 text-gray-800" />
+          ) : (
+            <Play className="w-7 h-7 text-gray-800 ml-1" />
+          )}
+        </div>
+      </div>
+
+      {/* Mute/Unmute Button */}
+      {isPlaying && (
+        <button
+          onClick={toggleMute}
+          className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors z-10"
+        >
+          {isMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+        </button>
+      )}
+
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+      
+      {/* Bottom Info */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 text-white pointer-events-none">
+        <div className="flex items-center gap-2 mb-1">
+          <div className={`w-6 h-6 rounded-full ${iconBg} flex items-center justify-center`}>
+            <Icon className="w-3 h-3" />
+          </div>
+          <span className={`text-xs font-medium ${tagColor}`}>{tag}</span>
+        </div>
+        <h3 className="text-lg font-bold">{title}</h3>
+        <p className="text-xs text-white/80">{subtitle}</p>
+      </div>
+    </div>
+  );
+};
 
 const features = [
   {
