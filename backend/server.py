@@ -6522,6 +6522,112 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ============== WEBSOCKET ENDPOINTS ==============
+
+@app.websocket("/ws/{user_type}/{token}")
+async def websocket_endpoint(websocket: WebSocket, user_type: str, token: str):
+    """
+    WebSocket endpoint for real-time notifications
+    
+    User types: manager, contractor, tenant, admin
+    Token: JWT token for authentication
+    """
+    user_id = None
+    org_id = None
+    
+    try:
+        # Verify token based on user type
+        if user_type == "manager":
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            user_id = payload.get("user_id")
+            # Get user's primary org
+            user = await db.users.find_one({"id": user_id})
+            if user:
+                membership = await db.memberships.find_one({"user_id": user_id})
+                org_id = membership.get("org_id") if membership else None
+                
+        elif user_type == "contractor":
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            user_id = payload.get("contractor_id")
+            
+        elif user_type == "tenant":
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            user_id = payload.get("tenant_portal_id")
+            
+        elif user_type == "admin":
+            payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+            if payload.get("type") != "admin":
+                await websocket.close(code=4001)
+                return
+            user_id = "admin"
+        else:
+            await websocket.close(code=4000)
+            return
+        
+        if not user_id:
+            await websocket.close(code=4001)
+            return
+            
+        # Connect to WebSocket manager
+        await ws_manager.connect(websocket, user_type, user_id, org_id)
+        
+        # Send connection confirmation
+        await websocket.send_json({
+            "type": "connected",
+            "message": "WebSocket connection established",
+            "user_type": user_type,
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Keep connection alive and handle incoming messages
+        while True:
+            try:
+                data = await websocket.receive_json()
+                
+                # Handle ping/pong for keep-alive
+                if data.get("type") == "ping":
+                    await websocket.send_json({"type": "pong"})
+                    
+                # Handle mark as read
+                elif data.get("type") == "mark_read":
+                    notification_id = data.get("notification_id")
+                    if notification_id and user_type == "manager":
+                        await db.notifications.update_one(
+                            {"id": notification_id, "user_id": user_id},
+                            {"$set": {"is_read": True}}
+                        )
+                    elif notification_id and user_type == "contractor":
+                        await db.contractor_notifications.update_one(
+                            {"id": notification_id, "contractor_id": user_id},
+                            {"$set": {"is_read": True}}
+                        )
+                        
+            except Exception as e:
+                logger.debug(f"WebSocket receive error: {e}")
+                break
+                
+    except jwt.ExpiredSignatureError:
+        await websocket.close(code=4002)  # Token expired
+    except jwt.InvalidTokenError:
+        await websocket.close(code=4001)  # Invalid token
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        logger.error(f"WebSocket error: {e}")
+    finally:
+        if user_id:
+            ws_manager.disconnect(websocket, user_type, user_id, org_id)
+
+
+@api_router.get("/ws/status")
+async def websocket_status():
+    """Get WebSocket connection statistics"""
+    return {
+        "connections": ws_manager.get_connection_count(),
+        "total": sum(ws_manager.get_connection_count().values())
+    }
+
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
