@@ -6715,15 +6715,6 @@ async def websocket_endpoint(websocket: WebSocket, user_type: str, token: str):
             ws_manager.disconnect(websocket, user_type, user_id, org_id)
 
 
-@api_router.get("/ws/status")
-async def websocket_status():
-    """Get WebSocket connection statistics"""
-    return {
-        "connections": ws_manager.get_connection_count(),
-        "total": sum(ws_manager.get_connection_count().values())
-    }
-
-
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
