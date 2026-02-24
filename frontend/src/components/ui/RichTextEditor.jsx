@@ -25,6 +25,7 @@ import {
   Minus,
   Link as LinkIcon,
   Image as ImageIcon,
+  Upload,
   AlignLeft,
   AlignCenter,
   AlignRight,
