@@ -714,7 +714,7 @@ const Landing = () => {
                   Tenants can submit maintenance requests, pay rent, and access documents
                 </p>
                 <Link to="/tenant-portal/login">
-                  <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-200 hover:bg-emerald-50">
+                  <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700">
                     Access Portal
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -733,7 +733,7 @@ const Landing = () => {
                   Property investors track performance, occupancy, and revenue in real-time
                 </p>
                 <Link to="/owner/login">
-                  <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                  <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-200 hover:bg-blue-100 hover:text-blue-700">
                     Access Portal
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -752,7 +752,7 @@ const Landing = () => {
                   Contractors manage work orders, update job status, and message managers
                 </p>
                 <Link to="/contractor/login">
-                  <Button variant="outline" size="sm" className="w-full text-orange-600 border-orange-200 hover:bg-orange-50">
+                  <Button variant="outline" size="sm" className="w-full text-orange-600 border-orange-200 hover:bg-orange-100 hover:text-orange-700">
                     Access Portal
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -771,7 +771,7 @@ const Landing = () => {
                   Prospective tenants can browse available units and apply online
                 </p>
                 <Link to="/rentals">
-                  <Button variant="outline" size="sm" className="w-full text-purple-600 border-purple-200 hover:bg-purple-50">
+                  <Button variant="outline" size="sm" className="w-full text-purple-600 border-purple-200 hover:bg-purple-100 hover:text-purple-700">
                     View Listings
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
