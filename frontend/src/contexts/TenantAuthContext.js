@@ -16,7 +16,7 @@ export const TenantAuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   const api = axios.create({
-    baseURL: process.env.REACT_APP_BACKEND_URL,
+    baseURL: process.env.REACT_APP_BACKEND_URL || 'https://backend-production-0325.up.railway.app',
   });
 
   api.interceptors.request.use((config) => {
