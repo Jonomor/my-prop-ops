@@ -1144,6 +1144,7 @@ const Landing = () => {
                 <li><a href="#pricing" className="hover:text-foreground">Pricing</a></li>
                 <li><a href="#testimonials" className="hover:text-foreground">Reviews</a></li>
                 <li><a href="#faq" className="hover:text-foreground">FAQ</a></li>
+                <li><Link to="/help" className="hover:text-foreground">Help Center</Link></li>
               </ul>
             </div>
             <div>
