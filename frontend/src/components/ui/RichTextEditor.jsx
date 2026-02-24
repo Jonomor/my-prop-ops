@@ -182,8 +182,8 @@ const RichTextEditor = ({ content, onChange, placeholder = 'Start writing...' })
 
   return (
     <div className="border border-border rounded-lg overflow-hidden bg-card">
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-border bg-muted/30">
+      {/* Toolbar - Sticky */}
+      <div className="flex flex-wrap items-center gap-1 p-2 border-b border-border bg-muted/30 sticky top-0 z-10">
         {/* Undo/Redo */}
         <MenuButton
           onClick={() => editor.chain().focus().undo().run()}
