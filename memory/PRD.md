@@ -90,6 +90,18 @@ MyPropOps is a full-stack SaaS property management platform deployed on Railway 
 
 ## API Endpoints
 
+### E-Signature Endpoints (NEW)
+- `GET /api/esign/templates` - List document templates
+- `POST /api/esign/templates` - Upload PDF template
+- `DELETE /api/esign/templates/:id` - Delete template
+- `GET /api/esign/documents` - List sent documents
+- `POST /api/esign/send` - Send document for signature
+- `GET /api/esign/document/:token` - Get document details (public)
+- `GET /api/esign/preview/:token` - Preview PDF (public)
+- `POST /api/esign/sign/:token` - Sign document (public)
+- `GET /api/esign/download/:id` - Download signed PDF
+- `POST /api/esign/documents/:id/resend` - Resend signature request
+
 ### Owner Portal
 - `POST /api/owner/login` - Owner authentication
 - `GET /api/owner/dashboard` - Dashboard data
@@ -108,7 +120,6 @@ MyPropOps is a full-stack SaaS property management platform deployed on Railway 
 - Online rent collection (Stripe Connect)
 - Real tenant screening integration
 - Listing syndication (Zillow, Trulia)
-- eSignatures for leases
 
 ### P2 - Medium Priority
 - Owner statements (PDF generation)
