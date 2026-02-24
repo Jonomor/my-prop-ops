@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { Wrench, Mail, Lock, User, Phone, Building, MapPin, ArrowRight, DollarSign, FileText } from 'lucide-react';
 
-const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API_URL = `${process.env.REACT_APP_BACKEND_URL || 'https://backend-production-0325.up.railway.app'}/api`;
 
 const specialties = [
   { value: 'plumbing', label: 'Plumbing' },

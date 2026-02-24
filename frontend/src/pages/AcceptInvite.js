@@ -7,7 +7,7 @@ import { Alert, AlertDescription } from '../components/ui/alert';
 import { Building, Loader2, AlertCircle, CheckCircle, Users } from 'lucide-react';
 import axios from 'axios';
 
-const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API_URL = `${process.env.REACT_APP_BACKEND_URL || 'https://backend-production-0325.up.railway.app'}/api`;
 
 const AcceptInvite = () => {
   const { token } = useParams();

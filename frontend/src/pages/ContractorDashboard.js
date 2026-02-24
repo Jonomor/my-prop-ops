@@ -30,7 +30,7 @@ import {
   Loader2
 } from 'lucide-react';
 
-const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API_URL = `${process.env.REACT_APP_BACKEND_URL || 'https://backend-production-0325.up.railway.app'}/api`;
 
 const priorityColors = {
   low: 'bg-green-100 text-green-700',

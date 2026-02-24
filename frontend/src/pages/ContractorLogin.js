@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { Wrench, Mail, Lock, ArrowRight, Building2 } from 'lucide-react';
 
-const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const API_URL = `${process.env.REACT_APP_BACKEND_URL || 'https://backend-production-0325.up.railway.app'}/api`;
 
 const ContractorLogin = () => {
   const navigate = useNavigate();
