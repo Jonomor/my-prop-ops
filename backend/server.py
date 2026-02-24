@@ -5751,7 +5751,7 @@ Keep responses under 300 words. Use bullet points for clarity."""
         user_prompt = f"Provide a brief executive summary of this property portfolio with key insights and recommendations:\n\n{context}"
     
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel('gemini-3-pro-preview')
         full_prompt = f"{system_message}\n\n{user_prompt}"
         response = model.generate_content(full_prompt)
         
@@ -6469,7 +6469,7 @@ EXCERPT: [2-3 sentence compelling summary for previews]
         if not GEMINI_API_KEY:
             raise HTTPException(status_code=503, detail="AI service not configured. Add GEMINI_API_KEY to environment.")
         
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        model = genai.GenerativeModel('gemini-3-pro-preview')
         full_prompt = f"{system_message}\n\n{prompt}"
         response = model.generate_content(full_prompt)
         response_text = response.text
