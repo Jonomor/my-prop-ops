@@ -342,8 +342,14 @@ const RichTextEditor = ({ content, onChange, placeholder = 'Start writing...' })
           <LinkIcon className="w-4 h-4" />
         </MenuButton>
         <MenuButton
-          onClick={addImage}
-          title="Add Image"
+          onClick={triggerImageUpload}
+          title="Upload Image"
+        >
+          <Upload className="w-4 h-4" />
+        </MenuButton>
+        <MenuButton
+          onClick={addImageFromUrl}
+          title="Image from URL"
         >
           <ImageIcon className="w-4 h-4" />
         </MenuButton>
@@ -358,6 +364,15 @@ const RichTextEditor = ({ content, onChange, placeholder = 'Start writing...' })
           <Minus className="w-4 h-4" />
         </MenuButton>
       </div>
+
+      {/* Hidden file input for image upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageUpload}
+        accept="image/*"
+        style={{ display: 'none' }}
+      />
 
       {/* Editor Content */}
       <EditorContent editor={editor} />
