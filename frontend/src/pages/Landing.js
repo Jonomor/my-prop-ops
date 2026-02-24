@@ -324,6 +324,7 @@ const Landing = () => {
               <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
               <a href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors">Reviews</a>
               <a href="#faq" className="text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
+              <Link to="/help" className="text-muted-foreground hover:text-foreground transition-colors">Help Center</Link>
               <Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
               <Link to="/tenant-portal/login" className="text-emerald-600 hover:text-emerald-700 transition-colors font-medium">For Tenants</Link>
               <Link to="/contractor/login" className="text-orange-600 hover:text-orange-700 transition-colors font-medium">For Contractors</Link>
