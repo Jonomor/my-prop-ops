@@ -277,9 +277,47 @@ const BlogPost = () => {
 
         {/* Content */}
         <div 
-          className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-primary prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-p:mb-4 prose-ul:my-4 prose-ol:my-4 prose-li:my-1"
+          className="blog-content prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-a:text-primary prose-h1:text-3xl prose-h1:mt-10 prose-h1:mb-6 prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4 prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-p:mb-4 prose-p:leading-relaxed prose-ul:my-4 prose-ul:pl-6 prose-ol:my-4 prose-ol:pl-6 prose-li:my-2 prose-blockquote:border-l-4 prose-blockquote:border-primary prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-muted-foreground prose-hr:my-8 prose-hr:border-border prose-img:rounded-lg prose-img:shadow-md prose-img:my-6 prose-strong:font-semibold prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded"
           dangerouslySetInnerHTML={{ __html: post.content }}
         />
+        
+        <style>{`
+          .blog-content p {
+            margin-bottom: 1rem;
+            line-height: 1.75;
+          }
+          .blog-content h1, .blog-content h2, .blog-content h3 {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+          }
+          .blog-content ul, .blog-content ol {
+            margin: 1rem 0;
+            padding-left: 1.5rem;
+          }
+          .blog-content li {
+            margin: 0.5rem 0;
+          }
+          .blog-content blockquote {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: hsl(var(--muted) / 0.3);
+            border-radius: 0.5rem;
+          }
+          .blog-content hr {
+            margin: 2rem 0;
+          }
+          .blog-content img {
+            max-width: 100%;
+            height: auto;
+            margin: 1.5rem auto;
+            display: block;
+          }
+          .blog-content mark {
+            background-color: #fef08a;
+            padding: 0.1em 0.2em;
+            border-radius: 0.2em;
+          }
+        `}</style>
 
         {/* Share */}
         <div className="mt-12 pt-8 border-t border-border flex items-center justify-between flex-wrap gap-4">
