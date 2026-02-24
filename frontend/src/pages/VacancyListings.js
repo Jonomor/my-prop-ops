@@ -21,7 +21,7 @@ const VacancyListings = () => {
   const [filters, setFilters] = useState({
     minRent: searchParams.get('minRent') || '',
     maxRent: searchParams.get('maxRent') || '',
-    bedrooms: searchParams.get('bedrooms') || '',
+    bedrooms: searchParams.get('bedrooms') || 'any',
     search: searchParams.get('search') || ''
   });
 
