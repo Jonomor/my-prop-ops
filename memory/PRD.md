@@ -1,86 +1,104 @@
 # MyPropOps - Product Requirements Document
 
 ## Project Overview
-MyPropOps is a full-stack SaaS web application for property and housing operations management, deployed on Railway with MongoDB Atlas.
+MyPropOps is a full-stack SaaS property management platform deployed on Railway with MongoDB Atlas.
 
-**Production URL:** https://mypropops.com
+**Production URL:** https://www.mypropops.com
 **Backend URL:** https://backend-production-0325.up.railway.app
 
 ## Core Features (Implemented)
-- Multi-tenant architecture with organization-based data isolation
-- User authentication (Admin, Manager, Staff, Contractor roles)
-- Tenant Portal for housing program participants
-- Contractor Portal for maintenance professionals
+
+### User Portals
+- **Manager Dashboard** - Full property management suite
+- **Tenant Portal** - Maintenance requests, documents, messaging
+- **Contractor Portal** - View/manage assigned maintenance jobs
+- **Owner Portal** (NEW) - Property investment dashboard for owners
+
+### Property Management
+- Multi-tenant organization architecture
 - Property and unit management
 - Tenant tracking and lease management
-- Inspection workflows and compliance tracking
-- Document management system
+- Inspection workflows (HQS compliant)
 - Maintenance request system
+- Document management
+
+### Additional Features
 - Real-time WebSocket notifications
-- AI-powered dashboard insights
+- AI-powered insights (Pro plan, requires Gemini API)
 - Stripe billing integration
-- Automated blog generation
+- Rich text blog editor with image upload
+- Help Center with 30+ FAQ articles
 - Super Admin dashboard
 
 ## Tech Stack
-- **Frontend:** React 18, TailwindCSS, Shadcn UI, React Router v6
-- **Backend:** FastAPI (Python), MongoDB (Atlas)
-- **Deployment:** Railway (Frontend + Backend), MongoDB Atlas
-- **Integrations:** Stripe, OpenAI GPT-4, Mailchimp/Mandrill
-
-## Recent Updates (Feb 23, 2026)
-
-### Production Deployment
-- Successfully deployed to Railway
-- Fixed $PORT environment variable issue in backend Dockerfile
-- Configured frontend with CI=false for production builds
-
-### PageSpeed Optimizations
-- Added preconnect hints for external resources
-- Optimized logo images (created logo-small.jpg at 2KB)
-- Added explicit width/height to images for CLS improvement
-- Improved accessibility: main landmark, ARIA labels, contrast fixes
-- Fixed heading hierarchy in footer
-
-### Favicon Updates
-- Implemented new rounded logo design
-- Generated all required sizes (ico, png, apple-touch-icon)
-- Version bumped to v=5 for cache busting
+- **Frontend:** React 18, TailwindCSS, Shadcn UI, TipTap Editor
+- **Backend:** FastAPI (Python), MongoDB Atlas
+- **Deployment:** Railway
+- **Integrations:** Stripe, Gemini AI
 
 ## Environment Variables
 
 ### Backend (Railway)
-- `MONGO_URL`: MongoDB Atlas connection string
-- `DB_NAME`: mypropops
-- `JWT_SECRET`: Production secret key
-- `PORT`: Auto-set by Railway
+- `MONGO_URL` - MongoDB Atlas connection string
+- `DB_NAME` - mypropops
+- `JWT_SECRET` - Production secret key
+- `GEMINI_API_KEY` - For AI blog generation (optional)
+- `PORT` - Auto-set by Railway
 
 ### Frontend (Railway)
-- `CI`: false (treats warnings as warnings, not errors)
-- `REACT_APP_BACKEND_URL`: https://backend-production-0325.up.railway.app
+- `CI` - false
+- `REACT_APP_BACKEND_URL` - https://backend-production-0325.up.railway.app
 
-## Credentials
-- **Admin:** admin@mypropops.com / MyPropOps@Admin2026!
+## Recent Updates (Feb 24, 2026)
+
+### Owner Portal
+- New login and dashboard for property owners
+- View assigned properties, occupancy, financials
+- Track maintenance on their properties
+
+### Blog Editor Enhancements
+- Rich text editor with TipTap
+- Image upload from computer (not just URL)
+- Alt text prompts for accessibility/SEO
+- Sticky toolbar
+
+### Help Center
+- 30+ FAQ articles covering all features
+- Search and category filtering
+- Located at /help
+
+### Bug Fixes
+- Fixed blog post formatting (content no longer jams together)
+- Fixed backend URL fallback for production
+- Fixed footer mobile navigation overlap
+
+## API Endpoints
+
+### Owner Portal
+- `POST /api/owner/login` - Owner authentication
+- `GET /api/owner/dashboard` - Dashboard data
+- `POST /api/organizations/{org_id}/owners` - Create owner
+- `PUT /api/properties/{property_id}/assign-owner` - Assign owner
 
 ## Backlog
 
 ### P1 - High Priority
-- Video optimization (self-host compressed versions)
-- Code splitting for route-based chunking
-- Backend refactoring (server.py is 6100+ lines)
+- Online rent collection (Stripe Connect)
+- Real tenant screening integration
+- Listing syndication (Zillow, Trulia)
+- eSignatures for leases
 
 ### P2 - Medium Priority
-- Real tenant screening API integration (currently demo mode)
-- Browser push notifications
-- CDN integration for static assets
+- Owner statements (PDF generation)
+- QuickBooks integration
+- Bulk SMS/email messaging
+- Renters insurance partnerships
 
 ### P3 - Future
-- AI-enhanced security monitoring
-- Accounting software integration
-- Stripe Connect for online rent payments
-- AI-powered document processing
+- AI rent pricing suggestions
+- Native mobile apps
+- 1099 e-filing
+- Accounting reports (P&L, Balance Sheet)
 
-## Known Limitations
-- Tenant Screening is in "Demo Mode" (mock data)
-- Large video files hosted on Emergent CDN (no cache control)
-- Monolithic server.py needs refactoring post-launch
+## Credentials
+- **Admin:** admin@mypropops.com / MyPropOps@Admin2026!
