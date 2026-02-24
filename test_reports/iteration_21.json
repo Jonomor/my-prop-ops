@@ -1,0 +1,80 @@
+{
+  "summary": "E-Signature feature testing completed. CRITICAL BUG FIXED: E-signature API endpoints were not registered because routes were defined after app.include_router() call. Moved e-signature routes before include_router. Backend: 12/12 tests passed (100%). Frontend: All 5 features verified working via Playwright.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+
+  "passed_tests": [
+    "FEATURE 1: E-Signatures page loads at /e-signatures for logged-in managers - PASS",
+    "FEATURE 2: Upload Template dialog opens when clicking 'Upload Template' button - PASS",
+    "FEATURE 3: Templates tab shows uploaded templates (and no templates when empty) - PASS",
+    "FEATURE 4: Send for Signature dialog opens when clicking 'Send for Signature' button - PASS",
+    "FEATURE 5: Public signing page at /sign/:token loads document details - PASS",
+    "Backend: GET /api/esign/templates returns templates list",
+    "Backend: POST /api/esign/templates uploads PDF template successfully",
+    "Backend: DELETE /api/esign/templates/:id deletes template",
+    "Backend: GET /api/esign/documents returns documents list",
+    "Backend: POST /api/esign/send sends document for signature",
+    "Backend: GET /api/esign/document/:token returns document details (public)",
+    "Backend: GET /api/esign/preview/:token returns PDF preview (public)",
+    "Backend: POST /api/esign/sign/:token signs document with signature image",
+    "Backend: POST /api/esign/documents/:id/resend extends document expiry"
+  ],
+
+  "test_report_links": [
+    "/app/backend/tests/test_esign.py",
+    "/app/test_reports/pytest/esign_results.xml"
+  ],
+
+  "action_items": [],
+
+  "critical_code_review_comments": [
+    "CRITICAL BUG FIXED: E-signature routes were defined after app.include_router(api_router) at line 7200, causing all esign endpoints to return 404. Moved the entire e-signature section (lines 7317-7653) to before the include_router call.",
+    "Also fixed create_notification call in sign_document function - it was using wrong parameter order (4 params vs 7 expected)",
+    "E-signature feature implementation is comprehensive: template upload, document sending, public signing page, PDF overlay with signature and timestamp"
+  ],
+
+  "updated_files": [
+    "/app/backend/server.py",
+    "/app/backend/tests/test_esign.py"
+  ],
+
+  "success_rate": {
+    "backend": "100% (12/12 tests passed)",
+    "frontend": "100% (5/5 features verified)"
+  },
+
+  "test_credentials": {
+    "manager": {"email": "manager@test.mypropops.com", "password": "TestManager2026!"}
+  },
+
+  "seed_data_used": "Test documents created via API tests - automatically cleaned up",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+
+  "feature_verification_summary": {
+    "feature_1_esignatures_page": "PASS - Page loads with title 'E-Signatures', Upload Template and Send for Signature buttons visible",
+    "feature_2_upload_template_dialog": "PASS - Dialog opens with Template Name input and PDF file chooser",
+    "feature_3_templates_tab": "PASS - Templates tab shows count and template cards with Use Template button",
+    "feature_4_send_signature_dialog": "PASS - Dialog opens with Document Template dropdown, Document Name, Signer Name and Email fields",
+    "feature_5_public_signing_page": "PASS - Shows document name, sender info, date, signer info, document preview, signature pad, agreement checkbox"
+  },
+
+  "bug_fixed": {
+    "issue": "All e-signature API endpoints returning 404 Not Found",
+    "root_cause": "E-signature routes were defined after app.include_router(api_router) at line 7200 in server.py. FastAPI had already registered all routes when include_router was called, so the e-signature routes added later were never registered.",
+    "fix": "Moved the e-signature code section (routes and models) to before the include_router call, ensuring all routes are defined before registration.",
+    "files_modified": ["/app/backend/server.py"]
+  },
+
+  "context_for_next_testing_agent": "E-signature feature is fully working. The critical bug where esign endpoints returned 404 has been fixed by moving the route definitions before app.include_router(). Backend restart applied. Test manager account: manager@test.mypropops.com / TestManager2026!. Public signing page works at /sign/:token with signature pad using react-signature-canvas."
+}
