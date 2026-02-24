@@ -6678,6 +6678,183 @@ async def initialize_database(secret_key: str):
     }
 
 
+# ============== OWNER PORTAL ENDPOINTS ==============
+
+class OwnerLogin(BaseModel):
+    email: str
+    password: str
+
+class OwnerCreate(BaseModel):
+    name: str
+    email: str
+    password: str
+    phone: Optional[str] = None
+
+@api_router.post("/owner/login")
+async def owner_login(data: OwnerLogin):
+    """Owner login endpoint"""
+    owner = await db.owners.find_one({"email": data.email.lower()})
+    if not owner:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    if not verify_password(data.password, owner['password']):
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    token = jwt.encode(
+        {"owner_id": owner['id'], "type": "owner", "exp": datetime.now(timezone.utc) + timedelta(days=7)},
+        JWT_SECRET, algorithm="HS256"
+    )
+    
+    return {
+        "token": token,
+        "owner": {
+            "id": owner['id'],
+            "name": owner['name'],
+            "email": owner['email']
+        }
+    }
+
+async def get_current_owner(authorization: str = Header(None)):
+    """Get current owner from JWT token"""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = authorization.replace("Bearer ", "")
+    try:
+        payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+        if payload.get("type") != "owner":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        owner = await db.owners.find_one({"id": payload["owner_id"]})
+        if not owner:
+            raise HTTPException(status_code=401, detail="Owner not found")
+        return owner
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Token expired")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+@api_router.get("/owner/dashboard")
+async def get_owner_dashboard(owner = Depends(get_current_owner)):
+    """Get owner dashboard data"""
+    owner_id = owner['id']
+    
+    # Get properties assigned to this owner
+    properties = await db.properties.find({"owner_id": owner_id}).to_list(100)
+    
+    total_units = 0
+    occupied_units = 0
+    monthly_revenue = 0
+    property_data = []
+    
+    for prop in properties:
+        units = await db.units.find({"property_id": prop['id']}).to_list(100)
+        prop_units = len(units)
+        prop_occupied = sum(1 for u in units if u.get('status') == 'occupied')
+        prop_rent = sum(u.get('rent', 0) for u in units if u.get('status') == 'occupied')
+        avg_rent = sum(u.get('rent', 0) for u in units) / len(units) if units else 0
+        
+        total_units += prop_units
+        occupied_units += prop_occupied
+        monthly_revenue += prop_rent
+        
+        property_data.append({
+            "id": prop['id'],
+            "name": prop.get('name', 'Unnamed Property'),
+            "address": prop.get('address', ''),
+            "status": prop.get('status', 'active'),
+            "total_units": prop_units,
+            "occupied_units": prop_occupied,
+            "vacant_units": prop_units - prop_occupied,
+            "monthly_rent": prop_rent,
+            "avg_rent": round(avg_rent)
+        })
+    
+    # Get recent maintenance for owner's properties
+    property_ids = [p['id'] for p in properties]
+    maintenance = await db.maintenance.find({
+        "property_id": {"$in": property_ids}
+    }).sort("created_at", -1).limit(10).to_list(10)
+    
+    maintenance_data = []
+    for m in maintenance:
+        prop = next((p for p in properties if p['id'] == m.get('property_id')), {})
+        maintenance_data.append({
+            "id": m.get('id'),
+            "title": m.get('title', m.get('description', 'Maintenance Request')[:50]),
+            "property_name": prop.get('name', 'Unknown'),
+            "unit": m.get('unit_number', m.get('unit_id', 'N/A')),
+            "status": m.get('status', 'open'),
+            "priority": m.get('priority', 'medium'),
+            "created_at": m.get('created_at', datetime.now(timezone.utc).isoformat())
+        })
+    
+    occupancy_rate = round((occupied_units / total_units * 100) if total_units > 0 else 0)
+    gross_potential = sum(u.get('rent', 0) for p in properties for u in await db.units.find({"property_id": p['id']}).to_list(100))
+    
+    return {
+        "stats": {
+            "total_properties": len(properties),
+            "total_units": total_units,
+            "occupied_units": occupied_units,
+            "occupancy_rate": occupancy_rate,
+            "monthly_revenue": monthly_revenue
+        },
+        "properties": property_data,
+        "recent_maintenance": maintenance_data,
+        "financials": {
+            "gross_potential": gross_potential,
+            "collected": monthly_revenue,
+            "collection_rate": round((monthly_revenue / gross_potential * 100) if gross_potential > 0 else 0),
+            "avg_rent": round(monthly_revenue / occupied_units) if occupied_units > 0 else 0,
+            "open_maintenance": sum(1 for m in maintenance_data if m['status'] not in ['completed', 'closed'])
+        }
+    }
+
+@api_router.post("/organizations/{org_id}/owners")
+async def create_owner(org_id: str, data: OwnerCreate, user = Depends(get_current_user)):
+    """Create a new property owner (by property manager)"""
+    membership = await db.memberships.find_one({"user_id": user['id'], "org_id": org_id})
+    if not membership or membership['role'] not in ['admin', 'manager']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    existing = await db.owners.find_one({"email": data.email.lower()})
+    if existing:
+        raise HTTPException(status_code=400, detail="Owner with this email already exists")
+    
+    owner_id = str(uuid.uuid4())
+    owner = {
+        "id": owner_id,
+        "org_id": org_id,
+        "name": data.name,
+        "email": data.email.lower(),
+        "password": hash_password(data.password),
+        "phone": data.phone,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.owners.insert_one(owner)
+    
+    return {"id": owner_id, "name": data.name, "email": data.email}
+
+@api_router.put("/properties/{property_id}/assign-owner")
+async def assign_property_owner(property_id: str, owner_id: str, user = Depends(get_current_user)):
+    """Assign a property to an owner"""
+    property = await db.properties.find_one({"id": property_id})
+    if not property:
+        raise HTTPException(status_code=404, detail="Property not found")
+    
+    membership = await db.memberships.find_one({"user_id": user['id'], "org_id": property['org_id']})
+    if not membership or membership['role'] not in ['admin', 'manager']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.properties.update_one(
+        {"id": property_id},
+        {"$set": {"owner_id": owner_id}}
+    )
+    
+    return {"status": "success", "message": "Owner assigned to property"}
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
