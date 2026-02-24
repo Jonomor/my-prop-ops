@@ -133,12 +133,21 @@ const RichTextEditor = ({ content, onChange, placeholder = 'Start writing...' })
       return;
     }
 
+    // Prompt for alt text
+    const altText = window.prompt('Enter alt text for the image (for accessibility & SEO):', file.name.replace(/\.[^/.]+$/, ''));
+    
+    if (altText === null) {
+      // User cancelled
+      event.target.value = '';
+      return;
+    }
+
     // Convert to base64 and insert
     const reader = new FileReader();
     reader.onload = (e) => {
       const base64 = e.target?.result;
       if (base64) {
-        editor.chain().focus().setImage({ src: base64 }).run();
+        editor.chain().focus().setImage({ src: base64, alt: altText || 'Image' }).run();
       }
     };
     reader.readAsDataURL(file);
@@ -157,7 +166,8 @@ const RichTextEditor = ({ content, onChange, placeholder = 'Start writing...' })
     const url = window.prompt('Enter image URL:');
     
     if (url) {
-      editor.chain().focus().setImage({ src: url }).run();
+      const altText = window.prompt('Enter alt text for the image (for accessibility & SEO):', '');
+      editor.chain().focus().setImage({ src: url, alt: altText || 'Image' }).run();
     }
   }, [editor]);
 
