@@ -329,7 +329,6 @@ const Landing = () => {
               <Link to="/tenant-portal/login" className="text-emerald-600 hover:text-emerald-700 transition-colors font-medium">For Tenants</Link>
               <Link to="/contractor/login" className="text-orange-600 hover:text-orange-700 transition-colors font-medium">For Contractors</Link>
               <Link to="/owner/login" className="text-blue-600 hover:text-blue-700 transition-colors font-medium">For Owners</Link>
-              <Link to="/rentals" className="text-purple-600 hover:text-purple-700 transition-colors font-medium">Rentals</Link>
             </div>
             <div className="hidden sm:flex items-center gap-4">
               <Link to="/login">
@@ -354,20 +353,17 @@ const Landing = () => {
 
       {/* Mobile Navigation Bar - Fixed at bottom on mobile */}
       <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-card border-t border-border safe-bottom">
-        <div className="flex items-center justify-around h-14 overflow-x-auto">
-          <a href="#features" className="flex flex-col items-center justify-center flex-1 min-w-[60px] h-full text-muted-foreground hover:text-foreground">
+        <div className="flex items-center justify-around h-14">
+          <a href="#features" className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground hover:text-foreground">
             <span className="text-xs">Features</span>
           </a>
-          <a href="#pricing" className="flex flex-col items-center justify-center flex-1 min-w-[60px] h-full text-muted-foreground hover:text-foreground">
+          <a href="#pricing" className="flex flex-col items-center justify-center flex-1 h-full text-muted-foreground hover:text-foreground">
             <span className="text-xs">Pricing</span>
           </a>
-          <Link to="/rentals" className="flex flex-col items-center justify-center flex-1 min-w-[60px] h-full text-purple-600 hover:text-purple-700">
-            <span className="text-xs font-medium">Rentals</span>
-          </Link>
-          <Link to="/tenant-portal/login" className="flex flex-col items-center justify-center flex-1 min-w-[60px] h-full text-emerald-600 hover:text-emerald-700">
+          <Link to="/tenant-portal/login" className="flex flex-col items-center justify-center flex-1 h-full text-emerald-600 hover:text-emerald-700">
             <span className="text-xs font-medium">Tenants</span>
           </Link>
-          <Link to="/owner/login" className="flex flex-col items-center justify-center flex-1 min-w-[60px] h-full text-blue-600 hover:text-blue-700">
+          <Link to="/owner/login" className="flex flex-col items-center justify-center flex-1 h-full text-blue-600 hover:text-blue-700">
             <span className="text-xs font-medium">Owners</span>
           </Link>
         </div>
