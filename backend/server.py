@@ -6855,6 +6855,241 @@ async def assign_property_owner(property_id: str, owner_id: str, user = Depends(
     return {"status": "success", "message": "Owner assigned to property"}
 
 
+# ============== PUBLIC VACANCY LISTINGS ==============
+
+@api_router.get("/public/vacancies")
+async def get_public_vacancies():
+    """Get all vacant units for public listing"""
+    # Get all units that are vacant and listed
+    vacant_units = await db.units.find({
+        "status": {"$in": ["vacant", "available"]},
+        "is_listed": {"$ne": False}
+    }).to_list(100)
+    
+    listings = []
+    for unit in vacant_units:
+        property = await db.properties.find_one({"id": unit.get('property_id')})
+        if not property:
+            continue
+        
+        listings.append({
+            "id": unit.get('id'),
+            "unit_name": unit.get('unit_number', unit.get('name', 'Unit')),
+            "property_id": property.get('id'),
+            "property_name": property.get('name', 'Property'),
+            "address": property.get('address', ''),
+            "rent": unit.get('rent', 0),
+            "bedrooms": unit.get('bedrooms', 1),
+            "bathrooms": unit.get('bathrooms', 1),
+            "sqft": unit.get('sqft'),
+            "amenities": unit.get('amenities', []),
+            "available_date": unit.get('available_date'),
+            "description": unit.get('description', ''),
+            "images": unit.get('images', [])
+        })
+    
+    return {"listings": listings, "total": len(listings)}
+
+@api_router.get("/public/unit/{unit_id}")
+async def get_public_unit(unit_id: str):
+    """Get unit info for application"""
+    unit = await db.units.find_one({"id": unit_id})
+    if not unit:
+        raise HTTPException(status_code=404, detail="Unit not found")
+    
+    property = await db.properties.find_one({"id": unit.get('property_id')})
+    
+    return {
+        "id": unit.get('id'),
+        "unit_name": unit.get('unit_number', unit.get('name', 'Unit')),
+        "property_id": property.get('id') if property else None,
+        "property_name": property.get('name', 'Property') if property else 'Unknown',
+        "address": property.get('address', '') if property else '',
+        "rent": unit.get('rent', 0)
+    }
+
+class TenantApplicationData(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+    phone: str
+    date_of_birth: str
+    current_address: str
+    current_city: str
+    current_state: str
+    current_zip: str
+    current_rent: Optional[str] = None
+    move_in_date: str
+    reason_for_moving: Optional[str] = None
+    employer_name: str
+    employer_phone: Optional[str] = None
+    job_title: str
+    monthly_income: str
+    employment_length: Optional[str] = None
+    num_occupants: str
+    pets: str
+    pet_details: Optional[str] = None
+    smoking: str
+    reference1_name: str
+    reference1_phone: str
+    reference1_relationship: str
+    reference2_name: Optional[str] = None
+    reference2_phone: Optional[str] = None
+    reference2_relationship: Optional[str] = None
+    emergency_name: str
+    emergency_phone: str
+    emergency_relationship: str
+    background_check_consent: bool
+    terms_consent: bool
+    additional_info: Optional[str] = None
+    unit_id: Optional[str] = None
+    property_id: Optional[str] = None
+
+@api_router.post("/public/applications")
+async def submit_tenant_application(data: TenantApplicationData):
+    """Submit a rental application"""
+    application_id = str(uuid.uuid4())
+    
+    # Get property org_id if unit specified
+    org_id = None
+    if data.unit_id:
+        unit = await db.units.find_one({"id": data.unit_id})
+        if unit:
+            property = await db.properties.find_one({"id": unit.get('property_id')})
+            if property:
+                org_id = property.get('org_id')
+    
+    application = {
+        "id": application_id,
+        "org_id": org_id,
+        "unit_id": data.unit_id,
+        "property_id": data.property_id,
+        "status": "pending",
+        "applicant": {
+            "first_name": data.first_name,
+            "last_name": data.last_name,
+            "email": data.email,
+            "phone": data.phone,
+            "date_of_birth": data.date_of_birth
+        },
+        "current_residence": {
+            "address": data.current_address,
+            "city": data.current_city,
+            "state": data.current_state,
+            "zip": data.current_zip,
+            "rent": data.current_rent,
+            "reason_for_moving": data.reason_for_moving
+        },
+        "employment": {
+            "employer_name": data.employer_name,
+            "employer_phone": data.employer_phone,
+            "job_title": data.job_title,
+            "monthly_income": data.monthly_income,
+            "length": data.employment_length
+        },
+        "additional": {
+            "num_occupants": data.num_occupants,
+            "pets": data.pets,
+            "pet_details": data.pet_details,
+            "smoking": data.smoking,
+            "move_in_date": data.move_in_date,
+            "additional_info": data.additional_info
+        },
+        "references": [
+            {
+                "name": data.reference1_name,
+                "phone": data.reference1_phone,
+                "relationship": data.reference1_relationship
+            },
+            {
+                "name": data.reference2_name,
+                "phone": data.reference2_phone,
+                "relationship": data.reference2_relationship
+            }
+        ],
+        "emergency_contact": {
+            "name": data.emergency_name,
+            "phone": data.emergency_phone,
+            "relationship": data.emergency_relationship
+        },
+        "consents": {
+            "background_check": data.background_check_consent,
+            "terms": data.terms_consent
+        },
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.applications.insert_one(application)
+    
+    # Create notification for property managers
+    if org_id:
+        admins = await db.memberships.find({"org_id": org_id, "role": {"$in": ["admin", "manager"]}}).to_list(100)
+        for admin in admins:
+            await create_notification(
+                admin['user_id'],
+                "new_application",
+                f"New rental application from {data.first_name} {data.last_name}",
+                {"application_id": application_id}
+            )
+    
+    return {"id": application_id, "status": "pending", "message": "Application submitted successfully"}
+
+@api_router.get("/organizations/{org_id}/applications")
+async def get_applications(org_id: str, status: str = None, user = Depends(get_current_user)):
+    """Get rental applications for an organization"""
+    membership = await db.memberships.find_one({"user_id": user['id'], "org_id": org_id})
+    if not membership:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    query = {"org_id": org_id}
+    if status:
+        query["status"] = status
+    
+    applications = await db.applications.find(query).sort("created_at", -1).to_list(100)
+    
+    result = []
+    for app in applications:
+        app_data = {
+            "id": app.get('id'),
+            "status": app.get('status'),
+            "applicant_name": f"{app.get('applicant', {}).get('first_name', '')} {app.get('applicant', {}).get('last_name', '')}",
+            "email": app.get('applicant', {}).get('email'),
+            "phone": app.get('applicant', {}).get('phone'),
+            "monthly_income": app.get('employment', {}).get('monthly_income'),
+            "move_in_date": app.get('additional', {}).get('move_in_date'),
+            "unit_id": app.get('unit_id'),
+            "created_at": app.get('created_at')
+        }
+        
+        if app.get('unit_id'):
+            unit = await db.units.find_one({"id": app.get('unit_id')})
+            if unit:
+                app_data['unit_name'] = unit.get('unit_number', unit.get('name'))
+        
+        result.append(app_data)
+    
+    return result
+
+@api_router.put("/applications/{application_id}/status")
+async def update_application_status(application_id: str, status: str, user = Depends(get_current_user)):
+    """Update application status (approved, denied, pending)"""
+    application = await db.applications.find_one({"id": application_id})
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+    
+    if application.get('org_id'):
+        membership = await db.memberships.find_one({"user_id": user['id'], "org_id": application['org_id']})
+        if not membership or membership['role'] not in ['admin', 'manager']:
+            raise HTTPException(status_code=403, detail="Not authorized")
+    
+    await db.applications.update_one(
+        {"id": application_id},
+        {"$set": {"status": status, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"status": "success", "message": f"Application {status}"}
+
+
 # Include the router in the main app
 app.include_router(api_router)
 
