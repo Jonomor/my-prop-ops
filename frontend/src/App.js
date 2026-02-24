@@ -158,6 +158,8 @@ function AppRoutes() {
       <Route path="/help" element={<HelpCenter />} />
       <Route path="/owner/login" element={<OwnerLogin />} />
       <Route path="/owner/dashboard" element={<OwnerDashboard />} />
+      <Route path="/rentals" element={<VacancyListings />} />
+      <Route path="/apply" element={<TenantApplication />} />
       <Route path="/admin/login" element={<AdminLogin />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
       
