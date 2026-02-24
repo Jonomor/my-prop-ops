@@ -6897,6 +6897,69 @@ async def create_test_owner(secret: str = None):
         "properties_assigned": len(properties)
     }
 
+@api_router.post("/setup/create-test-manager")
+async def create_test_manager(secret: str = None):
+    """Create a test manager account for testing purposes"""
+    expected_secret = os.environ.get("SETUP_SECRET", "mypropops-initial-setup-2026")
+    if secret != expected_secret:
+        raise HTTPException(status_code=403, detail="Invalid setup secret")
+    
+    test_email = "manager@test.mypropops.com"
+    
+    # Check if test user already exists
+    existing = await db.users.find_one({"email": test_email})
+    if existing:
+        # Update password
+        await db.users.update_one(
+            {"email": test_email},
+            {"$set": {"password": hash_password("TestManager2026!")}}
+        )
+        return {"status": "updated", "message": "Test manager password updated", "email": test_email}
+    
+    # Get or create an organization
+    org = await db.organizations.find_one({})
+    if not org:
+        org_id = str(uuid.uuid4())
+        org = {
+            "id": org_id,
+            "name": "Test Property Management",
+            "description": "Test organization",
+            "plan": "pro",
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.organizations.insert_one(org)
+    else:
+        org_id = org.get('id')
+    
+    # Create test manager
+    user_id = str(uuid.uuid4())
+    user = {
+        "id": user_id,
+        "email": test_email,
+        "password": hash_password("TestManager2026!"),
+        "name": "Test Manager",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.users.insert_one(user)
+    
+    # Create membership
+    membership = {
+        "id": str(uuid.uuid4()),
+        "org_id": org_id,
+        "user_id": user_id,
+        "role": "admin",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.memberships.insert_one(membership)
+    
+    return {
+        "status": "created",
+        "message": "Test manager created successfully",
+        "email": test_email,
+        "password": "TestManager2026!",
+        "org_id": org_id
+    }
+
 
 # ============== PUBLIC VACANCY LISTINGS ==============
 
