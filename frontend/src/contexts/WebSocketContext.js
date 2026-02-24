@@ -23,7 +23,7 @@ export const WebSocketProvider = ({ children }) => {
 
   // Get WebSocket URL from backend URL
   const getWsUrl = useCallback((userType, token) => {
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
+    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'https://backend-production-0325.up.railway.app';
     // Convert http(s) to ws(s)
     const wsProtocol = backendUrl.startsWith('https') ? 'wss' : 'ws';
     const wsHost = backendUrl.replace(/^https?:\/\//, '');
