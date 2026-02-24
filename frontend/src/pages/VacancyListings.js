@@ -43,7 +43,7 @@ const VacancyListings = () => {
   const filteredListings = listings.filter(listing => {
     if (filters.minRent && listing.rent < parseInt(filters.minRent)) return false;
     if (filters.maxRent && listing.rent > parseInt(filters.maxRent)) return false;
-    if (filters.bedrooms && listing.bedrooms !== parseInt(filters.bedrooms)) return false;
+    if (filters.bedrooms && filters.bedrooms !== 'any' && listing.bedrooms !== parseInt(filters.bedrooms)) return false;
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       if (!listing.property_name?.toLowerCase().includes(searchLower) &&
@@ -86,7 +86,7 @@ const VacancyListings = () => {
                 <SelectValue placeholder="Bedrooms" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Any</SelectItem>
+                <SelectItem value="any">Any</SelectItem>
                 <SelectItem value="0">Studio</SelectItem>
                 <SelectItem value="1">1 Bed</SelectItem>
                 <SelectItem value="2">2 Beds</SelectItem>
@@ -108,7 +108,7 @@ const VacancyListings = () => {
               onChange={(e) => setFilters({ ...filters, maxRent: e.target.value })}
               className="w-[100px]"
             />
-            <Button variant="outline" onClick={() => setFilters({ minRent: '', maxRent: '', bedrooms: '', search: '' })}>
+            <Button variant="outline" onClick={() => setFilters({ minRent: '', maxRent: '', bedrooms: 'any', search: '' })}>
               Clear
             </Button>
           </div>
@@ -132,7 +132,7 @@ const VacancyListings = () => {
                   : "Try adjusting your filters to see more results."}
               </p>
               {listings.length > 0 && (
-                <Button variant="outline" onClick={() => setFilters({ minRent: '', maxRent: '', bedrooms: '', search: '' })}>
+                <Button variant="outline" onClick={() => setFilters({ minRent: '', maxRent: '', bedrooms: 'any', search: '' })}>
                   Clear Filters
                 </Button>
               )}
