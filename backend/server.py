@@ -5751,7 +5751,7 @@ Keep responses under 300 words. Use bullet points for clarity."""
         user_prompt = f"Provide a brief executive summary of this property portfolio with key insights and recommendations:\n\n{context}"
     
     try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         full_prompt = f"{system_message}\n\n{user_prompt}"
         response = model.generate_content(full_prompt)
         
