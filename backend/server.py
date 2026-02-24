@@ -6469,7 +6469,7 @@ EXCERPT: [2-3 sentence compelling summary for previews]
         if not GEMINI_API_KEY:
             raise HTTPException(status_code=503, detail="AI service not configured. Add GEMINI_API_KEY to environment.")
         
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-2.0-flash')
         full_prompt = f"{system_message}\n\n{prompt}"
         response = model.generate_content(full_prompt)
         response_text = response.text
