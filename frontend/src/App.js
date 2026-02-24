@@ -44,6 +44,7 @@ import About from './pages/About';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import DPA from './pages/DPA';
+import HelpCenter from './pages/HelpCenter';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 
