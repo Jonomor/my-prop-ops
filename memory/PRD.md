@@ -51,6 +51,13 @@ MyPropOps is a full-stack SaaS property management platform deployed on Railway 
 
 ## Recent Updates (Feb 24, 2026)
 
+### Critical Bug Fixes (Feb 24, 2026)
+- **Rentals Page Blue Screen** - Fixed SelectItem value from empty string to 'any' to prevent React Select crash
+- **Contractor Portal Contrast** - Changed background gradient from bright orange to subtle gray-orange for better readability
+- **Owner Portal Login** - Created test owner endpoint (`/api/setup/create-test-owner`) and test account
+- **Mobile Navigation** - Added links to Rentals, Tenants, Owners portals in bottom nav bar
+- **Landing Page Portal Showcase** - Added new section showcasing all 4 portals (Tenant, Owner, Contractor, Browse Rentals)
+
 ### Owner Portal
 - New login and dashboard for property owners
 - View assigned properties, occupancy, financials
@@ -101,4 +108,8 @@ MyPropOps is a full-stack SaaS property management platform deployed on Railway 
 - Accounting reports (P&L, Balance Sheet)
 
 ## Credentials
-- **Admin:** admin@mypropops.com / MyPropOps@Admin2026!
+- **Super Admin:** admin@mypropops.com / MyPropOps@Admin2026!
+- **Property Manager:** manager@test.mypropops.com / TestManager2026!
+- **Tenant:** tenant@test.mypropops.com / TestTenant2026!
+- **Contractor:** contractor@test.mypropops.com / TestContractor2026!
+- **Owner:** owner@test.mypropops.com / TestOwner2026!
