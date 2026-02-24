@@ -5656,9 +5656,13 @@ import base64
 
 # ============== AI-POWERED INSIGHTS ENDPOINTS ==============
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+import google.generativeai as genai
 
-EMERGENT_LLM_KEY = os.environ.get("EMERGENT_LLM_KEY", "")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+
+# Configure Gemini
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
 
 class AIInsightsRequest(BaseModel):
     question: Optional[str] = None
@@ -5667,6 +5671,9 @@ class AIInsightsRequest(BaseModel):
 @api_router.post("/ai/insights")
 async def get_ai_insights(data: AIInsightsRequest, user = Depends(get_current_user)):
     """Generate AI-powered insights from property data"""
+    if not GEMINI_API_KEY:
+        raise HTTPException(status_code=503, detail="AI service not configured")
+    
     membership = await db.memberships.find_one({"user_id": user['id']})
     if not membership:
         raise HTTPException(status_code=403, detail="No organization membership")
