@@ -683,9 +683,9 @@ const Landing = () => {
       </section>
 
       {/* Portal Showcase Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="portal-showcase">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="portal-showcase">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
               <Users className="w-4 h-4" />
               Dedicated Portals
@@ -693,24 +693,24 @@ const Landing = () => {
             <h2 className="text-3xl sm:text-4xl font-bold font-heading">
               One platform. Every stakeholder.
             </h2>
-            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto text-lg">
               Give tenants, contractors, and property owners their own secure access points with dedicated features
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             {/* Tenant Portal */}
             <Card className="glass card-hover group">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Users className="w-8 h-8 text-emerald-600" />
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Users className="w-10 h-10 text-emerald-600" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Tenant Portal</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="text-xl font-semibold mb-3">Tenant Portal</h3>
+                <p className="text-muted-foreground mb-6">
                   Tenants can submit maintenance requests, pay rent, and access documents
                 </p>
                 <Link to="/tenant-portal/login">
-                  <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700">
+                  <Button variant="outline" className="w-full text-emerald-600 border-emerald-200 hover:bg-emerald-100 hover:text-emerald-700">
                     Access Portal
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -720,16 +720,16 @@ const Landing = () => {
 
             {/* Owner Portal */}
             <Card className="glass card-hover group">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Building className="w-8 h-8 text-blue-600" />
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Building className="w-10 h-10 text-blue-600" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Owner Portal</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="text-xl font-semibold mb-3">Owner Portal</h3>
+                <p className="text-muted-foreground mb-6">
                   Property investors track performance, occupancy, and revenue in real-time
                 </p>
                 <Link to="/owner/login">
-                  <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-200 hover:bg-blue-100 hover:text-blue-700">
+                  <Button variant="outline" className="w-full text-blue-600 border-blue-200 hover:bg-blue-100 hover:text-blue-700">
                     Access Portal
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -739,16 +739,16 @@ const Landing = () => {
 
             {/* Contractor Portal */}
             <Card className="glass card-hover group">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Wrench className="w-8 h-8 text-orange-600" />
+              <CardContent className="p-8 text-center">
+                <div className="w-20 h-20 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform">
+                  <Wrench className="w-10 h-10 text-orange-600" />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">Contractor Portal</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <h3 className="text-xl font-semibold mb-3">Contractor Portal</h3>
+                <p className="text-muted-foreground mb-6">
                   Contractors manage work orders, update job status, and message managers
                 </p>
                 <Link to="/contractor/login">
-                  <Button variant="outline" size="sm" className="w-full text-orange-600 border-orange-200 hover:bg-orange-100 hover:text-orange-700">
+                  <Button variant="outline" className="w-full text-orange-600 border-orange-200 hover:bg-orange-100 hover:text-orange-700">
                     Access Portal
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
