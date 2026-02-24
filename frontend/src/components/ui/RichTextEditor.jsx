@@ -111,7 +111,46 @@ const RichTextEditor = ({ content, onChange, placeholder = 'Start writing...' })
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   }, [editor]);
 
-  const addImage = useCallback(() => {
+  // File input ref for image upload
+  const fileInputRef = React.useRef(null);
+
+  const handleImageUpload = useCallback((event) => {
+    if (!editor) return;
+    
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size must be less than 5MB');
+      return;
+    }
+
+    // Convert to base64 and insert
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result;
+      if (base64) {
+        editor.chain().focus().setImage({ src: base64 }).run();
+      }
+    };
+    reader.readAsDataURL(file);
+    
+    // Reset input so same file can be selected again
+    event.target.value = '';
+  }, [editor]);
+
+  const triggerImageUpload = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const addImageFromUrl = useCallback(() => {
     if (!editor) return;
     
     const url = window.prompt('Enter image URL:');
