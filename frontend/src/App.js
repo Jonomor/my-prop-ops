@@ -49,6 +49,8 @@ import OwnerLogin from './pages/OwnerLogin';
 import OwnerDashboard from './pages/OwnerDashboard';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import ESignatures from './pages/ESignatures';
+import DocumentSigning from './pages/DocumentSigning';
 
 // Tenant Portal Pages
 import TenantLogin from './pages/TenantLogin';
