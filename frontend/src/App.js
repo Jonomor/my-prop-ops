@@ -47,6 +47,8 @@ import DPA from './pages/DPA';
 import HelpCenter from './pages/HelpCenter';
 import OwnerLogin from './pages/OwnerLogin';
 import OwnerDashboard from './pages/OwnerDashboard';
+import VacancyListings from './pages/VacancyListings';
+import TenantApplication from './pages/TenantApplication';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 
