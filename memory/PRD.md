@@ -51,6 +51,15 @@ MyPropOps is a full-stack SaaS property management platform deployed on Railway 
 
 ## Recent Updates (Feb 24, 2026)
 
+### E-Signature Feature (NEW - Feb 24, 2026)
+- Built-in electronic signature system (no 3rd party fees)
+- Manager can upload PDF templates (lease agreements, etc.)
+- Send documents to tenants/signers via email or link
+- Tenants sign by drawing signature on screen
+- Signed PDF generated with signature overlay and timestamp
+- Located at /e-signatures in manager dashboard
+- Public signing page at /sign/:token
+
 ### Critical Bug Fixes (Feb 24, 2026)
 - **Rentals Page Blue Screen** - Fixed SelectItem value from empty string to 'any' to prevent React Select crash
 - **Contractor Portal Contrast** - Changed background gradient from bright orange to subtle gray-orange for better readability
