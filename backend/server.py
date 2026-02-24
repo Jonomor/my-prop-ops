@@ -5751,17 +5751,12 @@ Keep responses under 300 words. Use bullet points for clarity."""
         user_prompt = f"Provide a brief executive summary of this property portfolio with key insights and recommendations:\n\n{context}"
     
     try:
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"insights-{org_id}-{datetime.now().timestamp()}",
-            system_message=system_message
-        ).with_model("openai", "gpt-4o")
-        
-        user_message = UserMessage(text=user_prompt)
-        response = await chat.send_message(user_message)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        full_prompt = f"{system_message}\n\n{user_prompt}"
+        response = model.generate_content(full_prompt)
         
         return {
-            "insight": response,
+            "insight": response.text,
             "insight_type": data.insight_type,
             "metrics": {
                 "occupancy_rate": occupancy_rate,
