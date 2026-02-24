@@ -39,7 +39,7 @@ import {
   X
 } from 'lucide-react';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'https://backend-production-0325.up.railway.app';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
