@@ -86,6 +86,12 @@ MyPropOps is a full-stack SaaS property management platform deployed on Railway 
 - `GET /api/owner/dashboard` - Dashboard data
 - `POST /api/organizations/{org_id}/owners` - Create owner
 - `PUT /api/properties/{property_id}/assign-owner` - Assign owner
+- `POST /api/setup/create-test-owner?secret=mypropops-initial-setup-2026` - Create test owner account
+
+### Public Endpoints
+- `GET /api/public/vacancies` - Get vacant units for public listing
+- `GET /api/public/unit/{unit_id}` - Get unit info for application
+- `POST /api/public/applications` - Submit rental application
 
 ## Backlog
 
