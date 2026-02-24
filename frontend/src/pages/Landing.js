@@ -755,25 +755,6 @@ const Landing = () => {
                 </Link>
               </CardContent>
             </Card>
-
-            {/* Vacancy Listings */}
-            <Card className="glass card-hover group">
-              <CardContent className="p-6 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                  <Building2 className="w-8 h-8 text-purple-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Browse Rentals</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Prospective tenants can browse available units and apply online
-                </p>
-                <Link to="/rentals">
-                  <Button variant="outline" size="sm" className="w-full text-purple-600 border-purple-200 hover:bg-purple-100 hover:text-purple-700">
-                    View Listings
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </section>
