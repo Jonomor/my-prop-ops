@@ -6854,6 +6854,49 @@ async def assign_property_owner(property_id: str, owner_id: str, user = Depends(
     
     return {"status": "success", "message": "Owner assigned to property"}
 
+@api_router.post("/setup/create-test-owner")
+async def create_test_owner(secret: str = None):
+    """Create a test owner account for testing purposes"""
+    expected_secret = os.environ.get("SETUP_SECRET", "mypropops-initial-setup-2026")
+    if secret != expected_secret:
+        raise HTTPException(status_code=403, detail="Invalid setup secret")
+    
+    test_owner_email = "owner@test.mypropops.com"
+    
+    # Check if test owner already exists
+    existing = await db.owners.find_one({"email": test_owner_email})
+    if existing:
+        return {"status": "exists", "message": "Test owner already exists", "email": test_owner_email}
+    
+    # Create test owner
+    owner_id = str(uuid.uuid4())
+    owner = {
+        "id": owner_id,
+        "org_id": None,  # Will need to be assigned properties
+        "name": "Test Owner",
+        "email": test_owner_email,
+        "password": hash_password("TestOwner2026!"),
+        "phone": "555-0100",
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+    await db.owners.insert_one(owner)
+    
+    # Find some properties to assign to this owner
+    properties = await db.properties.find({}).limit(2).to_list(2)
+    for prop in properties:
+        await db.properties.update_one(
+            {"id": prop['id']},
+            {"$set": {"owner_id": owner_id}}
+        )
+    
+    return {
+        "status": "created",
+        "message": "Test owner created successfully",
+        "email": test_owner_email,
+        "password": "TestOwner2026!",
+        "properties_assigned": len(properties)
+    }
+
 
 # ============== PUBLIC VACANCY LISTINGS ==============
 
