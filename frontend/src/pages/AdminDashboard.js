@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Switch } from '../components/ui/switch';
 import { Textarea } from '../components/ui/textarea';
 import { ScrollArea } from '../components/ui/scroll-area';
+import RichTextEditor from '../components/ui/RichTextEditor';
 import { toast } from 'sonner';
 import axios from 'axios';
 import {
