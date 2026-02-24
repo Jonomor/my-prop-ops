@@ -686,6 +686,102 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Portal Showcase Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30" data-testid="portal-showcase">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+              <Users className="w-4 h-4" />
+              Dedicated Portals
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold font-heading">
+              One platform. Every stakeholder.
+            </h2>
+            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+              Give tenants, contractors, and property owners their own secure access points with dedicated features
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Tenant Portal */}
+            <Card className="glass card-hover group">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Users className="w-8 h-8 text-emerald-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Tenant Portal</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Tenants can submit maintenance requests, pay rent, and access documents
+                </p>
+                <Link to="/tenant-portal/login">
+                  <Button variant="outline" size="sm" className="w-full text-emerald-600 border-emerald-200 hover:bg-emerald-50">
+                    Access Portal
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Owner Portal */}
+            <Card className="glass card-hover group">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Building className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Owner Portal</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Property investors track performance, occupancy, and revenue in real-time
+                </p>
+                <Link to="/owner/login">
+                  <Button variant="outline" size="sm" className="w-full text-blue-600 border-blue-200 hover:bg-blue-50">
+                    Access Portal
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Contractor Portal */}
+            <Card className="glass card-hover group">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Wrench className="w-8 h-8 text-orange-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Contractor Portal</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Contractors manage work orders, update job status, and message managers
+                </p>
+                <Link to="/contractor/login">
+                  <Button variant="outline" size="sm" className="w-full text-orange-600 border-orange-200 hover:bg-orange-50">
+                    Access Portal
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Vacancy Listings */}
+            <Card className="glass card-hover group">
+              <CardContent className="p-6 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                  <Building2 className="w-8 h-8 text-purple-600" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Browse Rentals</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Prospective tenants can browse available units and apply online
+                </p>
+                <Link to="/rentals">
+                  <Button variant="outline" size="sm" className="w-full text-purple-600 border-purple-200 hover:bg-purple-50">
+                    View Listings
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* Financial Infographic Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8" data-testid="infographic-section">
         <div className="max-w-7xl mx-auto">
