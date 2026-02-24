@@ -6466,14 +6466,13 @@ EXCERPT: [2-3 sentence compelling summary for previews]
 
 [HTML content starting with <p> - use <h2>, <h3>, <p>, <ul>, <ol>, <li>, <strong>, <em> tags]"""
 
-        chat = LlmChat(
-            api_key=EMERGENT_LLM_KEY,
-            session_id=f"blog-seo-{datetime.now().timestamp()}",
-            system_message=system_message
-        ).with_model("openai", "gpt-4o")
+        if not GEMINI_API_KEY:
+            raise HTTPException(status_code=503, detail="AI service not configured. Add GEMINI_API_KEY to environment.")
         
-        user_message = UserMessage(text=prompt)
-        response_text = await chat.send_message(user_message)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        full_prompt = f"{system_message}\n\n{prompt}"
+        response = model.generate_content(full_prompt)
+        response_text = response.text
         
         # Parse AI response with enhanced SEO fields
         content_text = response_text
