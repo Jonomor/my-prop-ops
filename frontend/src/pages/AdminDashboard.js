@@ -946,14 +946,10 @@ const AdminDashboard = () => {
             </div>
             <div className="space-y-2">
               <Label htmlFor="content">Content *</Label>
-              <Textarea
-                id="content"
-                value={blogForm.content}
-                onChange={(e) => setBlogForm(prev => ({ ...prev, content: e.target.value }))}
-                placeholder="Write your blog post content here... (Markdown supported)"
-                rows={12}
-                className="font-mono text-sm"
-                data-testid="blog-content-input"
+              <RichTextEditor
+                content={blogForm.content}
+                onChange={(html) => setBlogForm(prev => ({ ...prev, content: html }))}
+                placeholder="Write your blog post content here..."
               />
             </div>
             <div className="space-y-2">
