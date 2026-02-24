@@ -174,6 +174,7 @@ function AppRoutes() {
       <Route path="/inspections" element={<ProtectedRoute><Inspections /></ProtectedRoute>} />
       <Route path="/calendar" element={<ProtectedRoute><CalendarView /></ProtectedRoute>} />
       <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
+      <Route path="/e-signatures" element={<ProtectedRoute><ESignatures /></ProtectedRoute>} />
       <Route path="/team" element={<ProtectedRoute><TeamManagement /></ProtectedRoute>} />
       <Route path="/members" element={<ProtectedRoute><MemberDirectory /></ProtectedRoute>} />
       <Route path="/invites" element={<ProtectedRoute><PendingInvites /></ProtectedRoute>} />
@@ -191,6 +192,9 @@ function AppRoutes() {
       <Route path="/2fa-settings" element={<ProtectedRoute><TwoFactorAuth /></ProtectedRoute>} />
       <Route path="/ai-insights" element={<ProtectedRoute><AIInsights /></ProtectedRoute>} />
       <Route path="/organizations/new" element={<ProtectedRoute><CreateOrganization /></ProtectedRoute>} />
+      
+      {/* Public eSignature route */}
+      <Route path="/sign/:token" element={<DocumentSigning />} />
       
       {/* Default redirect */}
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
