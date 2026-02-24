@@ -885,7 +885,7 @@ const AdminDashboard = () => {
 
       {/* Blog Edit Dialog */}
       <Dialog open={editBlogOpen} onOpenChange={setEditBlogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{selectedBlog ? 'Edit Blog Post' : 'Create Blog Post'}</DialogTitle>
             <DialogDescription>
