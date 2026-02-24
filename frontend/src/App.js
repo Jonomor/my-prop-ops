@@ -45,6 +45,8 @@ import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import DPA from './pages/DPA';
 import HelpCenter from './pages/HelpCenter';
+import OwnerLogin from './pages/OwnerLogin';
+import OwnerDashboard from './pages/OwnerDashboard';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 
