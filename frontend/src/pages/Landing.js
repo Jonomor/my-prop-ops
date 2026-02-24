@@ -328,6 +328,7 @@ const Landing = () => {
               <Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link>
               <Link to="/tenant-portal/login" className="text-emerald-600 hover:text-emerald-700 transition-colors font-medium">For Tenants</Link>
               <Link to="/contractor/login" className="text-orange-600 hover:text-orange-700 transition-colors font-medium">For Contractors</Link>
+              <Link to="/owner/login" className="text-blue-600 hover:text-blue-700 transition-colors font-medium">For Owners</Link>
             </div>
             <div className="hidden sm:flex items-center gap-4">
               <Link to="/login">
