@@ -45,7 +45,8 @@ import {
   Shield,
   Sparkles,
   Wifi,
-  WifiOff
+  WifiOff,
+  PenTool
 } from 'lucide-react';
 
 const navItems = [
@@ -59,6 +60,7 @@ const navItems = [
   { path: '/inspections', label: 'Inspections', icon: ClipboardCheck },
   { path: '/calendar', label: 'Calendar', icon: Calendar },
   { path: '/documents', label: 'Documents', icon: FileText },
+  { path: '/e-signatures', label: 'E-Signatures', icon: PenTool },
   { path: '/reports', label: 'Reports', icon: FileSpreadsheet },
   { path: '/analytics', label: 'Analytics', icon: BarChart3 },
   { path: '/team', label: 'Team', icon: UserPlus },
