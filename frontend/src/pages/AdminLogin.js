@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { Shield, Loader2 } from 'lucide-react';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+const API_URL = process.env.REACT_APP_BACKEND_URL || 'https://backend-production-0325.up.railway.app';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
