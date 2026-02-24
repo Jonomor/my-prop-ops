@@ -319,46 +319,6 @@ const RichTextEditor = ({ content, onChange, placeholder = 'Start writing...' })
         </MenuButton>
       </div>
 
-      {/* Bubble Menu for quick formatting */}
-      {editor && (
-        <BubbleMenu
-          editor={editor}
-          tippyOptions={{ duration: 100 }}
-          className="flex items-center gap-1 p-1 bg-popover border border-border rounded-lg shadow-lg"
-        >
-          <MenuButton
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            isActive={editor.isActive('bold')}
-          >
-            <Bold className="w-3 h-3" />
-          </MenuButton>
-          <MenuButton
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            isActive={editor.isActive('italic')}
-          >
-            <Italic className="w-3 h-3" />
-          </MenuButton>
-          <MenuButton
-            onClick={() => editor.chain().focus().toggleUnderline().run()}
-            isActive={editor.isActive('underline')}
-          >
-            <UnderlineIcon className="w-3 h-3" />
-          </MenuButton>
-          <MenuButton
-            onClick={setLink}
-            isActive={editor.isActive('link')}
-          >
-            <LinkIcon className="w-3 h-3" />
-          </MenuButton>
-          <MenuButton
-            onClick={() => editor.chain().focus().toggleHighlight({ color: '#fef08a' }).run()}
-            isActive={editor.isActive('highlight')}
-          >
-            <Highlighter className="w-3 h-3" />
-          </MenuButton>
-        </BubbleMenu>
-      )}
-
       {/* Editor Content */}
       <EditorContent editor={editor} />
 
