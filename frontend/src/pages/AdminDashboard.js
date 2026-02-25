@@ -197,7 +197,8 @@ const AdminDashboard = () => {
       category: post?.category || 'Property Management',
       status: post?.status || 'published',
       meta_description: post?.meta_description || '',
-      keywords: post?.keywords || []
+      keywords: post?.keywords || [],
+      image_url: post?.image_url || ''
     });
     setEditBlogOpen(true);
   };
