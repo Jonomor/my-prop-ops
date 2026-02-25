@@ -6310,14 +6310,28 @@ def get_blog_image(category: str) -> str:
     images = BLOG_STOCK_IMAGES.get(category, BLOG_STOCK_IMAGES["Property Management"])
     return random.choice(images)
 
+def extract_first_image_from_content(content: str) -> Optional[str]:
+    """Extract the first image URL from HTML content"""
+    import re
+    # Match img tags with src attribute
+    img_pattern = r'<img[^>]+src=["\']([^"\']+)["\']'
+    match = re.search(img_pattern, content, re.IGNORECASE)
+    if match:
+        return match.group(1)
+    return None
+
 @api_router.post("/admin/blog")
 async def create_admin_blog_post(post: AdminBlogPost, admin = Depends(get_current_admin)):
     """Create a new blog post"""
     slug = post.title.lower().replace(" ", "-").replace("'", "").replace('"', "")
     slug = ''.join(c for c in slug if c.isalnum() or c == '-')
     
-    # Use provided image or get a stock image
-    image_url = post.image_url if post.image_url else get_blog_image(post.category)
+    # Priority: 1) Provided image_url, 2) First image from content, 3) Stock image
+    image_url = post.image_url
+    if not image_url:
+        image_url = extract_first_image_from_content(post.content)
+    if not image_url:
+        image_url = get_blog_image(post.category)
     
     blog_post = {
         "id": str(uuid.uuid4()),
@@ -6350,6 +6364,15 @@ async def update_admin_blog_post(post_id: str, post: AdminBlogPost, admin = Depe
     if not existing:
         raise HTTPException(status_code=404, detail="Blog post not found")
     
+    # Priority: 1) Provided image_url, 2) First image from content, 3) Keep existing, 4) Stock image
+    image_url = post.image_url
+    if not image_url:
+        image_url = extract_first_image_from_content(post.content)
+    if not image_url:
+        image_url = existing.get("image_url")
+    if not image_url:
+        image_url = get_blog_image(post.category)
+    
     update_data = {
         "title": post.title,
         "excerpt": post.excerpt,
@@ -6358,6 +6381,7 @@ async def update_admin_blog_post(post_id: str, post: AdminBlogPost, admin = Depe
         "status": post.status,
         "meta_description": post.meta_description or post.excerpt[:160],
         "keywords": post.keywords or [],
+        "image_url": image_url,
         "read_time": max(1, len(post.content.split()) // 200),
         "updated_at": datetime.now(timezone.utc).isoformat()
     }
