@@ -6271,27 +6271,37 @@ class AdminBlogPost(BaseModel):
     keywords: Optional[List[str]] = None
     image_url: Optional[str] = None
 
-# Stock images for blog posts by category
+# Stock images for blog posts by category - Professional photorealistic images
 BLOG_STOCK_IMAGES = {
     "Property Management": [
-        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
-        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80",
-        "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&q=80",
+        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&q=90",  # Modern apartment building exterior
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=90",  # Glass office building
+        "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&q=90",  # Luxury apartment interior
+        "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=90",  # Modern house exterior
+        "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=90",  # Beautiful home front
+        "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200&q=90",  # Luxury home exterior
     ],
     "Landlord Tips": [
-        "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=800&q=80",
-        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80",
-        "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
+        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&q=90",  # Business meeting documents
+        "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=1200&q=90",  # Signing contract
+        "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1200&q=90",  # Business handshake
+        "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1200&q=90",  # Handshake deal
+        "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=1200&q=90",  # Keys handover
+        "https://images.unsplash.com/photo-1560472355-536de3962603?w=1200&q=90",  # Property keys
     ],
     "Industry News": [
-        "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80",
-        "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&q=80",
-        "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&q=80",
+        "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&q=90",  # News and media
+        "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=1200&q=90",  # Real estate newspaper
+        "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=90",  # Financial charts
+        "https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?w=1200&q=90",  # Stock market
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=90",  # Analytics dashboard
     ],
     "Product Updates": [
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
-        "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&q=80",
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=90",  # Dashboard on laptop
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&q=90",  # Analytics screen
+        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&q=90",  # Laptop coding
+        "https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=1200&q=90",  # Team working laptops
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&q=90",  # MacBook workspace
     ]
 }
 
