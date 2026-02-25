@@ -6269,6 +6269,36 @@ class AdminBlogPost(BaseModel):
     status: str = "published"
     meta_description: Optional[str] = None
     keywords: Optional[List[str]] = None
+    image_url: Optional[str] = None
+
+# Stock images for blog posts by category
+BLOG_STOCK_IMAGES = {
+    "Property Management": [
+        "https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&q=80",
+        "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80",
+        "https://images.unsplash.com/photo-1582407947304-fd86f028f716?w=800&q=80",
+    ],
+    "Landlord Tips": [
+        "https://images.unsplash.com/photo-1560520653-9e0e4c89eb11?w=800&q=80",
+        "https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=800&q=80",
+        "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80",
+    ],
+    "Industry News": [
+        "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=800&q=80",
+        "https://images.unsplash.com/photo-1495020689067-958852a7765e?w=800&q=80",
+        "https://images.unsplash.com/photo-1585829365295-ab7cd400c167?w=800&q=80",
+    ],
+    "Product Updates": [
+        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&q=80",
+        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=80",
+        "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&q=80",
+    ]
+}
+
+def get_blog_image(category: str) -> str:
+    """Get a stock image URL for a blog post based on category"""
+    images = BLOG_STOCK_IMAGES.get(category, BLOG_STOCK_IMAGES["Property Management"])
+    return random.choice(images)
 
 @api_router.post("/admin/blog")
 async def create_admin_blog_post(post: AdminBlogPost, admin = Depends(get_current_admin)):
