@@ -6669,7 +6669,7 @@ async def schedule_blog_generation():
 
 @api_router.post("/setup/add-blog-images")
 async def add_images_to_existing_posts(secret: str = None, refresh_all: bool = False):
-    """Add stock images to existing blog posts that don't have images"""
+    """Add images to existing blog posts - extracts from content first, then uses stock images"""
     expected_secret = os.environ.get("SETUP_SECRET", "mypropops-initial-setup-2026")
     if secret != expected_secret:
         raise HTTPException(status_code=403, detail="Invalid setup secret")
@@ -6682,8 +6682,15 @@ async def add_images_to_existing_posts(secret: str = None, refresh_all: bool = F
     
     updated_count = 0
     for post in posts:
+        content = post.get("content", "")
         category = post.get("category", "Property Management")
-        image_url = get_blog_image(category)
+        
+        # Try to extract image from content first
+        image_url = extract_first_image_from_content(content)
+        
+        # Fall back to stock image if no image in content
+        if not image_url:
+            image_url = get_blog_image(category)
         
         await db.blog_posts.update_one(
             {"id": post["id"]},
