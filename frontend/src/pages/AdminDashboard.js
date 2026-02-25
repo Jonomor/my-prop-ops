@@ -905,6 +905,65 @@ const AdminDashboard = () => {
                 data-testid="blog-title-input"
               />
             </div>
+            
+            {/* Featured Image for Blog Card */}
+            <div className="space-y-2">
+              <Label htmlFor="image_url">Featured Image (Blog Card)</Label>
+              <div className="flex gap-2">
+                <Input
+                  id="image_url"
+                  value={blogForm.image_url}
+                  onChange={(e) => setBlogForm(prev => ({ ...prev, image_url: e.target.value }))}
+                  placeholder="Paste image URL here..."
+                  className="flex-1"
+                  data-testid="blog-image-input"
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="blog-image-upload"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        setBlogForm(prev => ({ ...prev, image_url: event.target.result }));
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={() => document.getElementById('blog-image-upload').click()}
+                >
+                  Upload
+                </Button>
+              </div>
+              {blogForm.image_url && (
+                <div className="mt-2 relative">
+                  <img 
+                    src={blogForm.image_url} 
+                    alt="Featured preview" 
+                    className="w-full max-h-48 object-cover rounded-lg border"
+                    onError={(e) => e.target.style.display = 'none'}
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => setBlogForm(prev => ({ ...prev, image_url: '' }))}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">This image will appear on the blog card. Upload an image or paste a URL.</p>
+            </div>
+            
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
