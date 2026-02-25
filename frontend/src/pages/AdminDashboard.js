@@ -70,7 +70,8 @@ const AdminDashboard = () => {
     category: 'Property Management',
     status: 'published',
     meta_description: '',
-    keywords: []
+    keywords: [],
+    image_url: ''
   });
   
   // Search
