@@ -973,11 +973,9 @@ const AdminDashboard = () => {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Property Management">Property Management</SelectItem>
-                    <SelectItem value="Tenant Relations">Tenant Relations</SelectItem>
-                    <SelectItem value="Maintenance">Maintenance</SelectItem>
-                    <SelectItem value="Legal & Compliance">Legal & Compliance</SelectItem>
-                    <SelectItem value="Technology">Technology</SelectItem>
+                    <SelectItem value="Landlord Tips">Landlord Tips</SelectItem>
                     <SelectItem value="Industry News">Industry News</SelectItem>
+                    <SelectItem value="Product Updates">Product Updates</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
