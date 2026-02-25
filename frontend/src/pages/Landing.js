@@ -1012,17 +1012,19 @@ const Landing = () => {
           </div>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-6 mb-12">
+          <div className="flex items-center justify-center gap-4 mb-12">
             <span className={`text-sm font-medium transition-colors ${billingPeriod === 'monthly' ? 'text-foreground' : 'text-muted-foreground'}`}>Monthly</span>
             <button
               onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'annual' : 'monthly')}
-              className={`relative w-16 h-8 rounded-full transition-colors ${billingPeriod === 'annual' ? 'bg-primary' : 'bg-muted-foreground/30'}`}
+              className={`relative inline-flex h-7 w-14 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${billingPeriod === 'annual' ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}
               data-testid="billing-toggle"
               aria-label={`Switch to ${billingPeriod === 'monthly' ? 'annual' : 'monthly'} billing`}
               role="switch"
               aria-checked={billingPeriod === 'annual'}
             >
-              <span className={`absolute top-1.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${billingPeriod === 'annual' ? 'translate-x-9' : 'translate-x-1.5'}`} />
+              <span 
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-md transition-transform duration-200 ${billingPeriod === 'annual' ? 'translate-x-8' : 'translate-x-1'}`} 
+              />
             </button>
             <div className="flex items-center gap-2">
               <span className={`text-sm font-medium transition-colors ${billingPeriod === 'annual' ? 'text-foreground' : 'text-muted-foreground'}`}>Annual</span>
