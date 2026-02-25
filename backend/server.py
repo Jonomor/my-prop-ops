@@ -6306,6 +6306,9 @@ async def create_admin_blog_post(post: AdminBlogPost, admin = Depends(get_curren
     slug = post.title.lower().replace(" ", "-").replace("'", "").replace('"', "")
     slug = ''.join(c for c in slug if c.isalnum() or c == '-')
     
+    # Use provided image or get a stock image
+    image_url = post.image_url if post.image_url else get_blog_image(post.category)
+    
     blog_post = {
         "id": str(uuid.uuid4()),
         "title": post.title,
@@ -6318,6 +6321,7 @@ async def create_admin_blog_post(post: AdminBlogPost, admin = Depends(get_curren
         "read_time": max(1, len(post.content.split()) // 200),
         "meta_description": post.meta_description or post.excerpt[:160],
         "keywords": post.keywords or [],
+        "image_url": image_url,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "published_at": datetime.now(timezone.utc).isoformat() if post.status == "published" else None,
         "updated_at": datetime.now(timezone.utc).isoformat()
