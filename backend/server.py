@@ -6588,7 +6588,7 @@ EXCERPT: [2-3 sentence compelling summary for previews]
             "category": selected_category,
             "read_time": read_time,
             "word_count": word_count,
-            "image_url": None,
+            "image_url": get_blog_image(selected_category),
             "status": "published",
             "published_at": datetime.now(timezone.utc).isoformat(),
             "created_at": datetime.now(timezone.utc).isoformat(),
