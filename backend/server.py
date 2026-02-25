@@ -6644,14 +6644,17 @@ async def schedule_blog_generation():
     return {"message": "Blog post generated", "should_publish": True, "result": result}
 
 @api_router.post("/setup/add-blog-images")
-async def add_images_to_existing_posts(secret: str = None):
+async def add_images_to_existing_posts(secret: str = None, refresh_all: bool = False):
     """Add stock images to existing blog posts that don't have images"""
     expected_secret = os.environ.get("SETUP_SECRET", "mypropops-initial-setup-2026")
     if secret != expected_secret:
         raise HTTPException(status_code=403, detail="Invalid setup secret")
     
-    # Find all posts without images
-    posts = await db.blog_posts.find({"$or": [{"image_url": None}, {"image_url": ""}]}).to_list(1000)
+    # Find posts to update
+    if refresh_all:
+        posts = await db.blog_posts.find({}).to_list(1000)
+    else:
+        posts = await db.blog_posts.find({"$or": [{"image_url": None}, {"image_url": ""}]}).to_list(1000)
     
     updated_count = 0
     for post in posts:
