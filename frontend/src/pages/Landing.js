@@ -1248,9 +1248,11 @@ const Landing = () => {
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} MyPropOps. All rights reserved.
             </p>
-            <p className="text-sm text-muted-foreground">
-              Made with care for property managers
-            </p>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <span>Built by <a href="https://jonomor.com/ali-morgan" className="hover:text-foreground underline" target="_blank" rel="noopener noreferrer">Ali Morgan</a></span>
+              <span className="hidden sm:inline">•</span>
+              <span>Part of the <a href="https://jonomor.com/ecosystem" className="hover:text-foreground underline" target="_blank" rel="noopener noreferrer">Jonomor Ecosystem</a></span>
+            </div>
           </div>
         </div>
       </footer>

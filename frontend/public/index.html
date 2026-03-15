@@ -57,14 +57,23 @@
         {
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
+            "@id": "https://mypropops.com/#app",
             "name": "MyPropOps",
+            "url": "https://mypropops.com",
+            "description": "MyPropOps is an operational platform for property management workflows designed to organize maintenance coordination, tenant communication, and operational processes.",
             "applicationCategory": "BusinessApplication",
             "applicationSubCategory": "Property Management Software",
             "operatingSystem": "Web Browser",
-            "description": "#1 Property Management Software. All-in-one SaaS platform for landlords and property managers. Manage properties, tenants, inspections, and documents.",
-            "url": "https://mypropops.com",
             "softwareVersion": "1.0",
-            "releaseNotes": "Cloud-based property management platform with tenant portal, maintenance tracking, and inspection workflows.",
+            "creator": {
+                "@id": "https://jonomor.com/ali-morgan#person"
+            },
+            "publisher": {
+                "@id": "https://jonomor.com/#organization"
+            },
+            "isPartOf": {
+                "@id": "https://jonomor.com/#organization"
+            },
             "offers": {
                 "@type": "AggregateOffer",
                 "lowPrice": "0",
@@ -112,18 +121,11 @@
                 "Team Collaboration",
                 "Tenant Portal",
                 "Maintenance Request System",
-                "Section 8 Housing Support",
-                "HUD Compliance Tools",
                 "Real-time Notifications",
                 "Stripe Payment Integration"
             ],
             "screenshot": "https://mypropops.com/og-image.png",
-            "softwareHelp": "https://mypropops.com/faq",
-            "creator": {
-                "@type": "Organization",
-                "name": "MyPropOps, Inc.",
-                "url": "https://mypropops.com"
-            }
+            "softwareHelp": "https://mypropops.com/help"
         }
         </script>
         
@@ -166,14 +168,18 @@
         {
             "@context": "https://schema.org",
             "@type": "Organization",
-            "name": "MyPropOps, Inc.",
-            "alternateName": "MyPropOps",
+            "@id": "https://mypropops.com/#organization",
+            "name": "MyPropOps",
             "url": "https://mypropops.com",
             "logo": "https://mypropops.com/logo512.png",
-            "slogan": "#1 Property Management Software",
-            "description": "MyPropOps, Inc. is the creator of the #1 property management software platform for modern property managers. Our cloud-based SaaS solution streamlines property operations, tenant management, compliance tracking, and team collaboration.",
+            "description": "MyPropOps is an operational platform for property management workflows designed to organize maintenance coordination, tenant communication, and operational processes.",
             "foundingDate": "2024",
-            "sameAs": [],
+            "founder": {
+                "@id": "https://jonomor.com/ali-morgan#person"
+            },
+            "parentOrganization": {
+                "@id": "https://jonomor.com/#organization"
+            },
             "contactPoint": {
                 "@type": "ContactPoint",
                 "contactType": "customer service",
@@ -183,19 +189,6 @@
             "address": {
                 "@type": "PostalAddress",
                 "addressCountry": "US"
-            },
-            "brand": {
-                "@type": "Brand",
-                "name": "MyPropOps",
-                "slogan": "#1 Property Management Software"
-            },
-            "makesOffer": {
-                "@type": "Offer",
-                "itemOffered": {
-                    "@type": "SoftwareApplication",
-                    "name": "MyPropOps Property Management Software",
-                    "applicationCategory": "BusinessApplication"
-                }
             }
         }
         </script>
